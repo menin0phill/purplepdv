@@ -948,10 +948,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let qty = 1;
     let selectedVarId = hasVars ? product.variations[0].id : null;
 
-    const qtyMinus = document.getElementById('btn-ecom-detail-qty-minus');
-    const qtyPlus = document.getElementById('btn-ecom-detail-qty-plus');
+    const oldQtyMinus = document.getElementById('btn-ecom-detail-qty-minus');
+    const oldQtyPlus = document.getElementById('btn-ecom-detail-qty-plus');
+    const oldAddBtn = document.getElementById('btn-ecom-detail-add-cart');
+
+    const qtyMinus = oldQtyMinus.cloneNode(true);
+    const qtyPlus = oldQtyPlus.cloneNode(true);
+    const addBtn = oldAddBtn.cloneNode(true);
+
+    oldQtyMinus.parentNode.replaceChild(qtyMinus, oldQtyMinus);
+    oldQtyPlus.parentNode.replaceChild(qtyPlus, oldQtyPlus);
+    oldAddBtn.parentNode.replaceChild(addBtn, oldAddBtn);
+
     const qtyVal = document.getElementById('ecom-detail-qty-val');
-    const addBtn = document.getElementById('btn-ecom-detail-add-cart');
     const swatches = content.querySelectorAll('.color-swatch');
     const varNameDisplay = document.getElementById('ecom-detail-var-name-display');
     const mainImg = document.getElementById('ecom-detail-main-img');
