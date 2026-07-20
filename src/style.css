@@ -2333,6 +2333,7 @@ input:checked + .slider:before {
 .ecom-layout {
   background: #ffffff !important;
   color: #111111 !important;
+  overflow: visible !important;
 }
 
 .ecom-navbar {
@@ -2783,8 +2784,12 @@ select.select-order-status.status-can {
 
 @media (max-width: 768px) {
   /* Proteção contra rolagem lateral no mobile */
-  html, body, .ecom-layout {
+  html, body {
     overflow-x: hidden !important;
+    width: 100% !important;
+  }
+  .ecom-layout {
+    overflow: visible !important;
     width: 100% !important;
   }
 
