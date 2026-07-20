@@ -1685,13 +1685,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 `);
                 if (typeof lucide !== 'undefined') lucide.createIcons();
               } else {
-                throw new Error(result.error || 'Erro desconhecido');
+                throw new Error((result.error ? (result.error + (result.details ? ' (' + result.details + ')' : '')) : null) || 'Erro desconhecido');
               }
             } catch (err) {
-              showNotification('Falha ao gerar link do cartão: ' + err.message, 'error');
+              showNotification('Erro Asaas: ' + err.message, 'error');
               successBox.innerHTML = `
                 <p><strong>Nº do Pedido:</strong> <code>${completedSale.id.split('_')[1] || completedSale.id}</code></p>
-                <p class="text-xs text-danger text-center">Fale com o suporte para concluir seu pagamento.</p>
+                <p class="text-xs text-danger text-center">Fale com o suporte para concluir seu pagamento. Detalhes: ${err.message}</p>
               `;
             }
             
@@ -1741,13 +1741,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   showNotification('Chave Pix copiada!', 'success');
                 });
               } else {
-                throw new Error(pixResult.error || 'Falha ao processar Pix.');
+                throw new Error((pixResult.error ? (pixResult.error + (pixResult.details ? ' (' + pixResult.details + ')' : '')) : null) || 'Falha ao processar Pix.');
               }
             } catch (err) {
-              showNotification('Erro ao conectar com Asaas. Usando Pix alternativo.', 'warning');
+              showNotification('Erro Asaas: ' + err.message, 'warning');
               successBox.innerHTML = `
                 <p><strong>Nº do Pedido:</strong> <code>${completedSale.id.split('_')[1] || completedSale.id}</code></p>
-                <p class="text-xs text-danger text-center" style="margin: 5px 0;">Modo offline: Escaneie o Pix de backup abaixo.</p>
+                <p class="text-xs text-danger text-center" style="margin: 5px 0;">Erro: ${err.message}</p>
+                <p class="text-xs text-muted text-center" style="margin: 5px 0;">Usando Pix de backup offline abaixo:</p>
                 <div style="margin: 15px auto; width: 200px; height: 200px; padding: 10px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.1);">
                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent('00020101021226930014br.gov.bcb.pix2571pix-qrcode.asaas.com/v3/simulated_purple_offline_' + Date.now())}" style="max-width:100%; max-height:100%;">
                 </div>
