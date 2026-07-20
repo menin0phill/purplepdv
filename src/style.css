@@ -2788,25 +2788,130 @@ select.select-order-status.status-can {
 
   /* Navbar Responsivo */
   .ecom-navbar {
-    padding: 12px 15px !important;
-    gap: 12px !important;
+    padding: 15px 15px !important;
+    gap: 8px !important;
   }
+  
   .ecom-navbar > div:first-child {
-    flex-direction: column !important;
-    gap: 12px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
     align-items: center !important;
+    width: 100% !important;
+    gap: 8px !important;
   }
+
   .ecom-navbar .ecom-logo-container {
     position: relative !important;
     left: auto !important;
     top: auto !important;
     transform: none !important;
-    margin-bottom: 4px !important;
+    margin: 0 !important;
+    margin-right: auto !important;
+    order: 1 !important;
+    display: block !important;
   }
+
+  .ecom-navbar .ecom-logo-container img {
+    height: 38px !important;
+  }
+
   .ecom-navbar .ecom-nav-right {
-    width: 100% !important;
+    display: contents !important;
+  }
+
+  .ecom-navbar #btn-ecom-favorites {
+    order: 2 !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background-color: rgba(139, 92, 246, 0.08) !important;
+    border: 1px solid rgba(139, 92, 246, 0.15) !important;
+    color: #6a3f97 !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
-    gap: 10px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+  }
+
+  .ecom-navbar #ecom-auth-status {
+    order: 3 !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ecom-navbar #btn-ecom-auth-open {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background-color: rgba(139, 92, 246, 0.08) !important;
+    border: 1px solid rgba(139, 92, 246, 0.15) !important;
+    color: #6a3f97 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+  }
+
+  .ecom-navbar .ecom-login-text,
+  .ecom-navbar .ecom-user-name {
+    display: none !important;
+  }
+
+  .ecom-navbar #btn-ecom-cart {
+    order: 4 !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: #6a3f97 !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    cursor: pointer !important;
+    border: none !important;
+  }
+
+  .ecom-navbar .ecom-cart-text {
+    display: none !important;
+  }
+
+  .ecom-navbar .cart-badge {
+    position: absolute !important;
+    top: -5px !important;
+    right: -5px !important;
+    background: #e53e3e !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    border: 1.5px solid white !important;
+  }
+
+  .auth-logged-info {
+    gap: 4px !important;
+  }
+  .auth-logged-info #btn-ecom-logout {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    border-radius: 12px !important;
+    color: #6a3f97 !important;
   }
 
   /* Posicionamento Absoluto das Setas do Carrossel para Evitar Overflow Lateral */
@@ -3018,28 +3123,7 @@ select.select-order-status.status-can {
   -webkit-overflow-scrolling: touch !important;
 }
 
-/* Responsividade do Perfil do Usuário e Login */
-@media (max-width: 768px) {
-  .ecom-login-text {
-    display: none !important;
-  }
-  #btn-ecom-auth-open {
-    padding: 8px 12px !important;
-    border-radius: 50% !important;
-    width: 38px !important;
-    height: 38px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-  .ecom-user-name {
-    display: none !important;
-  }
-  #btn-ecom-logout {
-    padding: 4px 8px !important;
-    font-size: 11px !important;
-  }
-}
+
 
 /* Estilo Empilhado para o Preço e Botão nos Cards Mobile */
 @media (max-width: 768px) {

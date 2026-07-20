@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <div class="auth-logged-info" style="display:flex; align-items:center; gap:8px;">
           <span class="text-sm" id="ecom-profile-trigger" style="cursor:pointer; font-weight:600; color:#6a3f97; display:flex; align-items:center; gap:4px;" title="Ver Perfil & Pedidos">
-            <i data-lucide="user" style="width:16px; height:16px;"></i> Olá, <strong>${loggedClient.name.split(' ')[0]}</strong>
+            <i data-lucide="user" style="width:16px; height:16px;"></i> <span class="ecom-user-name">Olá, <strong>${loggedClient.name.split(' ')[0]}</strong></span>
           </span>
           <button id="btn-ecom-logout" class="btn btn-clear btn-sm" title="Sair da Conta">Sair</button>
         </div>
@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       return `
         <button id="btn-ecom-auth-open" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:4px;">
-          <i data-lucide="user"></i> Entrar / Cadastrar
+          <i data-lucide="user"></i> <span class="ecom-login-text">Entrar / Cadastrar</span>
         </button>
       `;
     }
