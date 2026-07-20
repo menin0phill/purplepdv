@@ -2433,9 +2433,13 @@ input:checked + .slider:before {
   transform: scale(1.05) !important;
 }
 
+.ecom-card-hover-overlay {
+  pointer-events: none !important;
+}
 .ecom-product-card-premium:hover .ecom-card-hover-overlay {
   opacity: 1 !important;
   transform: translateY(0) !important;
+  pointer-events: auto !important;
 }
 
 .ecom-favorite-btn {

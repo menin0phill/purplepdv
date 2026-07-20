@@ -191,6 +191,46 @@ function initDB() {
     localStorage.setItem('purple_pdv_db_reset_v9', 'true');
   }
 
+  // MIGRAR IDs DUPLICADOS (causados por importações em massa na mesma milissegundo)
+  const rawProds = localStorage.getItem(KEY_PRODUCTS);
+  if (rawProds) {
+    try {
+      let prods = JSON.parse(rawProds);
+      let idsSeen = new Set();
+      let modified = false;
+      
+      prods = prods.map((p, idx) => {
+        // Se o ID for duplicado, vazio ou nulo, gera um único
+        if (!p.id || idsSeen.has(p.id)) {
+          p.id = 'p_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 5);
+          modified = true;
+        }
+        idsSeen.add(p.id);
+        
+        // Também garantir variações com IDs únicos
+        if (p.variations && p.variations.length > 0) {
+          let varIdsSeen = new Set();
+          p.variations = p.variations.map((v, vidx) => {
+            if (!v.id || varIdsSeen.has(v.id)) {
+              v.id = 'v_' + Date.now() + '_' + vidx + '_' + Math.random().toString(36).substr(2, 5);
+              modified = true;
+            }
+            varIdsSeen.add(v.id);
+            return v;
+          });
+        }
+        return p;
+      });
+      
+      if (modified) {
+        localStorage.setItem(KEY_PRODUCTS, JSON.stringify(prods));
+        console.log("Database Migration: Fixed duplicate product IDs!");
+      }
+    } catch(e) {
+      console.error("Migration error:", e);
+    }
+  }
+
   const currentProds = localStorage.getItem(KEY_PRODUCTS);
   let needsReset = false;
   if (currentProds) {
@@ -268,12 +308,15 @@ export function addProduct(product) {
   const products = getProducts();
   const newProduct = {
     ...product,
-    id: 'p_' + Date.now(),
+    id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
     costPrice: parseFloat(product.costPrice) || 0,
     price: parseFloat(product.price) || 0,
     stock: parseInt(product.stock) || 0,
     description: product.description || '',
-    variations: product.variations || []
+    variations: (product.variations || []).map((v, idx) => ({
+      ...v,
+      id: v.id || ('v_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 5))
+    }))
   };
   products.push(newProduct);
   saveProducts(products);

@@ -722,6 +722,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return p.category.toLowerCase() === selectedCategory.toLowerCase();
     });
 
+    // Ordenar: maior estoque no topo, fora de estoque (0) no final
+    filtered.sort((a, b) => b.stock - a.stock);
+
     // Injeta título e subtítulo da vitrine
     const mainEl = document.querySelector('.ecom-main');
     if (mainEl) {
@@ -1026,6 +1029,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
 
+    if (maxStock <= 0) {
+      showNotification(`O produto/variação ${name} está esgotado!`, 'error');
+      return;
+    }
+
     const existing = cart.find(item => item.cartKey === cartKey);
     if (existing) {
       if (existing.quantity + qty <= maxStock) {
@@ -1036,16 +1044,17 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification(`Adicionado limite máximo em estoque!`, 'warning');
       }
     } else {
+      const initialQty = qty > maxStock ? maxStock : qty;
       cart.push({
         id: product.id,
         variationId: variationId,
         cartKey: cartKey,
         name: name,
         price: product.price,
-        quantity: qty,
+        quantity: initialQty,
         maxStock: maxStock
       });
-      showNotification(`${qty}x ${name} adicionados!`, 'success');
+      showNotification(`${initialQty}x ${name} adicionados!`, 'success');
     }
     updateCartUI();
   }
@@ -1088,6 +1097,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
+
+    if (maxStock <= 0) {
+      showNotification(`O produto/variação ${name} está esgotado!`, 'error');
+      return;
+    }
 
     const existing = cart.find(item => item.cartKey === cartKey);
     if (existing) {
