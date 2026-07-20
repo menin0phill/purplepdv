@@ -2920,3 +2920,130 @@ select.select-order-status.status-can {
   }
 }
 
+/* ==========================================================================
+   MOBILE COMPATIBILITY (IPHONE & ANDROID) & TABLE TABLET LAYOUTS
+   ========================================================================== */
+
+/* iOS Auto-Zoom on Input Focus Fix */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Webkit Smooth Elastic Scrolling for Touch Screens */
+.ecom-menu,
+.table-container,
+.ecom-drawer-body,
+.pdv-products-grid,
+.pdv-categories-chips {
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* User Account Icon and Button Responsiveness */
+@media (max-width: 768px) {
+  .ecom-login-text {
+    display: none !important;
+  }
+  #btn-ecom-auth-open {
+    padding: 8px 12px !important;
+    border-radius: 50% !important;
+    width: 38px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .ecom-user-name {
+    display: none !important;
+  }
+  #btn-ecom-logout {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* E-Commerce Product Card Details Stacking on Small Screens */
+@media (max-width: 768px) {
+  .ecom-product-card-premium > div:last-child > div:last-child {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  
+  .ecom-product-card-premium .btn-ecom-quick-add,
+  .ecom-product-card-premium button[disabled] {
+    width: 100% !important;
+    text-align: center !important;
+    padding: 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Responsive tables for Products, Clients and Sales lists */
+.table-container {
+  width: 100% !important;
+  overflow-x: auto !important;
+}
+@media (max-width: 768px) {
+  .table-container table {
+    min-width: 650px !important;
+  }
+}
+
+/* PDV Layout adaptations on Mobile & Tablets */
+@media (max-width: 1024px) {
+  .pdv-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .pdv-products-panel {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .pdv-products-grid {
+    height: 500px !important; /* Limita altura do catálogo para rolar internamente */
+  }
+  .pdv-cart-panel {
+    margin-top: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* PDV Grid em 2 Colunas */
+  .pdv-products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    height: 400px !important;
+  }
+  .product-card {
+    height: 220px !important;
+    min-height: 220px !important;
+  }
+  .prod-card-image {
+    height: 100px !important;
+  }
+  .prod-card-body {
+    padding: 8px !important;
+  }
+  .prod-card-body h3 {
+    font-size: 12px !important;
+  }
+  .prod-card-body .price {
+    font-size: 12px !important;
+  }
+  
+  /* Formas de pagamento do PDV em 2 Colunas */
+  .payment-methods-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  /* Ajuste do modal de detalhes */
+  .prod-details-img-container img {
+    max-height: 100% !important;
+  }
+}
+
