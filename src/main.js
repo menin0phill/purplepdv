@@ -6,7 +6,7 @@ import { renderDashboard } from './components/dashboard.js';
 import { renderClientes } from './components/clientes.js';
 import { renderConfig } from './components/config.js';
 import { renderPedidos } from './components/pedidos.js';
-import { getConfig } from './db.js';
+import { getConfig, syncWithSupabase } from './db.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Inicializa o layout básico no index.html (gerenciado dinamicamente via JS)
@@ -234,8 +234,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   }
 
+  let currentScreen = 'pdv';
+
   // Função para navegar
   function navigate(screenName) {
+    currentScreen = screenName;
     if (restrictedScreens.includes(screenName) && sessionStorage.getItem('purple_admin_authenticated') !== 'true') {
       openAdminLockModal(screenName);
       return;
@@ -284,4 +287,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Navega para a tela padrão (PDV)
   navigate('pdv');
+
+  // Sincronização inicial em background
+  syncWithSupabase().then(() => {
+    navigate(currentScreen);
+    updateNavbarCashStatus();
+  });
+
+  // Atualizar tela quando dados mudarem em background
+  window.addEventListener('db-synced', () => {
+    navigate(currentScreen);
+    updateNavbarCashStatus();
+  });
 });

@@ -1,4 +1,4 @@
-import { getProducts, addProduct, updateProduct, deleteProduct } from '../db.js';
+import { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, supabase } from '../db.js';
 
 function generateBarcode39SVG(code) {
   const CHARS = {
@@ -427,17 +427,54 @@ function setupProductEvents(container) {
 
   if (uploadImgBtn && fileImgInput) {
     uploadImgBtn.addEventListener('click', () => fileImgInput.click());
-    fileImgInput.addEventListener('change', (e) => {
+    fileImgInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      filenameImgSpan.textContent = file.name;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const base64 = evt.target.result;
-        urlImgInput.value = base64;
-        updateImagePreview(base64);
+
+      filenameImgSpan.textContent = `Carregando: ${file.name}`;
+      
+      // Mostrar preview local imediatamente
+      const localReader = new FileReader();
+      localReader.onload = (evt) => {
+        updateImagePreview(evt.target.result);
       };
-      reader.readAsDataURL(file);
+      localReader.readAsDataURL(file);
+
+      if (supabase) {
+        filenameImgSpan.textContent = 'Enviando para o Supabase...';
+        uploadImgBtn.disabled = true;
+        const oldText = uploadImgBtn.textContent;
+        uploadImgBtn.textContent = 'Enviando...';
+        
+        try {
+          const publicUrl = await uploadProductImage(file);
+          urlImgInput.value = publicUrl;
+          filenameImgSpan.textContent = 'Salvo na nuvem!';
+          showNotification('Foto enviada com sucesso para a nuvem!', 'success');
+        } catch (err) {
+          console.error("Supabase Storage Error:", err);
+          showNotification('Erro ao enviar para nuvem. Salvando localmente.', 'warning');
+          
+          // Fallback para Base64 local
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            urlImgInput.value = evt.target.result;
+            filenameImgSpan.textContent = 'Salvo localmente (Base64)';
+          };
+          reader.readAsDataURL(file);
+        } finally {
+          uploadImgBtn.disabled = false;
+          uploadImgBtn.textContent = oldText;
+        }
+      } else {
+        // Fallback síncrono local se Supabase não configurado
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          urlImgInput.value = evt.target.result;
+          filenameImgSpan.textContent = 'Salvo localmente (Base64)';
+        };
+        reader.readAsDataURL(file);
+      }
     });
   }
 

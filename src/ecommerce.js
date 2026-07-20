@@ -1,5 +1,5 @@
 import './style.css';
-import { getProducts, addSale, getClients, addClient, getSales, getConfig } from './db.js';
+import { getProducts, addSale, getClients, addClient, getSales, getConfig, syncWithSupabase } from './db.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-ecommerce');
@@ -309,6 +309,18 @@ document.addEventListener('DOMContentLoaded', () => {
     renderProducts();
     updateCartUI();
     updateFavoritesUI();
+
+    // Sincronização inicial em background
+    syncWithSupabase().then(() => {
+      products = getProducts();
+      renderProducts();
+    });
+
+    // Atualizar UI quando dados mudarem em background
+    window.addEventListener('db-synced', () => {
+      products = getProducts();
+      renderProducts();
+    });
   }
 
   function renderCarousel() {

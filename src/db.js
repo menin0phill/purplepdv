@@ -1,3 +1,12 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey) 
+  : null;
+
 // Banco de dados simulado em LocalStorage para o PDV Purple
 
 const KEY_PRODUCTS = 'purple_pdv_products';
@@ -316,10 +325,12 @@ export function addProduct(product) {
     variations: (product.variations || []).map((v, idx) => ({
       ...v,
       id: v.id || ('v_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 5))
-    }))
+    })),
+    synced: false
   };
   products.push(newProduct);
   saveProducts(products);
+  syncWithSupabase();
   return newProduct;
 }
 
@@ -334,9 +345,11 @@ export function updateProduct(id, updatedData) {
       price: parseFloat(updatedData.price) || 0,
       stock: parseInt(updatedData.stock) || 0,
       description: updatedData.description || '',
-      variations: updatedData.variations || []
+      variations: updatedData.variations || [],
+      synced: false
     };
     saveProducts(products);
+    syncWithSupabase();
     return products[index];
   }
   return null;
@@ -346,6 +359,11 @@ export function deleteProduct(id) {
   let products = getProducts();
   products = products.filter(p => p.id !== id);
   saveProducts(products);
+  if (supabase) {
+    supabase.from('products').delete().eq('id', id).then(({error}) => {
+      if (error) console.error("Error deleting product from Supabase:", error);
+    });
+  }
 }
 
 // --- VENDAS ---
@@ -378,6 +396,7 @@ export function addSale(sale) {
   sale.items.forEach(item => {
     const product = products.find(p => p.id === item.id);
     if (product) {
+      product.synced = false;
       if (item.variationId && product.variations && product.variations.length > 0) {
         const variation = product.variations.find(v => v.id === item.variationId);
         if (variation) {
@@ -398,6 +417,7 @@ export function addSale(sale) {
     const client = clients.find(c => c.id === sale.clientId);
     if (client) {
       client.debt = (client.debt || 0) + sale.total;
+      client.synced = false;
       saveClients(clients);
     }
   }
@@ -407,10 +427,12 @@ export function addSale(sale) {
     origin: sale.origin || 'pos',
     status: sale.status || (sale.origin === 'e-commerce' ? 'Preparando' : 'Finalizada'),
     id: 's_' + Date.now(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    synced: false
   };
   sales.push(newSale);
   saveSales(sales);
+  syncWithSupabase();
   return newSale;
 }
 
@@ -419,7 +441,9 @@ export function updateSaleStatus(saleId, newStatus) {
   const index = sales.findIndex(s => s.id === saleId);
   if (index !== -1) {
     sales[index].status = newStatus;
+    sales[index].synced = false;
     saveSales(sales);
+    syncWithSupabase();
     return sales[index];
   }
   return null;
@@ -444,10 +468,12 @@ export function addClient(client) {
     ...client,
     id: 'c_' + Date.now(),
     debt: parseFloat(client.debt) || 0,
-    birthday: client.birthday || ''
+    birthday: client.birthday || '',
+    synced: false
   };
   clients.push(newClient);
   saveClients(clients);
+  syncWithSupabase();
   return newClient;
 }
 
@@ -459,9 +485,11 @@ export function updateClient(id, updatedData) {
       ...clients[index],
       ...updatedData,
       debt: parseFloat(updatedData.debt) || 0,
-      birthday: updatedData.birthday || ''
+      birthday: updatedData.birthday || '',
+      synced: false
     };
     saveClients(clients);
+    syncWithSupabase();
     return clients[index];
   }
   return null;
@@ -471,6 +499,11 @@ export function deleteClient(id) {
   let clients = getClients();
   clients = clients.filter(c => c.id !== id);
   saveClients(clients);
+  if (supabase) {
+    supabase.from('clients').delete().eq('id', id).then(({error}) => {
+      if (error) console.error("Error deleting client from Supabase:", error);
+    });
+  }
 }
 
 export function payClientDebt(clientId, amount, paymentMethod) {
@@ -486,7 +519,9 @@ export function payClientDebt(clientId, amount, paymentMethod) {
   }
 
   client.debt = Math.max(0, client.debt - payAmount);
+  client.synced = false;
   saveClients(clients);
+  syncWithSupabase();
 
   // Registrar a entrada no caixa
   addCashTransaction('suprimento', payAmount, `Recebimento Débito (Fiado) - ${client.name} via ${translatePaymentMethod(paymentMethod)}`);
@@ -547,11 +582,13 @@ export function openCash(initialAmount, operatorName = 'Operador Purple') {
     actualAmount: 0,
     difference: 0,
     transactions: [],
-    notes: ''
+    notes: '',
+    synced: false
   };
 
   sessions.push(newSession);
   saveCashSessions(sessions);
+  syncWithSupabase();
   return newSession;
 }
 
@@ -572,6 +609,7 @@ export function addCashTransaction(type, amount, description = '') {
   };
 
   current.transactions.push(transaction);
+  current.synced = false;
 
   if (type === 'suprimento' || type === 'venda') {
     current.expectedAmount += txAmount;
@@ -580,6 +618,7 @@ export function addCashTransaction(type, amount, description = '') {
   }
 
   saveCashSessions(sessions);
+  syncWithSupabase();
   return current;
 }
 
@@ -596,8 +635,10 @@ export function closeCash(actualAmount, notes = '') {
   current.actualAmount = parseFloat(actualAmount) || 0;
   current.difference = current.actualAmount - current.expectedAmount;
   current.notes = notes;
+  current.synced = false;
 
   saveCashSessions(sessions);
+  syncWithSupabase();
   return current;
 }
 
@@ -608,6 +649,264 @@ export function updateCashOperator(newOperatorName) {
     throw new Error('Nenhum caixa aberto para alterar o operador!');
   }
   current.operator = newOperatorName;
+  current.synced = false;
   saveCashSessions(sessions);
+  syncWithSupabase();
   return current;
 }
+
+// --- SYNC & MEDIA SUPABASE ---
+export async function syncWithSupabase() {
+  if (!supabase) {
+    console.log("Supabase: Client not configured. Running in LocalStorage-only mode.");
+    return { success: false, reason: 'not_configured' };
+  }
+
+  try {
+    console.log("Supabase: Starting background synchronization...");
+
+    // 1. PUSH LOCAL CHANGES TO REMOTE
+    // Sync Products
+    const localProducts = JSON.parse(localStorage.getItem(KEY_PRODUCTS)) || [];
+    const unsyncedProducts = localProducts.filter(p => !p.synced);
+    for (const prod of unsyncedProducts) {
+      const payload = {
+        id: prod.id,
+        code: prod.code || '',
+        name: prod.name,
+        category: prod.category || '',
+        cost_price: Number(prod.costPrice) || 0,
+        price: Number(prod.price) || 0,
+        stock: Number(prod.stock) || 0,
+        color: prod.color || '',
+        image: prod.image || '',
+        description: prod.description || '',
+        variations: prod.variations || [],
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error } = await supabase.from('products').upsert(payload);
+      if (!error) {
+        prod.synced = true;
+      } else {
+        console.error("Error syncing product:", prod.id, error);
+      }
+    }
+    localStorage.setItem(KEY_PRODUCTS, JSON.stringify(localProducts));
+
+    // Sync Clients
+    const localClients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
+    const unsyncedClients = localClients.filter(c => !c.synced);
+    for (const client of unsyncedClients) {
+      const payload = {
+        id: client.id,
+        name: client.name,
+        phone: client.phone || '',
+        email: client.email || '',
+        password: client.password || '',
+        birthday: client.birthday || null,
+        debt: Number(client.debt) || 0,
+        notes: client.notes || '',
+        cpf_cnpj: client.cpfCnpj || '',
+        address: client.address || '',
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error } = await supabase.from('clients').upsert(payload);
+      if (!error) {
+        client.synced = true;
+      } else {
+        console.error("Error syncing client:", client.id, error);
+      }
+    }
+    localStorage.setItem(KEY_CLIENTS, JSON.stringify(localClients));
+
+    // Sync Sales
+    const localSales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
+    const unsyncedSales = localSales.filter(s => !s.synced);
+    for (const sale of unsyncedSales) {
+      const payload = {
+        id: sale.id,
+        client_id: sale.clientId || null,
+        client_name: sale.clientName || '',
+        date: sale.date || sale.timestamp || new Date().toISOString(),
+        items: sale.items || [],
+        subtotal: Number(sale.subtotal) || 0,
+        discount: Number(sale.discount) || 0,
+        total: Number(sale.total) || 0,
+        payment_method: sale.paymentMethod,
+        amount_paid: Number(sale.amountPaid) || 0,
+        operator: sale.operator || '',
+        origin: sale.origin || 'pdv',
+        delivery_address: sale.deliveryAddress || '',
+        coupon: sale.coupon || null,
+        shipping_fee: Number(sale.shippingFee) || 0,
+        shipping_carrier: sale.shippingCarrier || '',
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error } = await supabase.from('sales').upsert(payload);
+      if (!error) {
+        sale.synced = true;
+      } else {
+        console.error("Error syncing sale:", sale.id, error);
+      }
+    }
+    localStorage.setItem(KEY_SALES, JSON.stringify(localSales));
+
+    // Sync Cash Sessions
+    const localSessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
+    const unsyncedSessions = localSessions.filter(s => !s.synced);
+    for (const session of unsyncedSessions) {
+      const payload = {
+        id: session.id,
+        operator: session.operator || '',
+        open_time: session.openedAt || null,
+        close_time: session.closedAt || null,
+        initial_cash: Number(session.initialAmount) || 0,
+        final_cash: Number(session.actualAmount) || 0,
+        status: session.status || 'closed',
+        transactions: session.transactions || [],
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error } = await supabase.from('cash_sessions').upsert(payload);
+      if (!error) {
+        session.synced = true;
+      } else {
+        console.error("Error syncing cash session:", session.id, error);
+      }
+    }
+    localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(localSessions));
+
+    // 2. PULL FRESH TABLES FROM REMOTE AND OVERWRITE LOCAL
+    // Fetch Products
+    const { data: dbProducts, error: errProducts } = await supabase
+      .from('products')
+      .select('*')
+      .order('updated_at', { ascending: true });
+
+    if (!errProducts && dbProducts) {
+      const mappedProds = dbProducts.map(p => ({
+        id: p.id,
+        code: p.code,
+        name: p.name,
+        category: p.category,
+        costPrice: Number(p.cost_price),
+        price: Number(p.price),
+        stock: Number(p.stock),
+        color: p.color,
+        image: p.image,
+        description: p.description,
+        variations: p.variations || [],
+        synced: true
+      }));
+      localStorage.setItem(KEY_PRODUCTS, JSON.stringify(mappedProds));
+    }
+
+    // Fetch Clients
+    const { data: dbClients, error: errClients } = await supabase
+      .from('clients')
+      .select('*')
+      .order('updated_at', { ascending: true });
+
+    if (!errClients && dbClients) {
+      const mappedClients = dbClients.map(c => ({
+        id: c.id,
+        name: c.name,
+        phone: c.phone,
+        email: c.email,
+        password: c.password,
+        birthday: c.birthday,
+        debt: Number(c.debt),
+        notes: c.notes,
+        cpfCnpj: c.cpf_cnpj,
+        address: c.address,
+        synced: true
+      }));
+      localStorage.setItem(KEY_CLIENTS, JSON.stringify(mappedClients));
+    }
+
+    // Fetch Sales
+    const { data: dbSales, error: errSales } = await supabase
+      .from('sales')
+      .select('*')
+      .order('updated_at', { ascending: true });
+
+    if (!errSales && dbSales) {
+      const mappedSales = dbSales.map(s => ({
+        id: s.id,
+        clientId: s.client_id,
+        clientName: s.client_name,
+        date: s.date,
+        items: s.items || [],
+        subtotal: Number(s.subtotal),
+        discount: Number(s.discount),
+        total: Number(s.total),
+        paymentMethod: s.payment_method,
+        amountPaid: Number(s.amount_paid),
+        operator: s.operator,
+        origin: s.origin,
+        deliveryAddress: s.delivery_address,
+        coupon: s.coupon,
+        shippingFee: Number(s.shipping_fee),
+        shippingCarrier: s.shipping_carrier,
+        synced: true
+      }));
+      localStorage.setItem(KEY_SALES, JSON.stringify(mappedSales));
+    }
+
+    // Fetch Cash Sessions
+    const { data: dbSessions, error: errSessions } = await supabase
+      .from('cash_sessions')
+      .select('*')
+      .order('updated_at', { ascending: true });
+
+    if (!errSessions && dbSessions) {
+      const mappedSessions = dbSessions.map(s => ({
+        id: s.id,
+        operator: s.operator,
+        openedAt: s.open_time,
+        closedAt: s.close_time,
+        initialAmount: Number(s.initial_cash),
+        actualAmount: Number(s.final_cash),
+        status: s.status,
+        transactions: s.transactions || [],
+        synced: true
+      }));
+      localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(mappedSessions));
+    }
+
+    console.log("Supabase: Background synchronization completed successfully!");
+    window.dispatchEvent(new CustomEvent('db-synced'));
+    return { success: true };
+  } catch (err) {
+    console.error("Supabase Sync Failed:", err);
+    return { success: false, reason: err.message };
+  }
+}
+
+export async function uploadProductImage(file) {
+  if (!supabase) {
+    throw new Error('Supabase não configurado.');
+  }
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `img_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${fileExt}`;
+  const filePath = fileName;
+
+  const { data, error } = await supabase.storage
+    .from('products')
+    .upload(filePath, file);
+
+  if (error) {
+    throw error;
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('products')
+    .getPublicUrl(filePath);
+
+  return publicUrl;
+}
+
