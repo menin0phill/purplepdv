@@ -23,12 +23,12 @@ export default async function handler(req, res) {
   try {
     const { amount, paymentMethod, customerName, customerEmail, customerPhone, apiKey, mode, orderId } = req.body;
 
-    if (!amount || !paymentMethod || !customerName || !apiKey) {
-      return res.status(400).json({ error: 'Campos obrigatórios ausentes: amount, paymentMethod, customerName, apiKey.' });
+    if (!amount || !paymentMethod || !customerName) {
+      return res.status(400).json({ error: 'Campos obrigatórios ausentes: amount, paymentMethod, customerName.' });
     }
 
-    // Se estiver em modo simulado, retorna dados mockados
-    const isSimulated = mode === 'simulated';
+    // Se estiver em modo simulado, ou sem chave de API, retorna dados mockados
+    const isSimulated = mode === 'simulated' || !apiKey;
 
     if (isSimulated) {
       if (paymentMethod === 'PIX') {
@@ -49,12 +49,26 @@ export default async function handler(req, res) {
     }
 
     // --- Integração Real com Asaas ---
-    // Determinar URL base com base no prefixo da chave API
-    const isProdKey = apiKey.startsWith('aact_prod_') || apiKey.startsWith('$aact_prod_');
-    const baseUrl = isProdKey ? 'https://api.asaas.com/v3' : 'https://sandbox.asaas.com/api/v3';
+    // Limpar e extrair chave caso ela tenha sido duplicada ou envelopada (ex: vinda do chat)
+    let cleanApiKey = apiKey.trim();
+    
+    // Se a chave contiver múltiplos blocos aact_ (colagem dupla)
+    if (cleanApiKey.includes('aact_')) {
+      const parts = cleanApiKey.split(/[\$\s,]+/);
+      for (const part of parts) {
+        const p = part.trim();
+        if (p.startsWith('aact_')) {
+          cleanApiKey = p;
+          break;
+        }
+      }
+    }
+    // Caso ainda tenha sobrado caracteres como '$' nas bordas
+    cleanApiKey = cleanApiKey.replace(/^\$/, '').replace(/\$$/, '').trim();
 
-    // Limpar o prefixo da chave se ela veio envelopada (ex: vinda do chat)
-    const cleanApiKey = apiKey.replace(/^\$/, '').replace(/\$$/, '').trim();
+    // Determinar URL base com base no prefixo da chave API
+    const isProdKey = cleanApiKey.startsWith('aact_prod_');
+    const baseUrl = isProdKey ? 'https://api.asaas.com/v3' : 'https://sandbox.asaas.com/api/v3';
 
     // 1. Cadastrar Cliente no Asaas
     const customerResponse = await fetch(`${baseUrl}/customers`, {
