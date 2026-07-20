@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${renderAuthStatusHTML()}
               </div>
               <button id="btn-ecom-cart" class="btn btn-secondary" style="background: #6a3f97; color: white; border: none; padding: 8px 16px; display: flex; align-items: center; gap: 6px; border-radius: 20px; font-weight: 500;">
-                <i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i> Carrinho <span class="cart-badge" id="ecom-cart-badge">${cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
+                <i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i> <span class="ecom-cart-text">Carrinho</span> <span class="cart-badge" id="ecom-cart-badge">${cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
               </button>
             </div>
           </div>
@@ -76,22 +76,22 @@ document.addEventListener('DOMContentLoaded', () => {
         </header>
 
         <!-- Banner de Hero -->
-        <section class="ecom-hero" style="background: #6a3f97; padding: 60px 20px; min-height: 600px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+        <section class="ecom-hero">
           <!-- Centered Content Wrapper -->
-          <div style="max-width: 1350px; width: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 120px;">
+          <div class="ecom-hero-wrapper">
             <!-- Left text -->
-            <div style="flex: 1; text-align: left; max-width: 580px; display: flex; flex-direction: column; justify-content: center; gap: 15px;">
-              <h2 style="font-family: 'Outfit', sans-serif; line-height: 0.85; font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: -3px; display: flex; flex-direction: column;">
-                <span style="font-size: 5.6rem; letter-spacing: -2px;">CONDIÇÕES</span>
-                <span style="font-size: 8.4rem; letter-spacing: -4px; margin-top: -5px; color: #ffffff;">ESPECIAIS</span>
+            <div class="ecom-hero-text-side">
+              <h2 class="ecom-hero-title">
+                <span class="title-sub">CONDIÇÕES</span>
+                <span class="title-main">ESPECIAIS</span>
               </h2>
-              <div style="background: linear-gradient(90deg, #9f7aea 0%, #b794f4 100%); color: white; padding: 8px 20px; border-radius: 6px; font-family: '42dot Sans', sans-serif; font-weight: 300; font-size: 1.1rem; width: max-content; white-space: nowrap; margin-top: 5px; box-shadow: 0 4px 15px rgba(159, 122, 234, 0.25);">
+              <div class="ecom-hero-subtitle-badge">
                 Conecte-se com sua melhor versão e realce a beleza que existe em você.
               </div>
             </div>
             
             <!-- Right carousel container -->
-            <div style="flex: 1.6; display: flex; align-items: center; justify-content: center; position: relative; max-width: 720px;">
+            <div class="ecom-hero-carousel-side">
               <button class="carousel-arrow prev-arrow" id="btn-carousel-prev" style="background:none; border:none; color:white; font-size:3rem; cursor:pointer; padding:15px; z-index:10; font-family:monospace; font-weight:bold;">&lt;</button>
               <div class="carousel-container" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 480px; user-select: none;">
                 <div class="carousel-track" id="carousel-track" style="position: relative; width: 660px; height: 450px; display: flex; align-items: center; justify-content: center;">
