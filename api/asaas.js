@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, paymentMethod, customerName, customerEmail, customerPhone, apiKey, mode, orderId } = req.body;
+    const { amount, paymentMethod, customerName, customerEmail, customerPhone, customerCpfCnpj, apiKey, mode, orderId } = req.body;
 
     if (!amount || !paymentMethod || !customerName) {
       return res.status(400).json({ error: 'Campos obrigatórios ausentes: amount, paymentMethod, customerName.' });
@@ -78,6 +78,7 @@ export default async function handler(req, res) {
         name: customerName,
         email: customerEmail || undefined,
         phone: customerPhone || undefined,
+        cpfCnpj: customerCpfCnpj ? customerCpfCnpj.replace(/\D/g, '') : undefined,
         notificationDisabled: true
       })
     });

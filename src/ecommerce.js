@@ -201,6 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <label for="reg-email" class="margin-top-xs">E-mail</label>
               <input type="email" id="reg-email" placeholder="juliana@email.com" required>
 
+              <label for="reg-cpfcnpj" class="margin-top-xs">CPF ou CNPJ</label>
+              <input type="text" id="reg-cpfcnpj" placeholder="000.000.000-00" required>
+
               <label for="reg-birthday" class="margin-top-xs">Data de Nascimento (Aniversário)</label>
               <input type="text" id="reg-birthday" placeholder="DD/MM/AAAA" maxlength="10" required>
 
@@ -511,6 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = document.getElementById('reg-name').value;
       const phone = document.getElementById('reg-phone').value;
       const email = document.getElementById('reg-email').value.trim();
+      const cpfCnpj = document.getElementById('reg-cpfcnpj').value.trim();
       
       const birthdayRaw = document.getElementById('reg-birthday').value.trim();
       let birthday = '';
@@ -539,8 +543,10 @@ document.addEventListener('DOMContentLoaded', () => {
         name,
         phone,
         email,
+        cpfCnpj,
         birthday,
         password: pass,
+        address,
         notes: 'Cadastrado pelo E-Commerce.',
         debt: 0
       });
@@ -1316,6 +1322,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
+              <label for="ecom-cpfcnpj" style="font-size:13px; font-weight:500;">CPF ou CNPJ (Obrigatório para Emissão)</label>
+              <input type="text" id="ecom-cpfcnpj" placeholder="000.000.000-00" class="input-sm" required style="width:100%; margin:0;">
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
               <label for="ecom-birthday" style="font-size:13px; font-weight:500;">Data de Nascimento (Aniversário)</label>
               <input type="text" id="ecom-birthday" placeholder="DD/MM/AAAA" class="input-sm" maxlength="10" required style="width:100%; margin:0;">
             </div>
@@ -1555,6 +1566,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const guestName = document.getElementById('ecom-name').value;
         const guestPhone = document.getElementById('ecom-phone').value;
         const guestEmail = document.getElementById('ecom-email').value.trim();
+        const guestCpfCnpj = document.getElementById('ecom-cpfcnpj').value.trim();
         
         const birthdayRaw = document.getElementById('ecom-birthday').value.trim();
         let guestBirthday = '';
@@ -1575,6 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
           name: guestName,
           phone: guestPhone || 'Visitante E-Com',
           email: guestEmail || '',
+          cpfCnpj: guestCpfCnpj,
           birthday: guestBirthday,
           notes: 'Visitante (sem login) via E-Commerce.',
           debt: 0
@@ -1642,13 +1655,16 @@ document.addEventListener('DOMContentLoaded', () => {
           let customerName = finalClientName || 'Cliente E-commerce';
           let customerEmail = '';
           let customerPhone = '';
+          let customerCpfCnpj = '';
           
           if (loggedClient) {
             customerEmail = loggedClient.email;
             customerPhone = loggedClient.phone;
+            customerCpfCnpj = loggedClient.cpfCnpj || '';
           } else {
             customerEmail = document.getElementById('ecom-email').value.trim();
             customerPhone = document.getElementById('ecom-phone').value;
+            customerCpfCnpj = document.getElementById('ecom-cpfcnpj').value.trim();
           }
           
           if (payment === 'credit') {
@@ -1669,6 +1685,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   customerName: customerName,
                   customerEmail: customerEmail,
                   customerPhone: customerPhone,
+                  customerCpfCnpj: customerCpfCnpj,
                   apiKey: config.asaasApiKey,
                   mode: config.asaasMode,
                   orderId: completedSale.id
@@ -1712,6 +1729,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   customerName: customerName,
                   customerEmail: customerEmail,
                   customerPhone: customerPhone,
+                  customerCpfCnpj: customerCpfCnpj,
                   apiKey: config.asaasApiKey,
                   mode: config.asaasMode,
                   orderId: completedSale.id
