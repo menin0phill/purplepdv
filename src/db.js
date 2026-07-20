@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// LocalStorage Fallback for Supabase config (allows setting credentials directly in Admin UI)
+const localDbConfig = JSON.parse(localStorage.getItem('purple_pdv_supabase_config')) || {};
+
+const supabaseUrl = localDbConfig.url || import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = localDbConfig.anonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 

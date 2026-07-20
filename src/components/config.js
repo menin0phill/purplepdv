@@ -24,6 +24,25 @@ export function renderConfig(container) {
             <span id="sync-diagnostic-details" style="font-size: 11px; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 2px;">Verificando conexão com o banco de dados...</span>
           </div>
         </div>
+        
+        <details style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; color: var(--text-main);">
+          <summary style="cursor: pointer; font-size: 13px; font-weight: 600; color: var(--primary);">🔧 Configurar Supabase Manualmente (Se a Vercel falhar)</summary>
+          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+            <p class="text-muted text-xs">Se as variáveis da Vercel falharem, você pode colar suas chaves do Supabase diretamente aqui. Elas serão salvas de forma segura localmente.</p>
+            <div>
+              <label for="fallback-sb-url" style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Supabase URL</label>
+              <input type="text" id="fallback-sb-url" placeholder="https://xxxxxxxxxxxxxxxxxxxx.supabase.co" style="width: 100%; background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--border-color); border-radius: 6px; height: 32px; padding: 0 8px; font-size: 12px;">
+            </div>
+            <div>
+              <label for="fallback-sb-key" style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px;">Supabase Anon Key</label>
+              <input type="password" id="fallback-sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width: 100%; background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--border-color); border-radius: 6px; height: 32px; padding: 0 8px; font-size: 12px;">
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 5px;">
+              <button type="button" id="btn-save-fallback-sb" class="btn btn-primary btn-sm" style="font-size: 11px; padding: 6px 12px;">Salvar Conexão</button>
+              <button type="button" id="btn-clear-fallback-sb" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 6px 12px; border-color: #ef4444; color: #ef4444; background: transparent;">Limpar Chaves</button>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="grid grid-2">
@@ -414,6 +433,44 @@ export function renderConfig(container) {
           diagDetails.textContent = 'Todas as vendas, produtos e operadores estão salvos na nuvem em tempo real!';
         }
       }
+    });
+  }
+
+  // Preenche inputs com configuração manual existente (se houver)
+  const manualConfig = JSON.parse(localStorage.getItem('purple_pdv_supabase_config')) || {};
+  const inputUrl = document.getElementById('fallback-sb-url');
+  const inputKey = document.getElementById('fallback-sb-key');
+  const btnSaveManual = document.getElementById('btn-save-fallback-sb');
+  const btnClearManual = document.getElementById('btn-clear-fallback-sb');
+
+  if (inputUrl && inputKey && btnSaveManual && btnClearManual) {
+    inputUrl.value = manualConfig.url || '';
+    inputKey.value = manualConfig.anonKey || '';
+
+    // Salvar configuração manual
+    btnSaveManual.addEventListener('click', () => {
+      const url = inputUrl.value.trim();
+      const anonKey = inputKey.value.trim();
+
+      if (!url || !anonKey) {
+        showNotification('Por favor, preencha a URL e a Anon Key do Supabase!', 'error');
+        return;
+      }
+
+      localStorage.setItem('purple_pdv_supabase_config', JSON.stringify({ url, anonKey }));
+      showNotification('Conexão configurada manualmente! Recarregando...', 'success');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    });
+
+    // Limpar configuração manual
+    btnClearManual.addEventListener('click', () => {
+      localStorage.removeItem('purple_pdv_supabase_config');
+      showNotification('Configuração manual removida. Voltando a ler chaves da Vercel...', 'info');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     });
   }
 }
