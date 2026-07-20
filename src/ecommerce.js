@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Estado de login do cliente
   let loggedClient = JSON.parse(sessionStorage.getItem('purple_ecom_logged_in_client')) || null;
+  let favorites = JSON.parse(localStorage.getItem('purple_ecom_favorites')) || [];
+  let searchQuery = '';
 
   // Renderiza layout base do E-commerce
   function renderLayout() {
@@ -41,8 +43,18 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <div class="ecom-nav-right gap-sm" style="display: flex; align-items: center; gap: 15px; position: relative; z-index: 5;">
-              <button class="btn-icon" style="color: #333; background:none; border:none; padding:4px;" title="Buscar"><i data-lucide="search"></i></button>
-              <button class="btn-icon" style="color: #333; background:none; border:none; padding:4px;" title="Favoritos"><i data-lucide="heart"></i></button>
+              <!-- Barra de Pesquisa Expansível -->
+              <div class="ecom-search-container" style="position: relative; display: flex; align-items: center; background: rgba(0,0,0,0.05); padding: 4px 10px; border-radius: 20px; transition: all 0.3s ease;">
+                <input type="text" id="ecom-search-input" placeholder="Buscar produto, preço, tag..." style="width: 0px; opacity: 0; padding: 0; border: none; outline: none; font-family: 'Outfit', sans-serif; font-size: 13px; background: transparent; color: #111; transition: all 0.3s ease;">
+                <button id="btn-ecom-search-trigger" class="btn-icon" style="color: #333; background:none; border:none; padding:4px; cursor: pointer; display: flex; align-items: center;" title="Buscar"><i data-lucide="search" style="width: 18px; height: 18px;"></i></button>
+              </div>
+
+              <!-- Botão de Favoritos com Badge -->
+              <button id="btn-ecom-favorites" class="btn-icon" style="color: #333; background:none; border:none; padding:4px; position: relative; cursor: pointer; display: flex; align-items: center;" title="Favoritos">
+                <i data-lucide="heart" style="width: 18px; height: 18px;"></i>
+                <span id="ecom-favorites-badge" class="badge" style="position: absolute; top: -5px; right: -5px; background: #6a3f97; color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid white; display: none;">0</span>
+              </button>
+
               <div id="ecom-auth-status" style="display: flex; align-items: center;">
                 ${renderAuthStatusHTML()}
               </div>
@@ -136,6 +148,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="ecom-drawer-footer" id="ecom-drawer-footer">
               <!-- Formulário de checkout e total -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Gaveta Lateral de Favoritos (Drawer) -->
+        <div id="ecom-favorites-drawer" class="ecom-drawer">
+          <div class="ecom-drawer-card">
+            <div class="ecom-drawer-header">
+              <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="heart" style="fill:white;"></i> Meus Favoritos</h3>
+              <button id="btn-close-ecom-favorites" class="btn-icon"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="ecom-drawer-body" id="ecom-favorites-items">
+              <!-- Itens de Favoritos -->
             </div>
           </div>
         </div>
@@ -282,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startCarouselAutoPlay();
     renderProducts();
     updateCartUI();
+    updateFavoritesUI();
   }
 
   function renderCarousel() {
@@ -400,6 +427,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeCartBtn = document.getElementById('btn-close-ecom-cart');
     const successModal = document.getElementById('modal-success');
     const closeSuccessBtn = document.getElementById('btn-success-close');
+
+    // Drawer de Favoritos
+    const favBtn = document.getElementById('btn-ecom-favorites');
+    const favDrawer = document.getElementById('ecom-favorites-drawer');
+    const closeFavBtn = document.getElementById('btn-close-ecom-favorites');
+
+    if (favBtn && favDrawer && closeFavBtn) {
+      favBtn.addEventListener('click', () => {
+        favDrawer.classList.add('active');
+        updateFavoritesUI();
+      });
+
+      closeFavBtn.addEventListener('click', () => {
+        favDrawer.classList.remove('active');
+      });
+    }
+
+    // Busca Expansível
+    const searchTrigger = document.getElementById('btn-ecom-search-trigger');
+    const searchInput = document.getElementById('ecom-search-input');
+    
+    if (searchTrigger && searchInput) {
+      searchTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = searchInput.style.width === '180px';
+        if (isOpen) {
+          if (!searchInput.value.trim()) {
+            searchInput.style.width = '0px';
+            searchInput.style.opacity = '0';
+            searchInput.style.padding = '0';
+          }
+        } else {
+          searchInput.style.width = '180px';
+          searchInput.style.opacity = '1';
+          searchInput.style.padding = '2px 8px';
+          searchInput.focus();
+        }
+      });
+
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderProducts();
+      });
+      
+      searchInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+      
+      document.addEventListener('click', () => {
+        if (searchInput.style.width === '180px' && !searchInput.value.trim()) {
+          searchInput.style.width = '0px';
+          searchInput.style.opacity = '0';
+          searchInput.style.padding = '0';
+        }
+      });
+    }
 
     // Drawer do carrinho
     cartBtn.addEventListener('click', () => {
@@ -715,7 +798,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderProducts() {
     const grid = document.getElementById('ecom-products-grid');
-    const filtered = products.filter(p => {
+    if (!grid) return;
+
+    let filtered = products.filter(p => {
       if (selectedCategory === 'Todos') return true;
       if (selectedCategory === 'Maquiagem') {
         const catLower = p.category.toLowerCase();
@@ -727,6 +812,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return p.category.toLowerCase() === selectedCategory.toLowerCase();
     });
+
+    // Filtro de pesquisa
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(p => {
+        const matchesName = p.name.toLowerCase().includes(q);
+        const matchesDesc = (p.description || '').toLowerCase().includes(q);
+        const matchesPrice = p.price.toString().includes(q);
+        const matchesCategory = p.category.toLowerCase().includes(q);
+        return matchesName || matchesDesc || matchesPrice || matchesCategory;
+      });
+    }
 
     // Ordenar: maior estoque no topo, fora de estoque (0) no final
     filtered.sort((a, b) => b.stock - a.stock);
@@ -753,14 +850,15 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = filtered.map(p => {
       const isOut = p.stock <= 0;
       const hasVars = p.variations && p.variations.length > 0;
+      const isFav = favorites.includes(p.id);
       return `
         <div class="ecom-product-card-premium ${isOut ? 'out-of-stock' : ''}" data-id="${p.id}">
           <!-- Image Wrapper -->
           <div class="ecom-card-image-wrapper" style="position: relative; overflow: hidden; border-radius: 12px; width: 286px; height: 381.33px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; z-index: 1;">
             <img src="${p.image}" alt="${p.name}" class="ecom-card-main-image" id="img-${p.id}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease, filter 0.4s ease;" onerror="this.style.display='none';">
             
-            <button class="ecom-favorite-btn" style="position: absolute; top: 12px; right: 12px; background: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; color: #777; transition: all 0.2s; z-index: 5;">
-              <i data-lucide="heart" style="width: 16px; height: 16px;"></i>
+            <button class="ecom-favorite-btn ${isFav ? 'favorited' : ''}" data-id="${p.id}" style="position: absolute; top: 12px; right: 12px; background: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; z-index: 5;">
+              <i data-lucide="heart" style="width: 16px; height: 16px; ${isFav ? 'fill: #6a3f97; color: #6a3f97;' : 'color: #777;'}"></i>
             </button>
             
             <!-- Hover Overlay -->
@@ -877,17 +975,17 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.querySelectorAll('.ecom-favorite-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const icon = btn.querySelector('i');
-        if (btn.classList.contains('favorited')) {
-          btn.classList.remove('favorited');
-          btn.style.color = '#777';
+        const prodId = btn.getAttribute('data-id');
+        if (favorites.includes(prodId)) {
+          favorites = favorites.filter(id => id !== prodId);
           showNotification('Removido dos favoritos', 'info');
         } else {
-          btn.classList.add('favorited');
-          btn.style.color = '#ef4444';
+          favorites.push(prodId);
           showNotification('Adicionado aos favoritos!', 'success');
         }
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        saveFavorites();
+        updateFavoritesUI();
+        renderProducts();
       });
     });
   }
@@ -1359,6 +1457,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
     setupCartCheckoutEvents(finalTotal);
+  }
+
+  function saveFavorites() {
+    localStorage.setItem('purple_ecom_favorites', JSON.stringify(favorites));
+  }
+
+  function updateFavoritesUI() {
+    const badge = document.getElementById('ecom-favorites-badge');
+    if (badge) {
+      badge.textContent = favorites.length;
+      badge.style.display = favorites.length > 0 ? 'flex' : 'none';
+    }
+
+    const container = document.getElementById('ecom-favorites-items');
+    if (!container) return;
+
+    if (favorites.length === 0) {
+      container.innerHTML = `
+        <div class="cart-empty-state" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#aaa; gap:10px; padding: 40px 0;">
+          <i data-lucide="heart" style="width: 48px; height: 48px; color: rgba(255,255,255,0.25);"></i>
+          <p style="font-size:14px; font-family:'Outfit', sans-serif; color: rgba(255,255,255,0.6);">Nenhum favorito selecionado.</p>
+        </div>
+      `;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      return;
+    }
+
+    // Obter produtos favoritados
+    const favProducts = products.filter(p => favorites.includes(p.id));
+
+    container.innerHTML = favProducts.map(p => {
+      const isOut = p.stock <= 0;
+      return `
+        <div class="ecom-cart-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; margin-bottom:12px; gap: 10px;">
+          <div style="display:flex; gap:10px; align-items:center; text-align:left;">
+            <img src="${p.image}" alt="${p.name}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; background:#f5f5f5; border:1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex; flex-direction:column;">
+              <strong style="font-size:13px; color:#ffffff; font-family:'Outfit', sans-serif; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; max-width:180px;">${p.name}</strong>
+              <span style="color:#ffffff; font-weight:600; font-size:12px; margin-top:2px;">R$ ${p.price.toFixed(2)}</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            ${isOut ? `
+              <button class="btn btn-secondary btn-sm" disabled style="padding: 4px 8px; font-size:10px; background:rgba(255,255,255,0.1) !important; color:rgba(255,255,255,0.4) !important;">Esgotado</button>
+            ` : `
+              <button class="btn btn-primary btn-sm btn-fav-add-to-cart" data-id="${p.id}" style="background:white; color:#6a3f97; border:none; padding:4px 8px; border-radius:15px; font-size:10px; font-weight:bold; cursor:pointer; font-family:'Outfit',sans-serif; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                Comprar
+              </button>
+            `}
+            <button class="btn-icon btn-fav-remove" data-id="${p.id}" title="Remover dos favoritos" style="color:#ffffff; background:none; border:none; cursor:pointer; padding:4px; opacity:0.75; display:flex; align-items:center; justify-content:center;">
+              <i data-lucide="trash-2" style="width:14px; height:14px; color:#f87171;"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Ouvintes de eventos na gaveta de favoritos
+    container.querySelectorAll('.btn-fav-add-to-cart').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const prodId = btn.getAttribute('data-id');
+        const product = products.find(p => p.id === prodId);
+        if (product) {
+          addEcomProductToCartWithQty(product, null, 1);
+        }
+      });
+    });
+
+    container.querySelectorAll('.btn-fav-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const prodId = btn.getAttribute('data-id');
+        favorites = favorites.filter(id => id !== prodId);
+        saveFavorites();
+        updateFavoritesUI();
+        renderProducts();
+      });
+    });
   }
 
   function renderCheckoutClientStatusHTML() {
