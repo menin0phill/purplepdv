@@ -2738,14 +2738,16 @@ select.select-order-status.status-can {
   }
   .ecom-hero-title {
     letter-spacing: -1.5px !important;
+    align-items: center !important;
   }
   .ecom-hero-title .title-sub {
-    font-size: 3.2rem !important;
+    font-size: clamp(2.2rem, 8vw, 4rem) !important;
     letter-spacing: -1px !important;
   }
   .ecom-hero-title .title-main {
-    font-size: 4.8rem !important;
+    font-size: clamp(3.2rem, 12vw, 5.8rem) !important;
     letter-spacing: -2px !important;
+    margin-top: -5px !important;
   }
   .ecom-hero-subtitle-badge {
     font-size: 0.95rem !important;
@@ -2778,6 +2780,12 @@ select.select-order-status.status-can {
 }
 
 @media (max-width: 768px) {
+  /* Proteção contra rolagem lateral no mobile */
+  html, body, .ecom-layout {
+    overflow-x: hidden !important;
+    width: 100% !important;
+  }
+
   /* Navbar Responsivo */
   .ecom-navbar {
     padding: 12px 15px !important;
@@ -2801,15 +2809,49 @@ select.select-order-status.status-can {
     gap: 10px !important;
   }
 
+  /* Posicionamento Absoluto das Setas do Carrossel para Evitar Overflow Lateral */
+  .ecom-hero-carousel-side {
+    position: relative !important;
+    width: 100% !important;
+    padding: 0 15px !important;
+    box-sizing: border-box !important;
+  }
+  .ecom-hero-carousel-side .carousel-arrow {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 20 !important;
+    font-size: 2rem !important;
+    padding: 8px !important;
+    background: rgba(15, 10, 30, 0.4) !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  .ecom-hero-carousel-side .prev-arrow {
+    left: 5px !important;
+  }
+  .ecom-hero-carousel-side .next-arrow {
+    right: 5px !important;
+  }
+  .carousel-container {
+    width: calc(100% - 70px) !important;
+    margin: 0 auto !important;
+  }
+
   /* Menu de Categorias Deslizável Horizontalmente (Padrão Sephora) */
   .ecom-menu {
     gap: 15px !important;
     overflow-x: auto !important;
     justify-content: flex-start !important;
-    padding: 5px 10px !important;
+    padding: 5px 15px !important;
     width: 100vw !important;
-    margin-left: -20px !important;
-    margin-right: -20px !important;
+    margin-left: -15px !important;
+    margin-right: -15px !important;
     scroll-behavior: smooth !important;
     scrollbar-width: none !important;
   }
@@ -2876,6 +2918,42 @@ select.select-order-status.status-can {
   }
 }
 
+/* Ajustes Específicos para Telas Estreitas ou Celulares Antigos (iPhone XR/SE e menores) */
+@media (max-width: 600px) {
+  /* Navbar com Barra de Busca de Largura Total em Nova Linha */
+  .ecom-navbar .ecom-nav-right {
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+  .ecom-navbar .ecom-search-container {
+    width: 100% !important;
+    order: 10 !important; /* Move para baixo dos botões Favorito, Perfil e Carrinho */
+    margin-top: 8px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
+    padding: 6px 12px !important;
+  }
+  .ecom-navbar #ecom-search-input {
+    width: 100% !important;
+    opacity: 1 !important;
+    padding: 2px 8px !important;
+    color: #fff !important;
+  }
+  .ecom-navbar #btn-ecom-search-trigger {
+    pointer-events: none !important; /* Desativa a animação de encolher/expandir no mobile */
+  }
+
+  /* Quebra de CEP e Frete para evitar esmagamento horizontal no carrinho */
+  .ecom-drawer .flex-row,
+  .ecom-drawer .delivery-mode-selector {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+}
+
 @media (max-width: 480px) {
   /* Ocultar texto do carrinho para economizar espaço */
   .ecom-cart-text {
@@ -2887,10 +2965,10 @@ select.select-order-status.status-can {
   
   /* Ajustes de Fonte do Hero no Mobile Pequeno */
   .ecom-hero-title .title-sub {
-    font-size: 2.4rem !important;
+    font-size: 1.8rem !important;
   }
   .ecom-hero-title .title-main {
-    font-size: 3.6rem !important;
+    font-size: 2.8rem !important;
   }
   
   /* Ajuste de Altura do Card no Mobile Pequeno */
@@ -2909,11 +2987,11 @@ select.select-order-status.status-can {
     height: 290px !important;
   }
   .carousel-slide .carousel-image-box {
-    width: 160px !important;
-    height: 160px !important;
+    width: 140px !important;
+    height: 140px !important;
   }
   .carousel-slide .carousel-info-bottom {
-    font-size: 14px !important;
+    font-size: 13px !important;
   }
   .carousel-slide .carousel-info-top {
     font-size: 11px !important;
@@ -2921,17 +2999,17 @@ select.select-order-status.status-can {
 }
 
 /* ==========================================================================
-   MOBILE COMPATIBILITY (IPHONE & ANDROID) & TABLE TABLET LAYOUTS
+   SUPLEMENTOS GERAIS DE COMPATIBILIDADE MOBILE (IPHONE & ANDROID)
    ========================================================================== */
 
-/* iOS Auto-Zoom on Input Focus Fix */
+/* Prevenir Auto-Zoom de Foco no iOS (iPhone) */
 @media (max-width: 768px) {
   input, select, textarea {
     font-size: 16px !important;
   }
 }
 
-/* Webkit Smooth Elastic Scrolling for Touch Screens */
+/* Rolagem Elástica Nativa para dispositivos Touch */
 .ecom-menu,
 .table-container,
 .ecom-drawer-body,
@@ -2940,7 +3018,7 @@ select.select-order-status.status-can {
   -webkit-overflow-scrolling: touch !important;
 }
 
-/* User Account Icon and Button Responsiveness */
+/* Responsividade do Perfil do Usuário e Login */
 @media (max-width: 768px) {
   .ecom-login-text {
     display: none !important;
@@ -2963,7 +3041,7 @@ select.select-order-status.status-can {
   }
 }
 
-/* E-Commerce Product Card Details Stacking on Small Screens */
+/* Estilo Empilhado para o Preço e Botão nos Cards Mobile */
 @media (max-width: 768px) {
   .ecom-product-card-premium > div:last-child > div:last-child {
     flex-direction: column !important;
@@ -2980,7 +3058,7 @@ select.select-order-status.status-can {
   }
 }
 
-/* Responsive tables for Products, Clients and Sales lists */
+/* Tabelas Administrativas Responsivas */
 .table-container {
   width: 100% !important;
   overflow-x: auto !important;
@@ -2991,7 +3069,7 @@ select.select-order-status.status-can {
   }
 }
 
-/* PDV Layout adaptations on Mobile & Tablets */
+/* Adaptação das Telas do PDV */
 @media (max-width: 1024px) {
   .pdv-layout {
     display: flex !important;
@@ -3004,7 +3082,7 @@ select.select-order-status.status-can {
     overflow: visible !important;
   }
   .pdv-products-grid {
-    height: 500px !important; /* Limita altura do catálogo para rolar internamente */
+    height: 500px !important;
   }
   .pdv-cart-panel {
     margin-top: 20px !important;
@@ -3012,7 +3090,6 @@ select.select-order-status.status-can {
 }
 
 @media (max-width: 480px) {
-  /* PDV Grid em 2 Colunas */
   .pdv-products-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
@@ -3035,13 +3112,11 @@ select.select-order-status.status-can {
     font-size: 12px !important;
   }
   
-  /* Formas de pagamento do PDV em 2 Colunas */
   .payment-methods-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
   }
   
-  /* Ajuste do modal de detalhes */
   .prod-details-img-container img {
     max-height: 100% !important;
   }
