@@ -14,6 +14,17 @@ const KEY_SALES = 'purple_pdv_sales';
 const KEY_CASH_SESSIONS = 'purple_pdv_cash_sessions';
 const KEY_CLIENTS = 'purple_pdv_clients';
 const KEY_CONFIG = 'purple_pdv_config';
+const KEY_OPERATORS = 'purple_pdv_operators';
+
+const DEFAULT_OPERATORS = [
+  {
+    id: 'op1',
+    name: 'Henrique',
+    email: 'henriqueelsilva@gmail.com',
+    password: 'Vida191023!',
+    role: 'admin'
+  }
+];
 
 // Clientes iniciais mockados (com senha, débito e aniversário)
 const DEFAULT_CLIENTS = [
@@ -271,10 +282,38 @@ function initDB() {
   if (!localStorage.getItem(KEY_CONFIG)) {
     localStorage.setItem(KEY_CONFIG, JSON.stringify({ requireClientCheckout: true }));
   }
+  if (!localStorage.getItem(KEY_OPERATORS)) {
+    localStorage.setItem(KEY_OPERATORS, JSON.stringify(DEFAULT_OPERATORS));
+  }
 }
 
 // Executa initDB ao importar
 initDB();
+
+// --- OPERADORES ---
+export function getOperators() {
+  return JSON.parse(localStorage.getItem(KEY_OPERATORS)) || DEFAULT_OPERATORS;
+}
+
+export function saveOperators(operators) {
+  localStorage.setItem(KEY_OPERATORS, JSON.stringify(operators));
+}
+
+export function addOperator(operator) {
+  const operators = getOperators();
+  const newOp = {
+    id: 'op_' + Date.now(),
+    name: operator.name,
+    email: operator.email,
+    password: operator.password,
+    role: operator.role || 'operator',
+    synced: false
+  };
+  operators.push(newOp);
+  saveOperators(operators);
+  syncWithSupabase();
+  return newOp;
+}
 
 // --- CONFIGURAÇÕES ---
 export function getConfig() {
@@ -694,6 +733,27 @@ export async function syncWithSupabase() {
     }
     localStorage.setItem(KEY_PRODUCTS, JSON.stringify(localProducts));
 
+    // Sync Operators
+    const localOperators = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
+    const unsyncedOperators = localOperators.filter(o => !o.synced);
+    for (const op of unsyncedOperators) {
+      const payload = {
+        id: op.id,
+        name: op.name,
+        email: op.email,
+        password: op.password,
+        role: op.role || 'operator',
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await supabase.from('operators').upsert(payload);
+      if (!error) {
+        op.synced = true;
+      } else {
+        console.error("Error syncing operator:", op.id, error);
+      }
+    }
+    localStorage.setItem(KEY_OPERATORS, JSON.stringify(localOperators));
+
     // Sync Clients
     const localClients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
     const unsyncedClients = localClients.filter(c => !c.synced);
@@ -825,6 +885,28 @@ export async function syncWithSupabase() {
         synced: true
       }));
       localStorage.setItem(KEY_CLIENTS, JSON.stringify(mappedClients));
+    }
+
+    // Fetch Operators
+    try {
+      const { data: dbOperators, error: errOperators } = await supabase
+        .from('operators')
+        .select('*')
+        .order('updated_at', { ascending: true });
+
+      if (!errOperators && dbOperators) {
+        const mappedOperators = dbOperators.map(o => ({
+          id: o.id,
+          name: o.name,
+          email: o.email,
+          password: o.password,
+          role: o.role || 'operator',
+          synced: true
+        }));
+        localStorage.setItem(KEY_OPERATORS, JSON.stringify(mappedOperators));
+      }
+    } catch (e) {
+      console.warn("Supabase Operators sync failed or table missing:", e);
     }
 
     // Fetch Sales

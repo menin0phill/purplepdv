@@ -1,4 +1,4 @@
-import { getConfig, saveConfig } from '../db.js';
+import { getConfig, saveConfig, getOperators, addOperator, saveOperators } from '../db.js';
 
 export function renderConfig(container) {
   const currentConfig = getConfig();
@@ -108,11 +108,121 @@ export function renderConfig(container) {
             <i data-lucide="save"></i> Salvar Configuração de Pagamento
           </button>
         </form>
+      <!-- Card de Gerenciamento de Operadores -->
+      <div class="glass-card margin-top-lg">
+        <h3>Gerenciamento de Operadores do Caixa</h3>
+        <p class="text-muted text-sm margin-top-xs">Cadastre e remova operadores autorizados a acessar a frente de caixa.</p>
+        
+        <div class="grid grid-2 margin-top-md" style="gap: 20px;">
+          <!-- Lista de Operadores -->
+          <div>
+            <h4 style="margin-bottom: 12px; color: var(--text-main);">Operadores Cadastrados</h4>
+            <div id="operators-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 8px;">
+              <!-- Gerado via JS -->
+            </div>
+          </div>
+          
+          <!-- Formulário Novo Operador -->
+          <div>
+            <h4 style="margin-bottom: 12px; color: var(--text-main);">Cadastrar Novo Operador</h4>
+            <form id="form-add-operator" class="form-group" style="display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <label for="op-name" style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Nome</label>
+                <input type="text" id="op-name" required placeholder="Ex: Ana Silva" style="width:100%; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--border-color); border-radius:6px; height:36px; padding:0 8px;">
+              </div>
+              <div>
+                <label for="op-email" style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">E-mail (Login)</label>
+                <input type="email" id="op-email" required placeholder="ana.silva@email.com" style="width:100%; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--border-color); border-radius:6px; height:36px; padding:0 8px;">
+              </div>
+              <div>
+                <label for="op-password" style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Senha</label>
+                <input type="password" id="op-password" required placeholder="Senha de acesso" style="width:100%; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--border-color); border-radius:6px; height:36px; padding:0 8px;">
+              </div>
+              <div>
+                <label for="op-role" style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Função (Cargo)</label>
+                <select id="op-role" style="width:100%; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--border-color); border-radius:6px; height:36px; padding:0 8px; font-family:var(--font-sans);">
+                  <option value="operator">Operador de Caixa</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm margin-top-xs" style="width:max-content;">
+                <i data-lucide="plus"></i> Adicionar Operador
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   `;
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Função para renderizar lista de operadores
+  function updateOperatorsList() {
+    const listEl = document.getElementById('operators-list');
+    if (!listEl) return;
+    
+    const operators = getOperators();
+    listEl.innerHTML = operators.map(op => {
+      const isSelf = op.email.toLowerCase() === 'henriqueelsilva@gmail.com';
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div>
+            <div style="font-weight: 600; font-size: 14px; color: white;">${op.name}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">${op.email} • <span style="text-transform: capitalize;">${op.role}</span></div>
+          </div>
+          ${isSelf ? `
+            <span style="font-size: 11px; color: var(--primary); font-weight: 600; padding: 4px 8px; background: rgba(139, 92, 246, 0.15); border-radius: 4px;">Admin Raiz</span>
+          ` : `
+            <button type="button" class="btn-delete-operator" data-id="${op.id}" style="background: none; border: none; color: #f56565; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+              <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+            </button>
+          `}
+        </div>
+      `;
+    }).join('');
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // Configura remoção de operadores
+    listEl.querySelectorAll('.btn-delete-operator').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const operators = getOperators();
+        const updated = operators.filter(o => o.id !== id);
+        saveOperators(updated);
+        updateOperatorsList();
+        showNotification('Operador removido com sucesso!', 'success');
+      });
+    });
+  }
+  
+  // Executa listagem inicial
+  updateOperatorsList();
+  
+  // Submit para adicionar novo operador
+  document.getElementById('form-add-operator').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('op-name').value.trim();
+    const email = document.getElementById('op-email').value.trim();
+    const password = document.getElementById('op-password').value;
+    const role = document.getElementById('op-role').value;
+    
+    const operators = getOperators();
+    if (operators.find(op => op.email.toLowerCase() === email.toLowerCase())) {
+      showNotification('Já existe um operador cadastrado com este e-mail!', 'error');
+      return;
+    }
+    
+    addOperator({ name, email, password, role });
+    
+    document.getElementById('op-name').value = '';
+    document.getElementById('op-email').value = '';
+    document.getElementById('op-password').value = '';
+    
+    updateOperatorsList();
+    showNotification('Novo operador cadastrado com sucesso!', 'success');
+  });
 
   // Ações de salvar configurações
   document.getElementById('form-config').addEventListener('submit', (e) => {
