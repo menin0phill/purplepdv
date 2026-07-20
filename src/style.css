@@ -2368,7 +2368,9 @@ input:checked + .slider:before {
 
 @media (max-width: 768px) {
   .ecom-main {
-    padding: 30px 20px !important;
+    padding: 20px 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -2786,6 +2788,97 @@ select.select-order-status.status-can {
     width: 100% !important;
   }
 
+  /* Stacking do Titulo da Vitrine */
+  .ecom-filter-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 15px !important;
+  }
+  .ecom-filter-bar h3 {
+    font-size: 1.8rem !important;
+  }
+  .ecom-filter-bar p {
+    font-size: 13px !important;
+  }
+
+  /* Stack do Hero Banner no Mobile (Frase primeiro, depois carrossel) */
+  .ecom-hero {
+    height: auto !important;
+    min-height: auto !important;
+    padding: 30px 10px 80px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  .ecom-hero-wrapper {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+    width: 100% !important;
+  }
+
+  .ecom-hero-text-side {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    margin-bottom: 10px !important;
+  }
+
+  .ecom-hero-title {
+    align-items: center !important;
+    letter-spacing: -1px !important;
+  }
+
+  .ecom-hero-title .title-sub {
+    font-size: 1.8rem !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  .ecom-hero-title .title-main {
+    font-size: 2.8rem !important;
+    letter-spacing: -1px !important;
+    margin-top: -2px !important;
+  }
+
+  .ecom-hero-subtitle-badge {
+    font-size: 0.9rem !important;
+    padding: 6px 12px !important;
+    margin: 8px auto 0 auto !important;
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    white-space: normal !important;
+  }
+
+  /* Posiciona o botão de compra estático no final do fluxo, impedindo sobreposição */
+  .ecom-hero > div:last-child {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin-top: 25px !important;
+    margin-bottom: 10px !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  #btn-hero-buy-now {
+    width: 100% !important;
+    max-width: 250px !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    border-radius: 30px !important;
+    text-align: center !important;
+  }
+
   /* Navbar Responsivo */
   .ecom-navbar {
     padding: 15px 15px !important;
@@ -2967,19 +3060,23 @@ select.select-order-status.status-can {
     white-space: nowrap !important;
   }
 
-  /* Grid de Produtos em 2 Colunas */
+  /* Grid de Produtos em 2 Colunas (Prevenção de transbordo lateral com minmax) */
   .ecom-products-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 16px !important;
-    padding: 5px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    padding: 4px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   .ecom-product-card-premium {
     width: 100% !important;
     max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   .ecom-card-image-wrapper {
     width: 100% !important;
-    height: 220px !important;
+    height: auto !important;
+    aspect-ratio: 3 / 4 !important;
   }
   .ecom-product-card-premium h4 {
     font-size: 13px !important;
