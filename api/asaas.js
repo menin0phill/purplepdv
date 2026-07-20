@@ -51,23 +51,20 @@ export default async function handler(req, res) {
     // --- Integração Real com Asaas ---
     // Limpar e extrair chave caso ela tenha sido duplicada ou envelopada (ex: vinda do chat)
     let cleanApiKey = apiKey.trim();
-    
-    // Se a chave contiver múltiplos blocos aact_ (colagem dupla)
-    if (cleanApiKey.includes('aact_')) {
-      const parts = cleanApiKey.split(/[\$\s,]+/);
-      for (const part of parts) {
-        const p = part.trim();
-        if (p.startsWith('aact_')) {
-          cleanApiKey = p;
-          break;
-        }
-      }
+
+    // Se a chave contiver múltiplos blocos (ex: colagem dupla do chat) ou caracteres estranhos
+    const match = cleanApiKey.match(/\$?aact_[a-zA-Z0-9_:\-]+/);
+    if (match) {
+      cleanApiKey = match[0];
     }
-    // Caso ainda tenha sobrado caracteres como '$' nas bordas
-    cleanApiKey = cleanApiKey.replace(/^\$/, '').replace(/\$$/, '').trim();
+
+    // Garantir que a chave comece com '$' (prefixo obrigatório do Asaas)
+    if (cleanApiKey.startsWith('aact_')) {
+      cleanApiKey = '$' + cleanApiKey;
+    }
 
     // Determinar URL base com base no prefixo da chave API
-    const isProdKey = cleanApiKey.startsWith('aact_prod_');
+    const isProdKey = cleanApiKey.includes('prod');
     const baseUrl = isProdKey ? 'https://api.asaas.com/v3' : 'https://sandbox.asaas.com/api/v3';
 
     // 1. Cadastrar Cliente no Asaas
