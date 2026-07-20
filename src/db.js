@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 // LocalStorage Fallback for Supabase config (allows setting credentials directly in Admin UI)
 const localDbConfig = JSON.parse(localStorage.getItem('purple_pdv_supabase_config')) || {};
 
-const supabaseUrl = localDbConfig.url || import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = localDbConfig.anonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = localDbConfig.url || import.meta.env.VITE_SUPABASE_URL || 'https://ryodvzcrisfctuiewyrk.supabase.co';
+const supabaseAnonKey = localDbConfig.anonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2R2emNyaXNmY3R1aWV3eXJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDM2MzQsImV4cCI6MjEwMDExOTYzNH0.ge_g5aMGJV6t8DZlYdT3QjAsGTArI6OLcs70E2mxNnU';
 
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
