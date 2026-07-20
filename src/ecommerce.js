@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedCategory = 'Todos';
   let discountPercentage = 0; // Desconto de aniversário (10% = 0.10)
   let selectedShippingPrice = 0;
+
+  function normalizeStr(str) {
+    if (!str) return '';
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  }
   let selectedShippingCarrier = '';
   let calculatedCep = '';
   let selectedDeliveryMode = 'delivery'; // 'delivery' ou 'pickup'
@@ -320,6 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('db-synced', () => {
       products = getProducts();
       renderProducts();
+    });
+
+    // Sincronizar produtos entre abas do navegador (PDV -> E-Commerce em tempo real)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'purple_pdv_products') {
+        products = getProducts();
+        renderProducts();
+      }
     });
   }
 
@@ -813,16 +826,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!grid) return;
 
     let filtered = products.filter(p => {
-      if (selectedCategory === 'Todos') return true;
-      if (selectedCategory === 'Maquiagem') {
-        const catLower = p.category.toLowerCase();
-        return catLower !== 'skincare' && 
-               catLower !== 'acessórios' && 
-               catLower !== 'acessorios' && 
-               catLower !== 'cabelo' && 
-               catLower !== 'corpo';
+      const pCat = normalizeStr(p.category);
+      const selCat = normalizeStr(selectedCategory);
+      
+      if (selCat === 'todos') return true;
+      
+      if (selCat === 'maquiagem') {
+        // Maquiagem é o padrão para qualquer categoria que não seja as outras principais
+        return pCat !== 'skincare' && 
+               pCat !== 'acessorios' && 
+               pCat !== 'cabelo' && 
+               pCat !== 'cabelos' &&
+               pCat !== 'corpo' &&
+               pCat !== 'corpos';
       }
-      return p.category.toLowerCase() === selectedCategory.toLowerCase();
+      
+      if (selCat === 'skincare') return pCat === 'skincare' || pCat === 'skin care';
+      if (selCat === 'cabelo' || selCat === 'cabelos') return pCat === 'cabelo' || pCat === 'cabelos';
+      if (selCat === 'corpo' || selCat === 'corpos') return pCat === 'corpo' || pCat === 'corpos';
+      if (selCat === 'acessorios') return pCat === 'acessorios' || pCat === 'acessorio';
+      
+      return pCat === selCat;
     });
 
     // Filtro de pesquisa

@@ -861,7 +861,14 @@ export async function syncWithSupabase() {
         variations: p.variations || [],
         synced: true
       }));
-      localStorage.setItem(KEY_PRODUCTS, JSON.stringify(mappedProds));
+      
+      const localProds = JSON.parse(localStorage.getItem(KEY_PRODUCTS)) || [];
+      const unsynced = localProds.filter(lp => !lp.synced);
+      const merged = [...mappedProds];
+      unsynced.forEach(lp => {
+        if (!merged.find(sp => sp.id === lp.id)) merged.push(lp);
+      });
+      localStorage.setItem(KEY_PRODUCTS, JSON.stringify(merged));
     }
 
     // Fetch Clients
@@ -878,13 +885,20 @@ export async function syncWithSupabase() {
         email: c.email,
         password: c.password,
         birthday: c.birthday,
-        debt: Number(c.debt),
         notes: c.notes,
         cpfCnpj: c.cpf_cnpj,
         address: c.address,
+        debt: Number(c.debt),
         synced: true
       }));
-      localStorage.setItem(KEY_CLIENTS, JSON.stringify(mappedClients));
+      
+      const localClients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
+      const unsynced = localClients.filter(lc => !lc.synced);
+      const merged = [...mappedClients];
+      unsynced.forEach(lc => {
+        if (!merged.find(sc => sc.id === lc.id)) merged.push(lc);
+      });
+      localStorage.setItem(KEY_CLIENTS, JSON.stringify(merged));
     }
 
     // Fetch Operators
@@ -903,7 +917,14 @@ export async function syncWithSupabase() {
           role: o.role || 'operator',
           synced: true
         }));
-        localStorage.setItem(KEY_OPERATORS, JSON.stringify(mappedOperators));
+        
+        const localOperators = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
+        const unsynced = localOperators.filter(lo => !lo.synced);
+        const merged = [...mappedOperators];
+        unsynced.forEach(lo => {
+          if (!merged.find(so => so.id === lo.id)) merged.push(lo);
+        });
+        localStorage.setItem(KEY_OPERATORS, JSON.stringify(merged));
       }
     } catch (e) {
       console.warn("Supabase Operators sync failed or table missing:", e);
@@ -935,7 +956,14 @@ export async function syncWithSupabase() {
         shippingCarrier: s.shipping_carrier,
         synced: true
       }));
-      localStorage.setItem(KEY_SALES, JSON.stringify(mappedSales));
+      
+      const localSales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
+      const unsynced = localSales.filter(ls => !ls.synced);
+      const merged = [...mappedSales];
+      unsynced.forEach(ls => {
+        if (!merged.find(ss => ss.id === ls.id)) merged.push(ls);
+      });
+      localStorage.setItem(KEY_SALES, JSON.stringify(merged));
     }
 
     // Fetch Cash Sessions
@@ -956,7 +984,14 @@ export async function syncWithSupabase() {
         transactions: s.transactions || [],
         synced: true
       }));
-      localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(mappedSessions));
+      
+      const localSessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
+      const unsynced = localSessions.filter(ls => !ls.synced);
+      const merged = [...mappedSessions];
+      unsynced.forEach(ls => {
+        if (!merged.find(ss => ss.id === ls.id)) merged.push(ls);
+      });
+      localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(merged));
     }
 
     console.log("Supabase: Background synchronization completed successfully!");
