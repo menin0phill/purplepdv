@@ -31,17 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <div class="login-form-wrapper">
-              <h2>Welcome to Purple PDV 👋</h2>
-              <p class="login-subtitle">Kindly fill in your details below to access the point of sale.</p>
+              <h2>Bem-vindo ao Purple PDV 👋</h2>
+              <p class="login-subtitle">Preencha os seus dados de acesso abaixo para entrar no PDV.</p>
               
               <form id="purple-login-form">
                 <div class="login-input-group">
-                  <label for="login-email">Email Address</label>
-                  <input type="email" id="login-email" required placeholder="henriqueelsilva@gmail.com" value="henriqueelsilva@gmail.com">
+                  <label for="login-email">Endereço de E-mail</label>
+                  <input type="email" id="login-email" required placeholder="seu-email@gmail.com">
                 </div>
                 
                 <div class="login-input-group" style="margin-bottom:28px;">
-                  <label for="login-password">Password</label>
+                  <label for="login-password">Senha de Acesso</label>
                   <div class="password-input-wrapper">
                     <input type="password" id="login-password" required placeholder="••••••••••••">
                     <button type="button" id="btn-toggle-login-password" class="btn-toggle-login-password">
