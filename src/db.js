@@ -995,10 +995,12 @@ export async function syncWithSupabase() {
     }
 
     console.log("Supabase: Background synchronization completed successfully!");
+    localStorage.removeItem('purple_pdv_last_sync_error');
     window.dispatchEvent(new CustomEvent('db-synced'));
     return { success: true };
   } catch (err) {
     console.error("Supabase Sync Failed:", err);
+    localStorage.setItem('purple_pdv_last_sync_error', err.message || String(err));
     return { success: false, reason: err.message };
   }
 }

@@ -12,7 +12,21 @@ export function renderConfig(container) {
         </div>
       </div>
 
-      <div class="grid grid-2 margin-top-md">
+      <!-- Card de Status de Sincronização Nuvem -->
+      <div class="glass-card margin-bottom-md" style="border: 1px solid rgba(139, 92, 246, 0.25);">
+        <h3 style="font-size: 15px; font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">
+          <i data-lucide="cloud-lightning" style="width: 18px; height: 18px; color: var(--primary);"></i> Status de Sincronização Nuvem (Supabase)
+        </h3>
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color);">
+          <div id="sync-diagnostic-badge" style="width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; background-color: #a0aec0;"></div>
+          <div>
+            <strong id="sync-diagnostic-status" style="display: block; font-size: 13px; color: white;">Carregando diagnóstico...</strong>
+            <span id="sync-diagnostic-details" style="font-size: 11px; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 2px;">Verificando conexão com o banco de dados...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
         <!-- Card de Configurações de Vendas -->
         <div class="glass-card">
           <h3>Fluxo de Venda & Segurança</h3>
@@ -371,6 +385,35 @@ export function renderConfig(container) {
           window.location.reload();
         }, 1500);
       });
+    });
+  }
+
+  // Lógica de Diagnóstico de Sincronização
+  const diagBadge = document.getElementById('sync-diagnostic-badge');
+  const diagStatus = document.getElementById('sync-diagnostic-status');
+  const diagDetails = document.getElementById('sync-diagnostic-details');
+
+  if (diagBadge && diagStatus && diagDetails) {
+    import('../db.js').then(({ supabase }) => {
+      if (!supabase) {
+        diagBadge.style.backgroundColor = '#a0aec0'; // cinza
+        diagStatus.textContent = 'Modo Local (Supabase não configurado)';
+        diagStatus.style.color = '#a0aec0';
+        diagDetails.textContent = 'Cadastre as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY na Vercel para ativar a nuvem.';
+      } else {
+        const lastError = localStorage.getItem('purple_pdv_last_sync_error');
+        if (lastError) {
+          diagBadge.style.backgroundColor = '#ef4444'; // vermelho
+          diagStatus.textContent = 'Erro na Sincronização';
+          diagStatus.style.color = '#ef4444';
+          diagDetails.textContent = `Falha: ${lastError}. Certifique-se de ter criado todas as 5 tabelas (products, clients, sales, cash_sessions, operators) no SQL Editor do Supabase.`;
+        } else {
+          diagBadge.style.backgroundColor = '#10b981'; // verde
+          diagStatus.textContent = 'Conectado e Sincronizado';
+          diagStatus.style.color = '#10b981';
+          diagDetails.textContent = 'Todas as vendas, produtos e operadores estão salvos na nuvem em tempo real!';
+        }
+      }
     });
   }
 }
