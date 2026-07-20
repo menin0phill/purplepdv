@@ -1633,12 +1633,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Exibir modal de sucesso
         const modal = document.getElementById('modal-success');
+        const successBox = modal.querySelector('.success-order-box');
+        
+        // Resetar o box de sucesso para garantir a presença do elemento success-order-id em compras consecutivas
+        successBox.innerHTML = `<p><strong>Nº do Pedido:</strong> <code id="success-order-id"></code></p><p><strong>Faturamento:</strong> E-Commerce Oficial</p>`;
+        
         document.getElementById('success-order-id').textContent = completedSale.id.split('_')[1] || completedSale.id;
         
         // Resetar textos/botões para o padrão antes de alterar
         const modalTitle = modal.querySelector('h2');
         const modalSub = modal.querySelector('p.text-muted');
-        const successBox = modal.querySelector('.success-order-box');
         const closeBtn = document.getElementById('btn-success-close');
         
         modalTitle.textContent = 'Pedido Concluído!';
