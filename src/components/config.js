@@ -77,6 +77,9 @@ export function renderConfig(container) {
                 <button type="button" id="btn-import-backup" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 4px;">
                   <i data-lucide="upload" style="width: 14px; height: 14px;"></i> Importar JSON
                 </button>
+                <button type="button" id="btn-clear-sales" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 4px; border: 1px solid #ef4444 !important; color: #ef4444 !important; background: transparent !important;">
+                  <i data-lucide="trash-2" style="width: 14px; height: 14px; color: #ef4444 !important;"></i> Zerar Vendas/Caixa (Produção)
+                </button>
               </div>
             </div>
           </div>
@@ -326,6 +329,48 @@ export function renderConfig(container) {
         }
       };
       reader.readAsText(file);
+    });
+  }
+
+  // Limpar Vendas e Caixa para Produção
+  const btnClearSales = document.getElementById('btn-clear-sales');
+  if (btnClearSales) {
+    btnClearSales.addEventListener('click', async () => {
+      if (!confirm('ATENÇÃO: Isso apagará permanentemente TODO o histórico de vendas, relatórios e sessões de caixa (tanto local quanto no Supabase)! Esta ação não pode ser desfeita. Tem certeza que deseja prosseguir para iniciar o sistema em produção?')) {
+        return;
+      }
+      
+      // Limpa LocalStorage
+      localStorage.setItem('purple_pdv_sales', JSON.stringify([]));
+      localStorage.setItem('purple_pdv_cash_sessions', JSON.stringify([]));
+      
+      // Limpa Supabase
+      import('../db.js').then(async ({ supabase }) => {
+        if (supabase) {
+          try {
+            showNotification('Limpando base de dados na nuvem...', 'info');
+            // Deleta tudo das tabelas sales e cash_sessions
+            const { error: errSales } = await supabase.from('sales').delete().neq('id', '0');
+            const { error: errSessions } = await supabase.from('cash_sessions').delete().neq('id', '0');
+            
+            if (errSales || errSessions) {
+              console.error("Erro ao apagar tabelas:", errSales, errSessions);
+              showNotification('Aviso: Limpo localmente, mas ocorreu um erro ao apagar na nuvem.', 'warning');
+            } else {
+              showNotification('Banco de dados da nuvem zerado com sucesso!', 'success');
+            }
+          } catch(e) {
+            console.error("Erro na requisição do Supabase:", e);
+            showNotification('Limpo localmente. Falha ao comunicar com a nuvem.', 'warning');
+          }
+        } else {
+          showNotification('Limpo localmente (Supabase não configurado).', 'success');
+        }
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      });
     });
   }
 }
