@@ -47,33 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button type="button" id="btn-toggle-login-password" class="btn-toggle-login-password">
                       <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                     </button>
-                  </div>
+                  </                <!-- Widget Real do Cloudflare Turnstile -->
+                <div style="margin: 15px 0 25px 0; display: flex; justify-content: center; min-height: 65px;">
+                  <div id="cf-turnstile-widget"></div>
                 </div>
-
-                <!-- Verificação Captcha Humana (Estilo Turnstile/Cloudflare) -->
-                <div class="turnstile-container" style="margin: 15px 0 25px 0; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <div id="captcha-checkbox-wrapper" style="position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                      <label id="captcha-box-label" style="width: 20px; height: 20px; border: 2px solid #8b5cf6; border-radius: 4px; cursor: pointer; display: block; transition: all 0.2s; background: rgba(0,0,0,0.2);"></label>
-                      <div id="captcha-spinner" style="display: none; width: 18px; height: 18px; border: 2px solid rgba(139, 92, 246, 0.3); border-top-color: #8b5cf6; border-radius: 50%; animation: captcha-spin 0.8s linear infinite;"></div>
-                      <div id="captcha-checkmark" style="display: none; color: #10b981; font-weight: bold; font-size: 18px; line-height: 1;">✓</div>
-                    </div>
-                    <span id="captcha-text" style="font-size: 13px; color: #cbd5e1; user-select: none;">Não sou um robô</span>
-                  </div>
-                  <div style="display: flex; flex-direction: column; align-items: flex-end; opacity: 0.65;">
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                      <img src="/logo-purple.jpg" alt="Purple Logo" style="width: 16px; height: 16px; border-radius: 50%;" onerror="this.src='https://instagram.fcgh13-1.fna.fbcdn.net/v/t51.82787-19/651031849_17966874450019045_9100807247552984597_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby44NDAuYzIifQ&_nc_ht=instagram.fcgh13-1.fna.fbcdn.net&_nc_cat=101&_nc_oc=Q6cZ2gHycOL9sD5xHY5FxNSgRSX2zXUNVbGhAFMCU2-eHb6Rysf1xxtGQbgLfuARnbBShC1lgu2RruKYQIc0-pCxF8Jl&_nc_ohc=EZMEJ4HLGO4Q7kNvwGewcRG&_nc_gid=6p0a7wHTtBkcfZVdLzYGpA&edm=APoiHPcBAAAA&ccb=7-5&oh=00_AQBAhoUNv7U6FBEqNAlimY0YwkPKb_5xZ83ur54LbSVd8g&oe=6A62003B&_nc_sid=22de04'">
-                      <span style="font-size: 9px; color: #a0aec0; font-weight: 600; letter-spacing: 0.5px;">Purple</span>
-                    </div>
-                    <span style="font-size: 7px; color: #718096; margin-top: 1px; letter-spacing: 0.3px;">Security Check</span>
-                  </div>
-                </div>
-
-                <style>
-                  @keyframes captcha-spin {
-                    to { transform: rotate(360deg); }
-                  }
-                </style>
                 
                 <button type="submit" id="btn-login-submit" class="btn-login-submit" disabled style="opacity: 0.5; cursor: not-allowed; transition: all 0.3s ease;">Entrar no PDV</button>
               </form>
@@ -111,35 +88,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    // Lógica do Captcha
-    const captchaBox = document.getElementById('captcha-box-label');
-    const captchaSpinner = document.getElementById('captcha-spinner');
-    const captchaCheckmark = document.getElementById('captcha-checkmark');
-    const captchaText = document.getElementById('captcha-text');
+    // Inicialização da verificação do Cloudflare Turnstile Real com Fallback Off-line
     const btnSubmit = document.getElementById('btn-login-submit');
-
     let isCaptchaVerified = false;
 
-    if (captchaBox && btnSubmit) {
-      captchaBox.addEventListener('click', () => {
-        if (isCaptchaVerified) return;
-        
-        captchaBox.style.display = 'none';
-        captchaSpinner.style.display = 'block';
-        captchaText.textContent = 'Verificando...';
-        
-        setTimeout(() => {
-          captchaSpinner.style.display = 'none';
-          captchaCheckmark.style.display = 'block';
-          captchaText.textContent = 'Verificado com sucesso';
-          captchaText.style.color = '#10b981';
-          
-          isCaptchaVerified = true;
-          btnSubmit.disabled = false;
-          btnSubmit.style.opacity = '1';
-          btnSubmit.style.cursor = 'pointer';
-        }, 1200);
-      });
+    if (window.turnstile) {
+      try {
+        window.turnstile.render('#cf-turnstile-widget', {
+          sitekey: '1x00000000000000000000AA', // Chave de teste universal oficial que funciona em qualquer domínio/localhost
+          theme: 'dark',
+          callback: function(token) {
+            isCaptchaVerified = true;
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.style.opacity = '1';
+              btnSubmit.style.cursor = 'pointer';
+            }
+          },
+          'expired-callback': function() {
+            isCaptchaVerified = false;
+            if (btnSubmit) {
+              btnSubmit.disabled = true;
+              btnSubmit.style.opacity = '0.5';
+              btnSubmit.style.cursor = 'not-allowed';
+            }
+          },
+          'error-callback': function() {
+            isCaptchaVerified = false;
+            if (btnSubmit) {
+              btnSubmit.disabled = true;
+              btnSubmit.style.opacity = '0.5';
+              btnSubmit.style.cursor = 'not-allowed';
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Erro ao inicializar o Cloudflare Turnstile:", err);
+      }
+    } else {
+      console.warn("Script do Cloudflare Turnstile não carregado. Ativando fallback de segurança...");
+      const widget = document.getElementById('cf-turnstile-widget');
+      if (widget) {
+        widget.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px; border:1px solid rgba(255,255,255,0.1); width: 100%; justify-content: center; box-sizing: border-box;">
+            <input type="checkbox" id="fallback-captcha" style="width:18px; height:18px; cursor:pointer;">
+            <label for="fallback-captcha" style="font-size:13px; color:#cbd5e1; cursor:pointer; user-select:none;">Confirmar que não sou um robô (Modo de Segurança)</label>
+          </div>
+        `;
+        document.getElementById('fallback-captcha').addEventListener('change', (e) => {
+          isCaptchaVerified = e.target.checked;
+          if (btnSubmit) {
+            btnSubmit.disabled = !isCaptchaVerified;
+            btnSubmit.style.opacity = isCaptchaVerified ? '1' : '0.5';
+            btnSubmit.style.cursor = isCaptchaVerified ? 'pointer' : 'not-allowed';
+          }
+        });
+      }
     }
 
     // Toggle Password Visibility Action
