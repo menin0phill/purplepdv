@@ -2720,7 +2720,7 @@ select.select-order-status.status-can {
   justify-content: flex-end !important;
   position: relative !important;
   max-width: 720px !important;
-  transform: translateX(50px) !important; /* Move o carrossel 50px adicionais para a direita */
+  transform: translateX(120px) !important; /* Move o carrossel 120px adicionais para a direita */
 }
 
 /* Responsividade Geral E-Commerce */
