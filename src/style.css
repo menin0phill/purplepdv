@@ -2257,6 +2257,8 @@ input:checked + .slider:before {
 
 .carousel-slide {
   position: absolute;
+  left: 50% !important;
+  margin-left: -160px !important;
   width: 320px !important;
   height: 420px !important;
   display: flex !important;
@@ -2778,6 +2780,7 @@ select.select-order-status.status-can {
   }
   .carousel-slide {
     width: 260px !important;
+    margin-left: -130px !important;
     transform: scale(0.85) !important;
   }
   .carousel-slide.active {
