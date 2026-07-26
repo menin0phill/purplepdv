@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { minPrice: '249,99', reward: 'MANTEIGA DE CACAU', image: '/gift-butter.png' },
     { minPrice: '349,99', reward: 'ESPONJA DE MAQUIAGEM', image: '/gift-sponge.png' },
     { minPrice: '449,99', reward: 'KIT DE MINI PINCÉIS', image: '/gift-brushes.png' },
-    { minPrice: '549,99', reward: 'UM MERGULHO NA PISCINA DE BRINDES', image: '/gift-box.png' }
+    { minPrice: '549,99', reward: 'UMA BOX MISTERIOSA COM 5 PRODUTOS', image: '/gift-box.png' }
   ];
   
   // Estado de login do cliente
