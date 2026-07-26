@@ -3804,5 +3804,37 @@ select.select-order-status.status-can {
   text-decoration: underline !important;
 }
 
+/* ==========================================================================
+   E-COMMERCE GENERAL LIGHT INPUTS OVERRIDES
+   ========================================================================== */
+
+#app-ecommerce input:not([type="checkbox"]):not([type="radio"]),
+#app-ecommerce select,
+#app-ecommerce textarea {
+  background-color: #f3f4f6 !important; /* Fundo cinza claro */
+  color: #1f2937 !important; /* Texto escuro */
+  border: 1px solid #e5e7eb !important; /* Borda cinza suave */
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+}
+
+#app-ecommerce input:not([type="checkbox"]):not([type="radio"])::placeholder,
+#app-ecommerce select::placeholder,
+#app-ecommerce textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+#app-ecommerce input:not([type="checkbox"]):not([type="radio"]):focus,
+#app-ecommerce select:focus,
+#app-ecommerce textarea:focus {
+  background-color: #ffffff !important;
+  border-color: #8b5cf6 !important; /* Destaque roxo */
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+  color: #1f2937 !important;
+  outline: none !important;
+}
+
 
 
