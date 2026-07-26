@@ -259,7 +259,8 @@ export function renderDashboard(container) {
       const birthParts = c.birthday.split('-');
       const formattedBday = `${birthParts[2]}/${birthParts[1]}/${birthParts[0]}`;
       const cleanPhone = c.phone.replace(/\D/g, '');
-      const textMessage = encodeURIComponent(`Olá, ${c.name.split(' ')[0]}! A Purple Cosméticos deseja a você um feliz aniversário! 🎂💜 Preparamos um presente especial: 10% de desconto em qualquer compra na nossa loja online este mês! Use o cupom PARABENSPURPLE no checkout. Aproveite aqui: http://localhost:5173/ecommerce.html`);
+      const siteUrl = window.location.origin;
+      const textMessage = encodeURIComponent(`Olá, ${c.name.split(' ')[0]}! A Purple Cosméticos deseja a você um feliz aniversário! Preparamos um presente especial: 10% de desconto em qualquer compra na nossa loja online este mês! Use o cupom PARABENSPURPLE no checkout. Aproveite aqui: ${siteUrl}`);
       const waUrl = `https://wa.me/55${cleanPhone}?text=${textMessage}`;
 
       return `
