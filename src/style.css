@@ -2717,10 +2717,16 @@ select.select-order-status.status-can {
   flex: 1.6 !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-end !important;
+  justify-content: center !important;
   position: relative !important;
   max-width: 720px !important;
-  transform: translateX(120px) !important; /* Move o carrossel 120px adicionais para a direita */
+}
+
+@media (min-width: 993px) {
+  .ecom-hero-carousel-side {
+    justify-content: flex-end !important;
+    transform: translateX(120px) !important;
+  }
 }
 
 /* Responsividade Geral E-Commerce */
