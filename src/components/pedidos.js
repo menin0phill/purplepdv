@@ -1,6 +1,128 @@
 import { getSales, updateSaleStatus } from '../db.js';
 
 export function renderPedidos(container) {
+  function showOrderDetailModal(sale) {
+    let modal = document.getElementById('modal-pdv-order-detail');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-pdv-order-detail';
+      modal.className = 'modal-overlay';
+      document.body.appendChild(modal);
+    }
+    
+    const orderNum = sale.id.split('_')[1] || sale.id;
+    const dateStr = new Date(sale.timestamp || sale.date).toLocaleString('pt-BR');
+    
+    let clientDetailsHTML = '';
+    if (sale.clientId) {
+      const clients = JSON.parse(localStorage.getItem('purple_pdv_clients')) || [];
+      const client = clients.find(c => c.id === sale.clientId);
+      if (client) {
+        clientDetailsHTML = `
+          <p style="margin: 4px 0;"><strong>WhatsApp:</strong> ${client.phone || 'Não informado'}</p>
+          <p style="margin: 4px 0;"><strong>E-mail:</strong> ${client.email || 'Não informado'}</p>
+          <p style="margin: 4px 0;"><strong>CPF/CNPJ:</strong> ${client.cpfCnpj || 'Não informado'}</p>
+        `;
+      }
+    }
+    
+    modal.innerHTML = `
+      <div class="modal-card scale-in" style="background:#120a22; color:#fff; border:2px solid #8b5cf6; border-radius:16px; padding:24px; max-width:600px; width:90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align:left; position:relative; overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; margin-bottom:16px;">
+          <h3 style="margin:0; font-family:'Outfit', sans-serif; font-size:1.4rem; font-weight:700; color:#b794f4;">Detalhes do Pedido #${orderNum}</h3>
+          <button type="button" id="btn-close-order-detail-modal" class="btn-icon" style="background:none; border:none; color:#a0aec0; cursor:pointer; font-size:1.5rem; display:flex; align-items:center; justify-content:center; width:30px; height:30px;"><i data-lucide="x"></i></button>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:16px; font-size:14px; max-height:420px; overflow-y:auto; padding-right:6px;">
+          <!-- Dados do Cliente -->
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:12px; border-radius:8px;">
+            <h4 style="margin:0 0- 8px 0; color:#8b5cf6; font-size:14px; font-weight:700; border-bottom:1px solid rgba(139,92,246,0.2); padding-bottom:4px; margin-bottom:8px;">Dados do Cliente</h4>
+            <p style="margin: 4px 0;"><strong>Nome:</strong> ${sale.clientName || 'Visitante'}</p>
+            ${clientDetailsHTML}
+            <p style="margin: 4px 0;"><strong>Data/Horário:</strong> ${dateStr}</p>
+            <p style="margin: 4px 0;"><strong>Origem:</strong> ${sale.origin === 'e-commerce' ? 'E-Commerce Online' : 'Frente de Caixa (PDV)'}</p>
+          </div>
+          
+          <!-- Endereço para envio -->
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:12px; border-radius:8px;">
+            <h4 style="margin:0 0 8px 0; color:#8b5cf6; font-size:14px; font-weight:700; border-bottom:1px solid rgba(139,92,246,0.2); padding-bottom:4px; margin-bottom:8px;">Endereço de Envio / Retirada</h4>
+            <p style="margin:0; line-height:1.4;">${sale.deliveryAddress || 'Retirada na Loja Física'}</p>
+            ${sale.shippingCarrier ? `<p style="margin:6px 0 0 0; font-size:12px; color:#a0aec0;"><strong>Transportadora:</strong> ${sale.shippingCarrier}</p>` : ''}
+          </div>
+          
+          <!-- Itens do pedido -->
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:12px; border-radius:8px;">
+            <h4 style="margin:0 0 8px 0; color:#8b5cf6; font-size:14px; font-weight:700; border-bottom:1px solid rgba(139,92,246,0.2); padding-bottom:4px; margin-bottom:8px;">Produtos Adquiridos</h4>
+            <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+              <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#a0aec0;">
+                  <th style="padding:6px 0;">Produto</th>
+                  <th style="padding:6px 0; text-align:center; width:60px;">Qtd</th>
+                  <th style="padding:6px 0; text-align:right; width:85px;">Unit.</th>
+                  <th style="padding:6px 0; text-align:right; width:85px;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sale.items.map(item => `
+                  <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:8px 0; color:#cbd5e1;">${item.name}</td>
+                    <td style="padding:8px 0; text-align:center; color:#cbd5e1;">${item.quantity}</td>
+                    <td style="padding:8px 0; text-align:right; color:#cbd5e1;">R$ ${item.price.toFixed(2)}</td>
+                    <td style="padding:8px 0; text-align:right; font-weight:bold; color:#fff;">R$ ${(item.price * item.quantity).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Resumo Financeiro -->
+          <div style="background:rgba(139,92,246,0.05); border:1px solid rgba(139,92,246,0.15); padding:12px; border-radius:8px;">
+            <h4 style="margin:0 0 8px 0; color:#b794f4; font-size:14px; font-weight:700; border-bottom:1px solid rgba(139,92,246,0.2); padding-bottom:4px; margin-bottom:8px;">Resumo de Pagamento</h4>
+            <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
+              <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
+                <span>Subtotal:</span>
+                <span>R$ ${sale.subtotal.toFixed(2)}</span>
+              </div>
+              ${sale.discount > 0 ? `
+                <div style="display:flex; justify-content:space-between; color:#10b981;">
+                  <span>Desconto aplicado:</span>
+                  <span>- R$ ${sale.discount.toFixed(2)}</span>
+                </div>
+              ` : ''}
+              ${sale.shippingFee > 0 ? `
+                <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
+                  <span>Frete cobrado:</span>
+                  <span>+ R$ ${sale.shippingFee.toFixed(2)}</span>
+                </div>
+              ` : ''}
+              <div style="display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.1); padding-top:6px; font-weight:bold; font-size:15px; color:#fff;">
+                <span>Total Geral:</span>
+                <span>R$ ${sale.total.toFixed(2)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:#cbd5e1; margin-top:4px;">
+                <span>Meio de Pagamento:</span>
+                <span style="text-transform:uppercase; font-weight:bold; color:#b794f4;">${sale.paymentMethod}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    modal.classList.add('active');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    const closeModal = () => {
+      modal.classList.remove('active');
+      setTimeout(() => modal.remove(), 200);
+    };
+    
+    document.getElementById('btn-close-order-detail-modal').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
   function loadPedidos() {
     const sales = getSales();
     const ecomSales = sales.filter(s => s.origin === 'e-commerce');
@@ -39,7 +161,7 @@ export function renderPedidos(container) {
               </thead>
               <tbody id="ecom-orders-tbody">
                 ${ecomSales.reverse().map(sale => {
-                  const dateStr = new Date(sale.timestamp).toLocaleString('pt-BR');
+                  const dateStr = new Date(sale.timestamp || sale.date || new Date()).toLocaleString('pt-BR');
                   const orderNum = sale.id.split('_')[1] || sale.id;
                   let statusClass = 'status-prep';
                   if (sale.status === 'Enviado') statusClass = 'status-env';
@@ -48,7 +170,7 @@ export function renderPedidos(container) {
                   
                   return `
                     <tr data-id="${sale.id}">
-                      <td style="font-weight:bold; color:var(--primary);">#${orderNum}</td>
+                      <td class="order-num-link" data-id="${sale.id}" style="font-weight:bold; color:var(--primary); cursor:pointer; text-decoration:underline;" title="Ver Detalhes do Pedido">#${orderNum}</td>
                       <td>${dateStr}</td>
                       <td>
                         <strong>${sale.clientName || 'Visitante'}</strong>
@@ -83,6 +205,18 @@ export function renderPedidos(container) {
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
+    // Event listener para abrir detalhes do pedido ao clicar no número do pedido
+    container.querySelectorAll('.order-num-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const saleId = link.getAttribute('data-id');
+        const sales = getSales();
+        const sale = sales.find(s => s.id === saleId);
+        if (sale) {
+          showOrderDetailModal(sale);
+        }
+      });
+    });
+
     // Event listener para mudança de status
     container.querySelectorAll('.select-order-status').forEach(select => {
       select.addEventListener('change', (e) => {
@@ -91,7 +225,6 @@ export function renderPedidos(container) {
         try {
           updateSaleStatus(saleId, newStatus);
           
-          // Remove classes antigas e adiciona nova baseada no valor selecionado
           select.classList.remove('status-prep', 'status-env', 'status-ent', 'status-can');
           if (newStatus === 'Preparando') select.classList.add('status-prep');
           if (newStatus === 'Enviado') select.classList.add('status-env');

@@ -957,6 +957,7 @@ export async function syncWithSupabase() {
         clientId: s.client_id,
         clientName: s.client_name,
         date: s.date,
+        timestamp: s.date,
         items: s.items || [],
         subtotal: Number(s.subtotal),
         discount: Number(s.discount),
