@@ -259,8 +259,11 @@ export function renderPDV(container) {
 }
 
 function renderProductsGrid(products, category, query) {
+  const lowerQuery = query.toLowerCase().trim();
   const filtered = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(query.toLowerCase()) || p.code.includes(query);
+    const matchesSearch = !lowerQuery || 
+                          p.name.toLowerCase().includes(lowerQuery) || 
+                          (p.code && p.code.includes(lowerQuery));
     const matchesCategory = category === 'Todos' || p.category === category;
     return matchesSearch && matchesCategory;
   });

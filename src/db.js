@@ -866,10 +866,14 @@ export async function syncWithSupabase() {
       }));
       
       const localProds = JSON.parse(localStorage.getItem(KEY_PRODUCTS)) || [];
-      const unsynced = localProds.filter(lp => !lp.synced);
-      const merged = [...mappedProds];
-      unsynced.forEach(lp => {
-        if (!merged.find(sp => sp.id === lp.id)) merged.push(lp);
+      const merged = [...localProds];
+      mappedProds.forEach(sp => {
+        const idx = merged.findIndex(lp => lp.id === sp.id || (lp.code && lp.code === sp.code));
+        if (idx !== -1) {
+          merged[idx] = { ...merged[idx], ...sp, synced: true };
+        } else {
+          merged.push(sp);
+        }
       });
       localStorage.setItem(KEY_PRODUCTS, JSON.stringify(merged));
     }
@@ -896,10 +900,14 @@ export async function syncWithSupabase() {
       }));
       
       const localClients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
-      const unsynced = localClients.filter(lc => !lc.synced);
-      const merged = [...mappedClients];
-      unsynced.forEach(lc => {
-        if (!merged.find(sc => sc.id === lc.id)) merged.push(lc);
+      const merged = [...localClients];
+      mappedClients.forEach(sc => {
+        const idx = merged.findIndex(lc => lc.id === sc.id || (lc.email && lc.email.toLowerCase() === sc.email.toLowerCase()));
+        if (idx !== -1) {
+          merged[idx] = { ...merged[idx], ...sc, synced: true };
+        } else {
+          merged.push(sc);
+        }
       });
       localStorage.setItem(KEY_CLIENTS, JSON.stringify(merged));
     }
@@ -922,10 +930,14 @@ export async function syncWithSupabase() {
         }));
         
         const localOperators = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
-        const unsynced = localOperators.filter(lo => !lo.synced);
-        const merged = [...mappedOperators];
-        unsynced.forEach(lo => {
-          if (!merged.find(so => so.id === lo.id)) merged.push(lo);
+        const merged = [...localOperators];
+        mappedOperators.forEach(so => {
+          const idx = merged.findIndex(lo => lo.id === so.id || lo.email.toLowerCase() === so.email.toLowerCase());
+          if (idx !== -1) {
+            merged[idx] = { ...merged[idx], ...so, synced: true };
+          } else {
+            merged.push(so);
+          }
         });
         localStorage.setItem(KEY_OPERATORS, JSON.stringify(merged));
       }
@@ -961,10 +973,14 @@ export async function syncWithSupabase() {
       }));
       
       const localSales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
-      const unsynced = localSales.filter(ls => !ls.synced);
-      const merged = [...mappedSales];
-      unsynced.forEach(ls => {
-        if (!merged.find(ss => ss.id === ls.id)) merged.push(ls);
+      const merged = [...localSales];
+      mappedSales.forEach(ss => {
+        const idx = merged.findIndex(ls => ls.id === ss.id);
+        if (idx !== -1) {
+          merged[idx] = { ...merged[idx], ...ss, synced: true };
+        } else {
+          merged.push(ss);
+        }
       });
       localStorage.setItem(KEY_SALES, JSON.stringify(merged));
     }
@@ -989,10 +1005,14 @@ export async function syncWithSupabase() {
       }));
       
       const localSessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
-      const unsynced = localSessions.filter(ls => !ls.synced);
-      const merged = [...mappedSessions];
-      unsynced.forEach(ls => {
-        if (!merged.find(ss => ss.id === ls.id)) merged.push(ls);
+      const merged = [...localSessions];
+      mappedSessions.forEach(ss => {
+        const idx = merged.findIndex(ls => ls.id === ss.id);
+        if (idx !== -1) {
+          merged[idx] = { ...merged[idx], ...ss, synced: true };
+        } else {
+          merged.push(ss);
+        }
       });
       localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(merged));
     }
