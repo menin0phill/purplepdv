@@ -1,4 +1,4 @@
-import { getSales, updateSaleStatus } from '../db.js';
+import { getSales, updateSaleStatus, sanitizeHTML } from '../db.js';
 
 export function renderPedidos(container) {
   function showOrderDetailModal(sale) {
@@ -19,9 +19,9 @@ export function renderPedidos(container) {
       const client = clients.find(c => c.id === sale.clientId);
       if (client) {
         clientDetailsHTML = `
-          <p style="margin: 4px 0;"><strong>WhatsApp:</strong> ${client.phone || 'Não informado'}</p>
-          <p style="margin: 4px 0;"><strong>E-mail:</strong> ${client.email || 'Não informado'}</p>
-          <p style="margin: 4px 0;"><strong>CPF/CNPJ:</strong> ${client.cpfCnpj || 'Não informado'}</p>
+          <p style="margin: 4px 0;"><strong>WhatsApp:</strong> ${sanitizeHTML(client.phone || 'Não informado')}</p>
+          <p style="margin: 4px 0;"><strong>E-mail:</strong> ${sanitizeHTML(client.email || 'Não informado')}</p>
+          <p style="margin: 4px 0;"><strong>CPF/CNPJ:</strong> ${sanitizeHTML(client.cpfCnpj || 'Não informado')}</p>
         `;
       }
     }
@@ -37,7 +37,7 @@ export function renderPedidos(container) {
           <!-- Dados do Cliente -->
           <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:12px; border-radius:8px;">
             <h4 style="margin:0 0- 8px 0; color:#8b5cf6; font-size:14px; font-weight:700; border-bottom:1px solid rgba(139,92,246,0.2); padding-bottom:4px; margin-bottom:8px;">Dados do Cliente</h4>
-            <p style="margin: 4px 0;"><strong>Nome:</strong> ${sale.clientName || 'Visitante'}</p>
+            <p style="margin: 4px 0;"><strong>Nome:</strong> ${sanitizeHTML(sale.clientName) || 'Visitante'}</p>
             ${clientDetailsHTML}
             <p style="margin: 4px 0;"><strong>Data/Horário:</strong> ${dateStr}</p>
             <p style="margin: 4px 0;"><strong>Origem:</strong> ${sale.origin === 'e-commerce' ? 'E-Commerce Online' : 'Frente de Caixa (PDV)'}</p>
@@ -46,8 +46,8 @@ export function renderPedidos(container) {
           <!-- Endereço para envio -->
           <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:12px; border-radius:8px;">
             <h4 style="margin:0 0 8px 0; color:#8b5cf6; font-size:14px; font-weight:700; border-bottom:1px solid rgba(139,92,246,0.2); padding-bottom:4px; margin-bottom:8px;">Endereço de Envio / Retirada</h4>
-            <p style="margin:0; line-height:1.4;">${sale.deliveryAddress || 'Retirada na Loja Física'}</p>
-            ${sale.shippingCarrier ? `<p style="margin:6px 0 0 0; font-size:12px; color:#a0aec0;"><strong>Transportadora:</strong> ${sale.shippingCarrier}</p>` : ''}
+            <p style="margin:0; line-height:1.4;">${sanitizeHTML(sale.deliveryAddress) || 'Retirada na Loja Física'}</p>
+            ${sale.shippingCarrier ? `<p style="margin:6px 0 0 0; font-size:12px; color:#a0aec0;"><strong>Transportadora:</strong> ${sanitizeHTML(sale.shippingCarrier)}</p>` : ''}
           </div>
           
           <!-- Itens do pedido -->
@@ -65,7 +65,7 @@ export function renderPedidos(container) {
               <tbody>
                 ${sale.items.map(item => `
                   <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <td style="padding:8px 0; color:#cbd5e1;">${item.name}</td>
+                    <td style="padding:8px 0; color:#cbd5e1;">${sanitizeHTML(item.name)}</td>
                     <td style="padding:8px 0; text-align:center; color:#cbd5e1;">${item.quantity}</td>
                     <td style="padding:8px 0; text-align:right; color:#cbd5e1;">R$ ${item.price.toFixed(2)}</td>
                     <td style="padding:8px 0; text-align:right; font-weight:bold; color:#fff;">R$ ${(item.price * item.quantity).toFixed(2)}</td>
@@ -101,7 +101,7 @@ export function renderPedidos(container) {
               </div>
               <div style="display:flex; justify-content:space-between; font-size:12px; color:#cbd5e1; margin-top:4px;">
                 <span>Meio de Pagamento:</span>
-                <span style="text-transform:uppercase; font-weight:bold; color:#b794f4;">${sale.paymentMethod}</span>
+                <span style="text-transform:uppercase; font-weight:bold; color:#b794f4;">${sanitizeHTML(sale.paymentMethod)}</span>
               </div>
             </div>
           </div>
@@ -173,17 +173,17 @@ export function renderPedidos(container) {
                       <td class="order-num-link" data-id="${sale.id}" style="font-weight:bold; color:var(--primary); cursor:pointer; text-decoration:underline;" title="Ver Detalhes do Pedido">#${orderNum}</td>
                       <td>${dateStr}</td>
                       <td>
-                        <strong>${sale.clientName || 'Visitante'}</strong>
+                        <strong>${sanitizeHTML(sale.clientName) || 'Visitante'}</strong>
                       </td>
                       <td style="max-width:200px; white-space:normal; font-size:12px;">
-                        ${sale.deliveryAddress || 'Retirada na Loja'}
+                        ${sanitizeHTML(sale.deliveryAddress) || 'Retirada na Loja'}
                       </td>
                       <td style="font-size:12px;">
-                        ${sale.items.map(item => `${item.quantity}x ${item.name}`).join('<br>')}
+                        ${sale.items.map(item => `${item.quantity}x ${sanitizeHTML(item.name)}`).join('<br>')}
                       </td>
                       <td style="font-weight:bold;">R$ ${sale.total.toFixed(2)}</td>
                       <td style="text-transform:uppercase; font-size:11px;">
-                        ${sale.paymentMethod}
+                        ${sanitizeHTML(sale.paymentMethod)}
                       </td>
                       <td>
                         <select class="select-order-status input-xs ${statusClass}" data-id="${sale.id}" style="padding:4px 8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-main); font-weight:bold;">

@@ -1,5 +1,5 @@
 import './style.css';
-import { getProducts, addSale, getClients, addClient, getSales, getConfig, syncWithSupabase } from './db.js';
+import { getProducts, addSale, getClients, addClient, getSales, getConfig, syncWithSupabase, sanitizeHTML } from './db.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-ecommerce');
@@ -1531,7 +1531,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loggedClient) {
       return `
         <div class="checkout-login-alert success">
-          <span>Identificado como: <strong>${loggedClient.name}</strong></span>
+          <span>Identificado como: <strong>${sanitizeHTML(loggedClient.name)}</strong></span>
         </div>
       `;
     } else {
@@ -3243,7 +3243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <header style="background:white; border-bottom:1px solid #eaeaea; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
           <a href="#home" style="cursor:pointer;"><img src="/logo-purple-text.png" alt="Purple Logo" style="height:40px;"></a>
           <div style="display:flex; gap:15px; align-items:center;">
-            <span style="font-size:13px; color:#555;">Logado como <strong>${loggedClient.name}</strong></span>
+            <span style="font-size:13px; color:#555;">Logado como <strong>${sanitizeHTML(loggedClient.name)}</strong></span>
             <a href="#home" style="color:#6a3f97; font-weight:600; text-decoration:none; font-size:14px; display:flex; align-items:center; gap:6px;"><i data-lucide="arrow-left" style="width:16px; height:16px;"></i> Ir para a Loja</a>
           </div>
         </header>
@@ -3251,7 +3251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="account-layout">
           <!-- Sidebar Menu -->
           <div class="account-sidebar-menu">
-            <h3>Olá, ${loggedClient.name.split(' ')[0]}!</h3>
+            <h3>Olá, ${sanitizeHTML(loggedClient.name.split(' ')[0])}!</h3>
             <button class="account-menu-item ${activeAccountTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
               <i data-lucide="home" style="width:16px; height:16px;"></i> Minha Conta
             </button>
@@ -3308,7 +3308,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Address box -->
           <div style="border:1px solid #eaeaea; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:8px;">
             <h4 style="font-size:14px; font-weight:700; color:#333; margin:0; display:flex; align-items:center; gap:6px;"><i data-lucide="map-pin" style="width:16px; height:16px; color:#8b5cf6;"></i> Endereço Principal</h4>
-            <p style="font-size:13px; color:#555; margin:0; min-height:40px;">${loggedClient.address || 'Você não tem endereços cadastrados.'}</p>
+            <p style="font-size:13px; color:#555; margin:0; min-height:40px;">${sanitizeHTML(loggedClient.address) || 'Você não tem endereços cadastrados.'}</p>
             <button id="btn-dash-edit-address" class="btn btn-secondary btn-sm" style="border:1px solid #8b5cf6; color:#8b5cf6; padding:6px; border-radius:6px; cursor:pointer; background:transparent; width:fit-content; font-size:11px; font-weight:bold; margin-top:8px;">Editar Endereço</button>
           </div>
 
@@ -3376,11 +3376,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="font-size:11px; text-transform:uppercase; color:#9ca3af; font-weight:600;">Código do Pedido</span>
                     <br><strong style="font-size:14px; color:#6a3f97; font-family:monospace;">#${sale.id.split('_')[1] || sale.id}</strong>
                   </div>
-                  <span style="background:${statusBadgeColor}; color:white; font-size:11px; font-weight:bold; padding:4px 10px; border-radius:12px;">${sale.status || 'Preparando'}</span>
+                  <span style="background:${statusBadgeColor}; color:white; font-size:11px; font-weight:bold; padding:4px 10px; border-radius:12px;">${sanitizeHTML(sale.status) || 'Preparando'}</span>
                 </div>
 
                 <div style="font-size:13px; color:#555; background:#fcfcfc; padding:10px; border-radius:6px; border:1px solid #f3f4f6;">
-                  ${sale.items.map(i => `• ${i.quantity}x ${i.name}`).join('<br>')}
+                  ${sale.items.map(i => `• ${i.quantity}x ${sanitizeHTML(i.name)}`).join('<br>')}
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-top:1px solid #f3f4f6; padding-top:10px; font-size:12px;">

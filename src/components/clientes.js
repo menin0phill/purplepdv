@@ -1,4 +1,4 @@
-import { getClients, addClient, updateClient, deleteClient, payClientDebt, getSales } from '../db.js';
+import { getClients, addClient, updateClient, deleteClient, payClientDebt, getSales, sanitizeHTML } from '../db.js';
 
 export function renderClientes(container) {
   let clients = getClients();
@@ -185,11 +185,11 @@ function renderClientsTableRows(clients) {
 
     return `
       <tr id="row-${c.id}">
-        <td><strong>${c.name}</strong></td>
+        <td><strong>${sanitizeHTML(c.name)}</strong></td>
         <td>
           <div class="contact-cell">
-            <span class="text-sm">${c.phone}</span>
-            ${c.email ? `<br><span class="text-xs text-muted">${c.email}</span>` : ''}
+            <span class="text-sm">${sanitizeHTML(c.phone)}</span>
+            ${c.email ? `<br><span class="text-xs text-muted">${sanitizeHTML(c.email)}</span>` : ''}
             ${c.birthday ? `<br><span class="text-xs text-purple font-bold"><i data-lucide="cake" class="icon-inline" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i> Aniv: ${formatDate(c.birthday)}</span>` : ''}
           </div>
         </td>
@@ -358,7 +358,7 @@ function setupTableActions(container) {
 
       if (client) {
         document.getElementById('quit-client-id').value = client.id;
-        document.getElementById('quit-client-desc').innerHTML = `Cliente: <strong>${client.name}</strong>. Saldo Devedor atual: <strong class="text-danger">R$ ${client.debt.toFixed(2)}</strong>.`;
+        document.getElementById('quit-client-desc').innerHTML = `Cliente: <strong>${sanitizeHTML(client.name)}</strong>. Saldo Devedor atual: <strong class="text-danger">R$ ${client.debt.toFixed(2)}</strong>.`;
         document.getElementById('quit-amount').value = client.debt.toFixed(2);
         modalQuitacao.classList.add('active');
       }

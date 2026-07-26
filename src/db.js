@@ -10,6 +10,18 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
+export function sanitizeHTML(str) {
+  if (str === null || str === undefined) return '';
+  if (typeof str !== 'string') return String(str);
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
+
 // Banco de dados simulado em LocalStorage para o PDV Purple
 
 const KEY_PRODUCTS = 'purple_pdv_products';
