@@ -200,57 +200,96 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
 
-        <!-- Modal de Login / Cadastro de Cliente -->
+        <!-- Modal de Login / Cadastro de Cliente (Interface Clara Baseada na Imagem) -->
         <div id="modal-auth" class="modal-overlay">
-          <div class="modal-card max-w-md">
-            <div class="auth-tabs">
-              <button id="tab-login" class="auth-tab-btn active">Entrar</button>
-              <button id="tab-register" class="auth-tab-btn">Criar Conta</button>
+          <div class="auth-light-card scale-in">
+            <!-- Badge de Avatar Redondo Sobreposto -->
+            <div class="auth-avatar-badge">
+              <i data-lucide="user"></i>
             </div>
-
-            <!-- Formulário de Login -->
-            <form id="form-ecom-login" class="form-group margin-top-md">
-              <label for="login-email">E-mail</label>
-              <input type="email" id="login-email" placeholder="ana.silva@email.com" required>
-
-              <label for="login-password" class="margin-top-sm">Senha</label>
-              <input type="password" id="login-password" placeholder="Sua senha (ex: 123456)" required>
-
-              <button type="submit" class="btn btn-primary btn-full margin-top-md">
-                Entrar na Conta
-              </button>
-            </form>
-
-            <!-- Formulário de Cadastro -->
-            <form id="form-ecom-register" class="form-group margin-top-md hidden">
-              <label for="reg-name">Nome Completo</label>
-              <input type="text" id="reg-name" placeholder="Juliana Santos" required>
-
-              <label for="reg-phone" class="margin-top-xs">Telefone / WhatsApp</label>
-              <input type="text" id="reg-phone" placeholder="(11) 98888-7777" required>
-
-              <label for="reg-email" class="margin-top-xs">E-mail</label>
-              <input type="email" id="reg-email" placeholder="juliana@email.com" required>
-
-              <label for="reg-cpfcnpj" class="margin-top-xs">CPF ou CNPJ</label>
-              <input type="text" id="reg-cpfcnpj" placeholder="000.000.000-00" required>
-
-              <label for="reg-birthday" class="margin-top-xs">Data de Nascimento (Aniversário)</label>
-              <input type="text" id="reg-birthday" placeholder="DD/MM/AAAA" maxlength="10" required>
-
-              <label for="reg-password" class="margin-top-xs">Criar Senha</label>
-              <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
-
-              <label for="reg-address" class="margin-top-xs">Endereço de Entrega Padrão</label>
-              <input type="text" id="reg-address" placeholder="Av. Paulista, 1000 - Apto 51" required>
-
-              <button type="submit" class="btn btn-primary btn-full margin-top-md">
-                Criar Conta & Fazer Login
-              </button>
-            </form>
-
-            <div class="modal-actions margin-top-md">
-              <button type="button" id="btn-cancel-auth" class="btn btn-secondary">Fechar</button>
+            
+            <!-- Botão Fechar -->
+            <button type="button" id="btn-cancel-auth" class="auth-close-btn">&times;</button>
+            
+            <!-- Container de Login -->
+            <div id="auth-login-container">
+              <h3 class="auth-card-title">Bem vindo de volta</h3>
+              
+              <form id="form-ecom-login" class="auth-light-form">
+                <div class="auth-field-group">
+                  <label for="login-email">E-mail *</label>
+                  <input type="email" id="login-email" placeholder="Digite seu e-mail" required>
+                </div>
+                
+                <div class="auth-field-group">
+                  <label for="login-password">Senha *</label>
+                  <input type="password" id="login-password" placeholder="Digite sua senha" required>
+                </div>
+                
+                <div class="auth-remember-row">
+                  <label class="auth-checkbox-label">
+                    <input type="checkbox" id="login-remember">
+                    <span>Lembrar-me</span>
+                  </label>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">Conectar-se</button>
+              </form>
+              
+              <div class="auth-footer-links">
+                <a href="#" id="link-forgot-password" class="auth-footer-link">Esqueceu a senha?</a>
+                <a href="#" id="link-go-to-register" class="auth-footer-link">Não tem uma conta? Crie uma aqui</a>
+              </div>
+            </div>
+            
+            <!-- Container de Cadastro -->
+            <div id="auth-register-container" class="hidden">
+              <h3 class="auth-card-title">Criar nova conta</h3>
+              
+              <form id="form-ecom-register" class="auth-light-form">
+                <div class="auth-field-group">
+                  <label for="reg-name">Nome Completo *</label>
+                  <input type="text" id="reg-name" placeholder="Ex: Juliana Santos" required>
+                </div>
+                
+                <div class="auth-field-group">
+                  <label for="reg-phone">Telefone / WhatsApp *</label>
+                  <input type="text" id="reg-phone" placeholder="Ex: (11) 98888-7777" required>
+                </div>
+                
+                <div class="auth-field-group">
+                  <label for="reg-email">E-mail *</label>
+                  <input type="email" id="reg-email" placeholder="Ex: juliana@email.com" required>
+                </div>
+                
+                <div class="auth-field-row">
+                  <div class="auth-field-group flex-1">
+                    <label for="reg-cpfcnpj">CPF ou CNPJ *</label>
+                    <input type="text" id="reg-cpfcnpj" placeholder="000.000.000-00" required>
+                  </div>
+                  
+                  <div class="auth-field-group flex-1">
+                    <label for="reg-birthday">Nascimento *</label>
+                    <input type="text" id="reg-birthday" placeholder="DD/MM/AAAA" maxlength="10" required>
+                  </div>
+                </div>
+                
+                <div class="auth-field-group">
+                  <label for="reg-password">Criar Senha *</label>
+                  <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                </div>
+                
+                <div class="auth-field-group">
+                  <label for="reg-address">Endereço de Entrega Padrão *</label>
+                  <input type="text" id="reg-address" placeholder="Ex: Av. Paulista, 1000 - Apto 51" required>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">Criar Conta & Entrar</button>
+              </form>
+              
+              <div class="auth-footer-links">
+                <a href="#" id="link-go-to-login" class="auth-footer-link">Já tem uma conta? Conecte-se aqui</a>
+              </div>
             </div>
           </div>
         </div>
@@ -574,26 +613,65 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Tabs de Auth
+    // Alternância de Auth (Nova Interface Clara)
     const tabLogin = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
     const formLogin = document.getElementById('form-ecom-login');
     const formRegister = document.getElementById('form-ecom-register');
+    
+    const loginContainer = document.getElementById('auth-login-container');
+    const registerContainer = document.getElementById('auth-register-container');
+    
+    const linkGoToRegister = document.getElementById('link-go-to-register');
+    const linkGoToLogin = document.getElementById('link-go-to-login');
 
-    tabLogin.addEventListener('click', () => showAuthTab('login'));
-    tabRegister.addEventListener('click', () => showAuthTab('register'));
+    if (tabLogin) tabLogin.addEventListener('click', () => showAuthTab('login'));
+    if (tabRegister) tabRegister.addEventListener('click', () => showAuthTab('register'));
+    
+    if (linkGoToRegister) {
+      linkGoToRegister.addEventListener('click', (e) => {
+        e.preventDefault();
+        showAuthTab('register');
+      });
+    }
+    
+    if (linkGoToLogin) {
+      linkGoToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        showAuthTab('login');
+      });
+    }
 
     function showAuthTab(tab) {
       if (tab === 'login') {
-        tabLogin.classList.add('active');
-        tabRegister.classList.remove('active');
-        formLogin.classList.remove('hidden');
-        formRegister.classList.add('hidden');
+        if (tabLogin) tabLogin.classList.add('active');
+        if (tabRegister) tabRegister.classList.remove('active');
+        
+        if (loginContainer) loginContainer.classList.remove('hidden');
+        if (registerContainer) registerContainer.classList.add('hidden');
+        
+        if (formLogin) formLogin.classList.remove('hidden');
+        if (formRegister) formRegister.classList.add('hidden');
       } else {
-        tabLogin.classList.remove('active');
-        tabRegister.classList.add('active');
-        formLogin.classList.add('hidden');
-        formRegister.classList.remove('hidden');
+        if (tabLogin) tabLogin.classList.remove('active');
+        if (tabRegister) tabRegister.classList.add('active');
+        
+        if (loginContainer) loginContainer.classList.add('hidden');
+        if (registerContainer) registerContainer.classList.remove('hidden');
+        
+        if (formLogin) formLogin.classList.add('hidden');
+        if (formRegister) formRegister.classList.remove('hidden');
+      }
+      
+      // Altera o ícone do badge de avatar dinamicamente com base na tela
+      const badgeIcon = document.querySelector('.auth-avatar-badge');
+      if (badgeIcon) {
+        if (tab === 'login') {
+          badgeIcon.innerHTML = `<i data-lucide="user"></i>`;
+        } else {
+          badgeIcon.innerHTML = `<i data-lucide="user-plus"></i>`;
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
       }
     }
 

@@ -3600,4 +3600,209 @@ select.select-order-status.status-can {
   }
 }
 
+/* ==========================================================================
+   E-COMMERCE LIGHT AUTH CARD (BEM-VINDO DE VOLTA)
+   ========================================================================== */
+
+#modal-auth.modal-overlay {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: rgba(15, 10, 25, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.3s ease !important;
+}
+
+.auth-light-card {
+  background: #ffffff !important;
+  color: #1e1b4b !important;
+  border-radius: 28px !important;
+  padding: 40px 32px 32px 32px !important;
+  width: 90% !important;
+  max-width: 420px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+  position: relative !important;
+  text-align: center !important;
+  font-family: 'Outfit', sans-serif !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.auth-avatar-badge {
+  position: absolute !important;
+  top: -45px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 90px !important;
+  height: 90px !important;
+  background: #ffffff !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 8px 24px rgba(106, 63, 151, 0.15) !important;
+  border: 4px solid #ffffff !important;
+  box-sizing: border-box !important;
+  z-index: 10 !important;
+}
+
+.auth-avatar-badge i, .auth-avatar-badge svg {
+  width: 44px !important;
+  height: 44px !important;
+  color: white !important;
+  background: #6a3f97 !important;
+  padding: 12px !important;
+  border-radius: 50% !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+.auth-close-btn {
+  position: absolute !important;
+  top: 15px !important;
+  right: 20px !important;
+  background: none !important;
+  border: none !important;
+  font-size: 28px !important;
+  color: #9ca3af !important;
+  cursor: pointer !important;
+  transition: color 0.2s ease !important;
+  line-height: 1 !important;
+  z-index: 12 !important;
+}
+.auth-close-btn:hover {
+  color: #6a3f97 !important;
+}
+
+.auth-card-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #1e1b4b !important;
+  margin: 16px 0 24px 0 !important;
+  font-family: 'Outfit', sans-serif !important;
+}
+
+.auth-light-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  text-align: left !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  padding-right: 4px !important;
+}
+
+.auth-field-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.auth-field-row {
+  display: flex !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+.auth-field-row .flex-1 {
+  flex: 1 !important;
+}
+
+.auth-field-group label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #4b5563 !important;
+}
+
+.auth-field-group input {
+  background-color: #f3f4f6 !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  color: #1f2937 !important;
+  font-family: 'Outfit', sans-serif !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.auth-field-group input::placeholder {
+  color: #9ca3af !important;
+}
+
+.auth-field-group input:focus {
+  background-color: #ffffff !important;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+}
+
+.auth-remember-row {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  margin-top: 4px !important;
+}
+
+.auth-checkbox-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  color: #6b7280 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.auth-checkbox-label input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  accent-color: #6a3f97 !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+}
+
+.auth-submit-btn {
+  background: #6a3f97 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-align: center !important;
+  width: 100% !important;
+  font-family: 'Outfit', sans-serif !important;
+  box-shadow: 0 4px 12px rgba(106, 63, 151, 0.2) !important;
+}
+
+.auth-submit-btn:hover {
+  background: #5b328a !important;
+  box-shadow: 0 6px 16px rgba(106, 63, 151, 0.3) !important;
+}
+
+.auth-footer-links {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-top: 24px !important;
+  align-items: center !important;
+}
+
+.auth-footer-link {
+  font-size: 13px !important;
+  color: #9ca3af !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.auth-footer-link:hover {
+  color: #6a3f97 !important;
+  text-decoration: underline !important;
+}
+
+
 
