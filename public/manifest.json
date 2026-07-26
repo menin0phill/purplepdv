@@ -1,0 +1,16 @@
+{
+  "name": "Purple PDV",
+  "short_name": "Purple PDV",
+  "description": "Frente de Caixa e Gestão Premium - Purple",
+  "start_url": "/pdv.html",
+  "display": "standalone",
+  "background_color": "#130a22",
+  "theme_color": "#6a3f97",
+  "icons": [
+    {
+      "src": "/logo-purple.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
