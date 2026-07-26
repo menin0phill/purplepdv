@@ -1536,10 +1536,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div style="display:flex; gap:6px; align-items:center;">
             ${isOut ? `
-              <button class="btn btn-secondary btn-sm" disabled style="padding: 4px 8px; font-size:10px; background:rgba(255,255,255,0.1) !important; color:rgba(255,255,255,0.4) !important;">Esgotado</button>
+              <button disabled style="padding: 6px 12px; font-size: 10px; font-weight: 700; border-radius: 20px; border: none; background: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.4) !important; font-family: 'Outfit', sans-serif; cursor: not-allowed;">Esgotado</button>
             ` : `
-              <button class="btn btn-primary btn-sm btn-fav-add-to-cart" data-id="${p.id}" style="background:white; color:#6a3f97; border:none; padding:4px 8px; border-radius:15px; font-size:10px; font-weight:bold; cursor:pointer; font-family:'Outfit',sans-serif; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                Comprar
+              <button class="btn-fav-add-to-cart" data-id="${p.id}" style="background: #8b5cf6 !important; color: white !important; border: none; padding: 6px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap; transition: opacity 0.2s;">
+                Adicionar
               </button>
             `}
             <button class="btn-icon btn-fav-remove" data-id="${p.id}" title="Remover dos favoritos" style="color:#ffffff; background:none; border:none; cursor:pointer; padding:4px; opacity:0.75; display:flex; align-items:center; justify-content:center;">
