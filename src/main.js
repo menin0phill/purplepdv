@@ -47,7 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button type="button" id="btn-toggle-login-password" class="btn-toggle-login-password">
                       <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                     </button>
-                  </                <!-- Widget Real do Cloudflare Turnstile -->
+                  </div>
+                </div>
+
+                <!-- Widget Real do Cloudflare Turnstile -->
                 <div style="margin: 15px 0 25px 0; display: flex; justify-content: center; min-height: 65px;">
                   <div id="cf-turnstile-widget"></div>
                 </div>
@@ -95,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.turnstile) {
       try {
         window.turnstile.render('#cf-turnstile-widget', {
-          sitekey: '1x00000000000000000000AA', // Chave de teste universal oficial que funciona em qualquer domínio/localhost
+          sitekey: import.meta.env.VITE_TURNSTILE_SITEKEY || '1x00000000000000000000AA', 
           theme: 'dark',
           callback: function(token) {
             isCaptchaVerified = true;
