@@ -186,6 +186,31 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeDashboard();
       } else {
         showIncorrectCredentialsPopup();
+        // Reseta o captcha no login incorreto para prevenir ataques de força bruta
+        if (window.turnstile) {
+          try {
+            window.turnstile.reset('#cf-turnstile-widget');
+          } catch (e) {
+            console.error("Erro ao resetar Turnstile:", e);
+          }
+          isCaptchaVerified = false;
+          if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.style.opacity = '0.5';
+            btnSubmit.style.cursor = 'not-allowed';
+          }
+        } else {
+          const fallbackCheckbox = document.getElementById('fallback-captcha');
+          if (fallbackCheckbox) {
+            fallbackCheckbox.checked = false;
+            isCaptchaVerified = false;
+            if (btnSubmit) {
+              btnSubmit.disabled = true;
+              btnSubmit.style.opacity = '0.5';
+              btnSubmit.style.cursor = 'not-allowed';
+            }
+          }
+        }
       }
     });
   }
