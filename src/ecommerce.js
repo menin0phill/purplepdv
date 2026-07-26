@@ -611,7 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('purple_ecom_logged_in_client', JSON.stringify(client));
         showNotification(`Bem-vinda, ${client.name}!`, 'success');
         authModal.classList.remove('active');
-        renderLayout();
+        router();
       } else {
         showNotification('E-mail ou senha incorretos!', 'error');
       }
@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sessionStorage.setItem('purple_ecom_logged_in_client', JSON.stringify(newClient));
       showNotification('Conta criada com sucesso!', 'success');
       authModal.classList.remove('active');
-      renderLayout();
+      router();
     });
 
     // Eventos do carrossel
@@ -735,10 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Eventos de abertura e fechamento da área do cliente
     document.addEventListener('click', (e) => {
       if (e.target.closest('#ecom-profile-trigger')) {
-        openEcomProfile();
-      }
-      if (e.target.closest('#btn-close-ecom-profile')) {
-        document.getElementById('modal-ecom-profile').classList.remove('active');
+        window.location.hash = '#minha-conta';
       }
     });
   }
@@ -1308,191 +1305,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const discountValue = subtotal * discountPercentage;
     const finalTotal = subtotal - discountValue + selectedShippingPrice;
-
     drawerFooter.innerHTML = `
-      <div class="cart-summary border-top-purple pad-top-sm">
-        ${discountPercentage > 0 || selectedShippingPrice > 0 ? `
-          <div class="summary-row">
+      <div class="cart-summary border-top-purple pad-top-sm" style="margin-top: 15px;">
+        ${discountPercentage > 0 ? `
+          <div class="summary-row" style="display:flex; justify-content:space-between; margin-bottom: 6px;">
             <span>Subtotal</span>
             <span>R$ ${subtotal.toFixed(2)}</span>
           </div>
-        ` : ''}
-        ${discountPercentage > 0 ? `
-          <div class="summary-row text-success font-bold" style="display:flex; justify-content:space-between;">
-            <span>Desconto Aniversário (10%)</span>
+          <div class="summary-row text-success font-bold" style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+            <span>Desconto Cupom (10%)</span>
             <span>- R$ ${discountValue.toFixed(2)}</span>
           </div>
         ` : ''}
-        ${selectedShippingPrice > 0 ? `
-          <div class="summary-row text-purple font-bold" style="display:flex; justify-content:space-between;">
-            <span>Envio (${selectedShippingCarrier})</span>
-            <span>+ R$ ${selectedShippingPrice.toFixed(2)}</span>
-          </div>
-        ` : ''}
-        <div class="summary-row font-bold">
+        <div class="summary-row font-bold" style="display:flex; justify-content:space-between; font-size: 16px; color: white;">
           <span>Total Geral</span>
-          <span>R$ ${finalTotal.toFixed(2)}</span>
+          <span>R$ ${(subtotal - discountValue).toFixed(2)}</span>
         </div>
       </div>
 
       <!-- Campo de Cupom de Desconto -->
-      <div class="coupon-area margin-top-sm" style="background:rgba(139,92,246,0.03); border:1px dashed var(--border-color); padding:10px; border-radius:var(--radius-sm);">
-        <label class="text-xs text-muted font-bold block">Cupom de Desconto</label>
+      <div class="coupon-area margin-top-sm" style="background:rgba(255,255,255,0.03); border:1px dashed var(--border-color); padding:10px; border-radius:8px; margin-top: 15px;">
+        <label class="text-xs text-muted font-bold block" style="display:block; font-size:11px; color:#cbd5e1; text-align:left;">Cupom de Desconto</label>
         <div class="flex-row" style="display:flex; gap:8px; align-items:center; margin-top:4px;">
-          <input type="text" id="ecom-coupon-input" placeholder="PARABENSPURPLE" class="input-sm" style="flex-grow:1; height:34px;" value="${discountPercentage > 0 ? 'PARABENSPURPLE' : ''}">
-          <button type="button" id="btn-ecom-apply-coupon" class="btn btn-secondary btn-sm" style="height:34px; margin-top:0; padding:0 12px;">Aplicar</button>
+          <input type="text" id="ecom-coupon-input" placeholder="PARABENSPURPLE" class="input-sm" style="flex-grow:1; height:34px; margin:0; background:rgba(255,255,255,0.08); border:1px solid var(--border-color); color:white; border-radius:6px; padding:0 8px;" value="${discountPercentage > 0 ? 'PARABENSPURPLE' : ''}">
+          <button type="button" id="btn-ecom-apply-coupon" class="btn btn-secondary btn-sm" style="height:34px; margin-top:0; padding:0 12px; border-radius:6px; cursor:pointer;">Aplicar</button>
         </div>
-        <div id="ecom-coupon-message" class="text-xs margin-top-xs" style="text-align:left;">
-          ${discountPercentage > 0 ? '<span class="text-success font-bold">Cupom PARABENSPURPLE aplicado: 10% de desconto!</span>' : ''}
+        <div id="ecom-coupon-message" class="text-xs margin-top-xs" style="text-align:left; margin-top:4px;">
+          ${discountPercentage > 0 ? '<span style="color:#10b981; font-weight:bold; font-size:11px;">Cupom PARABENSPURPLE aplicado: 10% de desconto!</span>' : ''}
         </div>
       </div>
 
-      <!-- Opções de Entrega / Retirada -->
-      <div class="delivery-mode-selector margin-top-sm" style="display:flex; gap:10px;">
-        <label style="flex:1; cursor:pointer; margin:0;">
-          <input type="radio" name="delivery_mode" value="delivery" ${selectedDeliveryMode === 'delivery' ? 'checked' : ''} style="display:none;">
-          <div class="delivery-mode-card ${selectedDeliveryMode === 'delivery' ? 'active' : ''}" style="border:1.5px solid ${selectedDeliveryMode === 'delivery' ? 'var(--purple-accent)' : 'var(--border-color)'}; background: ${selectedDeliveryMode === 'delivery' ? 'rgba(139,92,246,0.08)' : 'rgba(15,10,30,0.6)'}; padding:8px 6px; border-radius:var(--radius-sm); text-align:center; transition:all 0.2s;">
-            <i data-lucide="truck" style="width:16px; height:16px; stroke: ${selectedDeliveryMode === 'delivery' ? 'var(--purple-accent)' : 'var(--text-muted)'}; display:inline-block; vertical-align:middle;"></i>
-            <span style="font-size:12px; font-weight:bold; margin-left:4px; vertical-align:middle; color: ${selectedDeliveryMode === 'delivery' ? 'var(--text-main)' : 'var(--text-muted)'};">Receber em Casa</span>
-          </div>
-        </label>
-        <label style="flex:1; cursor:pointer; margin:0;">
-          <input type="radio" name="delivery_mode" value="pickup" ${selectedDeliveryMode === 'pickup' ? 'checked' : ''} style="display:none;">
-          <div class="delivery-mode-card ${selectedDeliveryMode === 'pickup' ? 'active' : ''}" style="border:1.5px solid ${selectedDeliveryMode === 'pickup' ? 'var(--purple-accent)' : 'var(--border-color)'}; background: ${selectedDeliveryMode === 'pickup' ? 'rgba(139,92,246,0.08)' : 'rgba(15,10,30,0.6)'}; padding:8px 6px; border-radius:var(--radius-sm); text-align:center; transition:all 0.2s;">
-            <i data-lucide="store" style="width:16px; height:16px; stroke: ${selectedDeliveryMode === 'pickup' ? 'var(--purple-accent)' : 'var(--text-muted)'}; display:inline-block; vertical-align:middle;"></i>
-            <span style="font-size:12px; font-weight:bold; margin-left:4px; vertical-align:middle; color: ${selectedDeliveryMode === 'pickup' ? 'var(--text-main)' : 'var(--text-muted)'};">Retirar na Loja</span>
-          </div>
-        </label>
-      </div>
-
-      ${selectedDeliveryMode === 'delivery' ? `
-        <!-- Cálculo de Envio (Melhor Envio Style) -->
-        <div class="shipping-calc-box margin-top-sm" style="background:rgba(139,92,246,0.03); border:1px solid var(--border-color); padding:12px; border-radius:var(--radius-sm); text-align:left;">
-          <label class="text-xs text-muted font-bold block">Calcular Envio (Melhor Envio)</label>
-          <div style="display:flex; gap:8px; align-items:center; margin-top:4px;">
-            <input type="text" id="ecom-cep-input" placeholder="00000-000" class="input-sm" style="flex-grow:1; height:34px; margin:0;" maxlength="9" value="${calculatedCep}">
-            <button type="button" id="btn-ecom-calc-shipping" class="btn btn-secondary btn-sm" style="height:34px; margin-top:0; padding:0 12px;">Calcular</button>
-          </div>
-          <div id="ecom-shipping-options" class="margin-top-xs" style="display:${calculatedCep ? 'flex' : 'none'}; flex-direction:column; gap:6px;">
-            <div class="shipping-carrier-option" style="display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(139,92,246,0.05); padding:4px 0;">
-              <input type="radio" name="shipping_carrier" id="ship-sedex" value="18.90" data-carrier="Correios SEDEX" ${selectedShippingCarrier === 'Correios SEDEX' ? 'checked' : ''} style="cursor:pointer;">
-              <label for="ship-sedex" style="font-size:12px; display:flex; justify-content:space-between; flex-grow:1; cursor:pointer; margin:0;">
-                <span>Correios SEDEX (2 dias)</span>
-                <strong>R$ 18,90</strong>
-              </label>
-            </div>
-            <div class="shipping-carrier-option" style="display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(139,92,246,0.05); padding:4px 0;">
-              <input type="radio" name="shipping_carrier" id="ship-pac" value="11.50" data-carrier="Correios PAC" ${selectedShippingCarrier === 'Correios PAC' ? 'checked' : ''} style="cursor:pointer;">
-              <label for="ship-pac" style="font-size:12px; display:flex; justify-content:space-between; flex-grow:1; cursor:pointer; margin:0;">
-                <span>Correios PAC (5 dias)</span>
-                <strong>R$ 11,50</strong>
-              </label>
-            </div>
-            <div class="shipping-carrier-option" style="display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(139,92,246,0.05); padding:4px 0;">
-              <input type="radio" name="shipping_carrier" id="ship-jadlog" value="14.20" data-carrier="Jadlog Package" ${selectedShippingCarrier === 'Jadlog Package' ? 'checked' : ''} style="cursor:pointer;">
-              <label for="ship-jadlog" style="font-size:12px; display:flex; justify-content:space-between; flex-grow:1; cursor:pointer; margin:0;">
-                <span>Jadlog Package (4 dias)</span>
-                <strong>R$ 14,20</strong>
-              </label>
-            </div>
-            <!-- OPÇÃO MOTOBOY -->
-            <div class="shipping-carrier-option" style="display:flex; align-items:center; gap:8px; padding:4px 0;">
-              <input type="radio" name="shipping_carrier" id="ship-motoboy" value="0.00" data-carrier="Motoboy (Cálculo via WhatsApp)" ${selectedShippingCarrier === 'Motoboy (Cálculo via WhatsApp)' ? 'checked' : ''} style="cursor:pointer;">
-              <label for="ship-motoboy" style="font-size:12px; display:flex; justify-content:space-between; flex-grow:1; cursor:pointer; margin:0;">
-                <span>Motoboy (Envio a combinar)</span>
-                <strong class="text-purple">Cálculo WhatsApp</strong>
-              </label>
-            </div>
-          </div>
-        </div>
-      ` : `
-        <!-- Informativo de Retirada -->
-        <div class="pickup-info-box margin-top-sm" style="background:rgba(139,92,246,0.03); border:1px solid var(--purple-accent); padding:12px; border-radius:var(--radius-sm); text-align:left;">
-          <h5 style="margin:0 0 4px 0; color:var(--purple-accent);"><i data-lucide="store" class="icon-inline" style="width:14px; height:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> Retirada na Loja Física</h5>
-          <p class="text-sm" style="margin:0; line-height:1.4; color:var(--text-muted);">
-            Rua Jequirituba, 600 - Jardim Colonial - São Paulo/SP - CEP: 04821-035<br>
-            <strong>Custo de Frete: R$ 0,00 (Gratuito)</strong>
-          </p>
-        </div>
-      `}
-
-      <div class="checkout-client-banner margin-top-sm">
-        ${renderCheckoutClientStatusHTML()}
-      </div>
-
-      <form id="ecom-form-checkout" class="form-group margin-top-md text-left" style="display:flex; flex-direction:column; gap:16px; width:100%; padding-bottom:30px;">
-        <h4 style="margin: 0 0 5px 0; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; font-family:'Outfit', sans-serif;">Dados de Entrega & Pagamento</h4>
-        
-        ${loggedClient ? `
-          <div class="logged-checkout-info" style="display:flex; flex-direction:column; gap:8px; background: rgba(255,255,255,0.05); padding:12px; border-radius:8px;">
-            <p style="margin:0;"><strong>Nome:</strong> ${loggedClient.name}</p>
-            <p style="margin:0;"><strong>WhatsApp:</strong> ${loggedClient.phone}</p>
-            <p style="margin:0;"><strong>E-mail:</strong> ${loggedClient.email}</p>
-            ${selectedDeliveryMode === 'delivery' ? `
-              <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
-                <label for="ecom-address" style="font-weight:bold; font-size:12px;">Endereço de Entrega</label>
-                <input type="text" id="ecom-address" value="${loggedClient.address || ''}" placeholder="Av. Paulista, 1000 - Apto 51" class="input-sm" required style="width:100%;">
-              </div>
-            ` : `
-              <p style="margin:8px 0 0 0; font-size:12px; color:#b794f4;"><strong>Entrega:</strong> Retirada na Loja Física</p>
-              <input type="hidden" id="ecom-address" value="Retirada na Loja Física">
-            `}
-          </div>
-        ` : `
-          <div id="ecom-guest-fields" style="display:flex; flex-direction:column; gap:14px; width:100%;">
-            <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-              <label for="ecom-name" style="font-size:13px; font-weight:500;">Nome Completo</label>
-              <input type="text" id="ecom-name" placeholder="Juliana Santos" class="input-sm" required style="width:100%; margin:0;">
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-              <label for="ecom-email" style="font-size:13px; font-weight:500;">E-mail</label>
-              <input type="email" id="ecom-email" placeholder="juliana@email.com" class="input-sm" required style="width:100%; margin:0;">
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-              <label for="ecom-phone" style="font-size:13px; font-weight:500;">WhatsApp / Celular</label>
-              <input type="text" id="ecom-phone" placeholder="(11) 98888-7777" class="input-sm" required style="width:100%; margin:0;">
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-              <label for="ecom-cpfcnpj" style="font-size:13px; font-weight:500;">CPF ou CNPJ (Obrigatório para Emissão)</label>
-              <input type="text" id="ecom-cpfcnpj" placeholder="000.000.000-00" class="input-sm" required style="width:100%; margin:0;">
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-              <label for="ecom-birthday" style="font-size:13px; font-weight:500;">Data de Nascimento (Aniversário)</label>
-              <input type="text" id="ecom-birthday" placeholder="DD/MM/AAAA" class="input-sm" maxlength="10" required style="width:100%; margin:0;">
-            </div>
-
-            ${selectedDeliveryMode === 'delivery' ? `
-              <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-                <label for="ecom-address" style="font-size:13px; font-weight:500;">Endereço de Entrega</label>
-                <input type="text" id="ecom-address" placeholder="Av. Paulista, 1000 - Apto 51" class="input-sm" required style="width:100%; margin:0;">
-              </div>
-            ` : `
-              <input type="hidden" id="ecom-address" value="Retirada na Loja Física">
-            `}
-          </div>
-        `}
-
-        <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-          <label for="ecom-payment" style="font-size:13px; font-weight:500;">Método de Pagamento</label>
-          <select id="ecom-payment" class="input-sm" required style="width:100%; margin:0;">
-            <option value="pix">Pix (Aprovação Rápida)</option>
-            <option value="credit">Cartão de Crédito Online</option>
-            <option value="debit">Cartão de Débito Online</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:10px; width:100%; font-family:'Outfit', sans-serif;">
-          <i data-lucide="check"></i> Concluir Pedido
-        </button>
-      </form>
+      <a href="#carrinho" id="btn-go-to-checkout" class="btn btn-primary btn-full btn-lg" style="margin-top:20px; width:100%; font-family:'Outfit', sans-serif; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; height:46px; border-radius:23px; background:#8b5cf6; color:white; font-weight:700; border:none; cursor:pointer;">
+        <i data-lucide="shopping-bag" style="width:18px; height:18px;"></i> Finalizar a Compra
+      </a>
     `;
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
-    setupCartCheckoutEvents(finalTotal);
+
+    // Event listener para fechar o drawer de carrinho ao clicar em finalizar a compra
+    const goCheckoutBtn = document.getElementById('btn-go-to-checkout');
+    if (goCheckoutBtn) {
+      goCheckoutBtn.addEventListener('click', () => {
+        document.getElementById('ecom-cart-drawer').classList.remove('active');
+      });
+    }
+
+    // Event listener para cupom
+    const applyCouponBtn = document.getElementById('btn-ecom-apply-coupon');
+    const couponInput = document.getElementById('ecom-coupon-input');
+    if (applyCouponBtn && couponInput) {
+      applyCouponBtn.addEventListener('click', () => {
+        const code = couponInput.value.trim().toUpperCase();
+        if (code === 'PARABENSPURPLE') {
+          discountPercentage = 0.1;
+          showNotification('Cupom aplicado com sucesso!', 'success');
+        } else {
+          discountPercentage = 0;
+          showNotification('Cupom inválido!', 'error');
+        }
+        updateCartUI();
+      });
+    }
   }
 
   function saveFavorites() {
@@ -2019,8 +1892,1588 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- SISTEMA DE ROTEAMENTO SPA E NOVAS TELAS (CHECKOUT DEDICADO, RASTREAMENTO E MEU PERFIL SEPHORA) ---
+
+  let checkoutStep = 1;
+  let selectedPaymentMethod = 'pix';
+  let activeAccountTab = 'dashboard';
+  let checkoutGuestData = null;
+
+  function injectCheckoutAccountStyles() {
+    if (document.getElementById('ecom-extra-styles')) return;
+    const styleEl = document.createElement('style');
+    styleEl.id = 'ecom-extra-styles';
+    styleEl.innerHTML = `
+      .checkout-layout {
+        display: flex;
+        gap: 30px;
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+        font-family: 'Outfit', sans-serif;
+        color: #111;
+        text-align: left;
+      }
+      .checkout-main-col {
+        flex: 1.7;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .checkout-summary-col {
+        flex: 1;
+        background: #fdfdfd;
+        border: 1px solid #eaeaea;
+        border-radius: 12px;
+        padding: 24px;
+        position: sticky;
+        top: 130px;
+        height: fit-content;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      }
+      .checkout-stepper-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eaeaea;
+      }
+      .checkout-step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #9ca3af;
+      }
+      .checkout-step-indicator.active {
+        color: #8b5cf6;
+        font-weight: 700;
+      }
+      .checkout-step-indicator.active .step-num {
+        background: #8b5cf6;
+        color: white;
+      }
+      .checkout-step-indicator .step-num {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+      .checkout-step-indicator.completed {
+        color: #10b981;
+      }
+      .checkout-step-indicator.completed .step-num {
+        background: #10b981;
+        color: white;
+      }
+      
+      .checkout-card {
+        background: white;
+        border: 1px solid #eaeaea;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      }
+      .checkout-card h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+        font-weight: 700;
+        border-bottom: 1px solid #f3f4f6;
+        padding-bottom: 8px;
+      }
+
+      /* Estilos Minha Conta Sephora */
+      .account-layout {
+        display: flex;
+        gap: 30px;
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+        font-family: 'Outfit', sans-serif;
+        color: #111;
+        text-align: left;
+      }
+      .account-sidebar-menu {
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-right: 1px solid #eaeaea;
+        padding-right: 20px;
+        flex-shrink: 0;
+      }
+      .account-sidebar-menu h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .account-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #555;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .account-menu-item:hover {
+        background: #f5f3ff;
+        color: #8b5cf6;
+      }
+      .account-menu-item.active {
+        background: #f5f3ff;
+        color: #8b5cf6;
+        font-weight: 700;
+        border-left: 4px solid #8b5cf6;
+        border-radius: 0 8px 8px 0;
+      }
+      .account-content-pane {
+        flex: 1;
+        min-height: 500px;
+      }
+      .loyalty-banner {
+        background: linear-gradient(135deg, #180936 0%, #3e126e 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+      }
+      .loyalty-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -20%;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(139, 92, 246, 0.15);
+        filter: blur(40px);
+      }
+      .loyalty-banner h4 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .loyalty-points {
+        text-align: right;
+        z-index: 2;
+      }
+      .loyalty-points span {
+        font-size: 11px;
+        opacity: 0.8;
+        text-transform: uppercase;
+      }
+      .loyalty-points h2 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #fca5a5;
+        line-height: 1;
+      }
+      .dashboard-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      /* Stepper Rastreamento */
+      .tracking-stepper-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        margin: 30px 0;
+        padding: 0 10px;
+      }
+      .tracking-stepper-container::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 5%;
+        right: 5%;
+        height: 4px;
+        background: #e5e7eb;
+        z-index: 1;
+      }
+      .tracking-stepper-progress-bar {
+        position: absolute;
+        top: 15px;
+        left: 5%;
+        height: 4px;
+        background: #10b981;
+        z-index: 2;
+        transition: width 0.4s ease;
+      }
+      .tracking-step-node {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 80px;
+      }
+      .tracking-step-node .node-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid white;
+        transition: all 0.3s;
+      }
+      .tracking-step-node.active .node-circle {
+        background: #8b5cf6;
+        color: white;
+        box-shadow: 0 0 10px rgba(139,92,246,0.5);
+      }
+      .tracking-step-node.completed .node-circle {
+        background: #10b981;
+        color: white;
+      }
+      .tracking-step-node span {
+        font-size: 11px;
+        font-weight: 600;
+        color: #4b5563;
+        text-align: center;
+      }
+      .tracking-step-node.active span {
+        color: #8b5cf6;
+        font-weight: 700;
+      }
+      @media (max-width: 768px) {
+        .checkout-layout, .account-layout {
+          flex-direction: column;
+        }
+        .account-sidebar-menu {
+          width: 100%;
+          border-right: none;
+          border-bottom: 1px solid #eaeaea;
+          padding-right: 0;
+          padding-bottom: 15px;
+        }
+      }
+    `;
+    document.head.appendChild(styleEl);
+  }
+
+  function renderCheckoutPage() {
+    injectCheckoutAccountStyles();
+    
+    if (loggedClient && checkoutStep === 1) {
+      checkoutStep = 2;
+    }
+    
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const discountValue = subtotal * discountPercentage;
+    const totalGeral = subtotal - discountValue + selectedShippingPrice;
+
+    appContainer.innerHTML = `
+      <div style="background:#fafafa; min-height:100vh; padding-bottom:50px;">
+        <!-- Header de Checkout -->
+        <header style="background:white; border-bottom:1px solid #eaeaea; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+          <a href="#home" style="cursor:pointer;"><img src="/logo-purple-text.png" alt="Purple Logo" style="height:40px;"></a>
+          <a href="#home" style="color:#6a3f97; font-weight:600; text-decoration:none; font-size:14px; display:flex; align-items:center; gap:6px;"><i data-lucide="arrow-left" style="width:16px; height:16px;"></i> Continuar Comprando</a>
+        </header>
+
+        <div class="checkout-layout">
+          <!-- Coluna Principal (Etapas) -->
+          <div class="checkout-main-col">
+            <!-- Stepper Indicators -->
+            <div class="checkout-stepper-header">
+              <div class="checkout-step-indicator ${checkoutStep === 1 ? 'active' : (checkoutStep > 1 ? 'completed' : '')}">
+                <span class="step-num">${checkoutStep > 1 ? '✓' : '1'}</span> Identificação
+              </div>
+              <div style="width:40px; height:1px; background:#e5e7eb;"></div>
+              <div class="checkout-step-indicator ${checkoutStep === 2 ? 'active' : (checkoutStep > 2 ? 'completed' : '')}">
+                <span class="step-num">${checkoutStep > 2 ? '✓' : '2'}</span> Entrega e Frete
+              </div>
+              <div style="width:40px; height:1px; background:#e5e7eb;"></div>
+              <div class="checkout-step-indicator ${checkoutStep === 3 ? 'active' : ''}">
+                <span class="step-num">3</span> Pagamento
+              </div>
+            </div>
+
+            <!-- Card da Etapa Atual -->
+            <div class="checkout-card" id="checkout-step-container">
+              ${renderCheckoutStepFormHTML(subtotal, discountValue, totalGeral)}
+            </div>
+          </div>
+
+          <!-- Coluna Resumo Lateral -->
+          <div class="checkout-summary-col">
+            <h3 style="margin-top:0; font-size:16px; font-weight:700; border-bottom:1px solid #eaeaea; padding-bottom:8px; margin-bottom:15px; color:#111;">Resumo da Sacola</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:12px; max-height:220px; overflow-y:auto; padding-right:4px; margin-bottom:20px;">
+              ${cart.map(item => `
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px;">
+                  <span style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#333;">${item.quantity}x ${item.name}</span>
+                  <strong style="color:#111;">R$ ${(item.price * item.quantity).toFixed(2)}</strong>
+                </div>
+              `).join('')}
+            </div>
+
+            <div style="border-top:1px solid #eaeaea; padding-top:15px; display:flex; flex-direction:column; gap:8px; font-size:14px; color:#555;">
+              <div style="display:flex; justify-content:space-between;">
+                <span>Subtotal</span>
+                <span>R$ ${subtotal.toFixed(2)}</span>
+              </div>
+              ${discountPercentage > 0 ? `
+                <div style="display:flex; justify-content:space-between; color:#10b981; font-weight:600;">
+                  <span>Desconto (10%)</span>
+                  <span>- R$ ${discountValue.toFixed(2)}</span>
+                </div>
+              ` : ''}
+              <div style="display:flex; justify-content:space-between;">
+                <span>Frete</span>
+                <span>${selectedShippingPrice > 0 ? `R$ ${selectedShippingPrice.toFixed(2)}` : 'A calcular'}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-weight:700; font-size:16px; color:#6a3f97; border-top:1px solid #eaeaea; padding-top:8px; margin-top:4px;">
+                <span>Total Geral</span>
+                <span>R$ ${totalGeral.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="notifications-container" class="notifications-container"></div>
+    `;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setupCheckoutPageEvents();
+  }
+
+  function renderCheckoutStepFormHTML(subtotal, discountValue, totalGeral) {
+    if (checkoutStep === 1) {
+      return `
+        <h3>1. Identificação</h3>
+        <div style="display:flex; gap:30px; flex-wrap:wrap; margin-top:20px;">
+          <!-- Lado A: Entrar na Conta -->
+          <div style="flex:1; min-width:280px; border-right:1px solid #eaeaea; padding-right:30px;">
+            <h4 style="font-size:15px; font-weight:600; margin-bottom:12px; color:#111;">Já é cliente? Faça Login</h4>
+            <form id="checkout-login-form" style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-login-email" style="font-size:12px; font-weight:600; color:#555;">E-mail</label>
+                <input type="email" id="ch-login-email" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="seu-email@gmail.com">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-login-password" style="font-size:12px; font-weight:600; color:#555;">Senha</label>
+                <input type="password" id="ch-login-password" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="••••••••">
+              </div>
+              <button type="submit" class="btn btn-primary" style="background:#8b5cf6; color:white; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer; margin-top:8px;">Entrar na Conta</button>
+            </form>
+          </div>
+
+          <!-- Lado B: Continuar sem Login (Visitante) -->
+          <div style="flex:1.2; min-width:280px;">
+            <h4 style="font-size:15px; font-weight:600; margin-bottom:12px; color:#111;">Novo por aqui? Compre como Visitante</h4>
+            <form id="checkout-guest-form" style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-guest-name" style="font-size:12px; font-weight:600; color:#555;">Nome Completo</label>
+                <input type="text" id="ch-guest-name" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="Ex: Juliana Santos" value="${checkoutGuestData ? checkoutGuestData.name : ''}">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-guest-email" style="font-size:12px; font-weight:600; color:#555;">E-mail</label>
+                <input type="email" id="ch-guest-email" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="juliana@email.com" value="${checkoutGuestData ? checkoutGuestData.email : ''}">
+              </div>
+              <div style="display:flex; gap:12px;">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-guest-phone" style="font-size:12px; font-weight:600; color:#555;">WhatsApp / Celular</label>
+                  <input type="text" id="ch-guest-phone" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="(11) 98888-7777" value="${checkoutGuestData ? checkoutGuestData.phone : ''}">
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-guest-cpf" style="font-size:12px; font-weight:600; color:#555;">CPF ou CNPJ</label>
+                  <input type="text" id="ch-guest-cpf" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="000.000.000-00" value="${checkoutGuestData ? checkoutGuestData.cpf : ''}">
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-guest-birthday" style="font-size:12px; font-weight:600; color:#555;">Data de Nascimento</label>
+                <input type="text" id="ch-guest-birthday" required class="input-sm" maxlength="10" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="DD/MM/AAAA" value="${checkoutGuestData ? checkoutGuestData.birthday : ''}">
+              </div>
+              <button type="submit" class="btn btn-secondary" style="border:1px solid #8b5cf6; color:#8b5cf6; padding:10px; border-radius:6px; font-weight:600; cursor:pointer; background:transparent; margin-top:8px;">Prosseguir como Visitante</button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    if (checkoutStep === 2) {
+      return `
+        <h3>2. Entrega e Opções de Frete</h3>
+        
+        <!-- Seletor de Modo de Entrega -->
+        <div style="display:flex; gap:12px; margin-bottom:20px;">
+          <button type="button" id="btn-ch-mode-delivery" class="btn btn-sm" style="flex:1; padding:12px; border-radius:8px; border:2px solid ${selectedDeliveryMode === 'delivery' ? '#8b5cf6' : '#eaeaea'}; background:${selectedDeliveryMode === 'delivery' ? '#f5f3ff' : 'white'}; color:${selectedDeliveryMode === 'delivery' ? '#8b5cf6' : '#555'}; font-weight:bold; cursor:pointer;">
+            <i data-lucide="truck" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Receber em Casa
+          </button>
+          <button type="button" id="btn-ch-mode-pickup" class="btn btn-sm" style="flex:1; padding:12px; border-radius:8px; border:2px solid ${selectedDeliveryMode === 'pickup' ? '#8b5cf6' : '#eaeaea'}; background:${selectedDeliveryMode === 'pickup' ? '#f5f3ff' : 'white'}; color:${selectedDeliveryMode === 'pickup' ? '#8b5cf6' : '#555'}; font-weight:bold; cursor:pointer;">
+            <i data-lucide="store" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Retirar na Loja
+          </button>
+        </div>
+
+        <form id="checkout-shipping-form" style="display:flex; flex-direction:column; gap:16px;">
+          ${selectedDeliveryMode === 'delivery' ? `
+            <div style="background:#fcfcfc; border:1px solid #eaeaea; padding:16px; border-radius:8px; display:flex; flex-direction:column; gap:12px;">
+              <h4 style="font-size:14px; font-weight:700; margin:0; color:#333;">Endereço de Entrega</h4>
+              
+              <div style="display:flex; gap:12px; align-items:flex-end;">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-shipping-cep" style="font-size:11px; font-weight:600; color:#555;">CEP</label>
+                  <input type="text" id="ch-shipping-cep" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="00000-000" maxlength="9" value="${calculatedCep}">
+                </div>
+                <button type="button" id="btn-ch-calc-shipping" class="btn btn-secondary" style="height:36px; padding:0 16px; border-radius:6px; cursor:pointer; background:#e5e7eb; border:none; font-weight:600; color:#333;">Calcular</button>
+              </div>
+
+              <!-- Opções de Envio -->
+              <div id="ch-shipping-rates" style="display:${calculatedCep ? 'flex' : 'none'}; flex-direction:column; gap:10px; margin-top:10px; background:rgba(139,92,246,0.03); border:1px solid rgba(139,92,246,0.1); padding:12px; border-radius:8px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <input type="radio" name="ch_carrier" id="ch-ship-sedex" value="18.90" data-carrier="Correios SEDEX" ${selectedShippingCarrier === 'Correios SEDEX' ? 'checked' : ''} style="cursor:pointer;" required>
+                  <label for="ch-ship-sedex" style="font-size:12px; display:flex; justify-content:space-between; flex-grow:1; cursor:pointer; margin:0;">
+                    <span>Correios SEDEX (2 dias)</span>
+                    <strong>R$ 18,90</strong>
+                  </label>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <input type="radio" name="ch_carrier" id="ch-ship-pac" value="11.50" data-carrier="Correios PAC" ${selectedShippingCarrier === 'Correios PAC' ? 'checked' : ''} style="cursor:pointer;">
+                  <label for="ch-ship-pac" style="font-size:12px; display:flex; justify-content:space-between; flex-grow:1; cursor:pointer; margin:0;">
+                    <span>Correios PAC (5 dias)</span>
+                    <strong>R$ 11,50</strong>
+                  </label>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <input type="radio" name="ch_carrier" id="ch-ship-motoboy" value="10.00" data-carrier="Motoboy Express" ${selectedShippingCarrier === 'Motoboy Express' ? 'checked' : ''} style="cursor:pointer;">
+                  <label for="ch-ship-motoboy" style="font-size:12px; display:flex; justify-content:space-between; flex-grow:1; cursor:pointer; margin:0;">
+                    <span>Motoboy Express (Mesmo dia)</span>
+                    <strong>R$ 10,00</strong>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Detalhes do Endereço -->
+              <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:10px;">
+                <div style="flex:2; display:flex; flex-direction:column; gap:4px; min-width:200px;">
+                  <label for="ch-shipping-street" style="font-size:11px; font-weight:600; color:#555;">Rua / Avenida</label>
+                  <input type="text" id="ch-shipping-street" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="Ex: Av. Paulista" value="${(loggedClient && loggedClient.address && !loggedClient.address.includes('Retirada')) ? loggedClient.address.split(',')[0] || '' : ''}">
+                </div>
+                <div style="flex:0.6; display:flex; flex-direction:column; gap:4px; min-width:60px;">
+                  <label for="ch-shipping-number" style="font-size:11px; font-weight:600; color:#555;">Número</label>
+                  <input type="text" id="ch-shipping-number" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="1000">
+                </div>
+              </div>
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-shipping-complement" style="font-size:11px; font-weight:600; color:#555;">Complemento</label>
+                  <input type="text" id="ch-shipping-complement" class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="Ex: Apto 51">
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-shipping-neighborhood" style="font-size:11px; font-weight:600; color:#555;">Bairro</label>
+                  <input type="text" id="ch-shipping-neighborhood" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="Bela Vista">
+                </div>
+              </div>
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <div style="flex:2; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-shipping-city" style="font-size:11px; font-weight:600; color:#555;">Cidade</label>
+                  <input type="text" id="ch-shipping-city" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="São Paulo">
+                </div>
+                <div style="flex:0.6; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-shipping-state" style="font-size:11px; font-weight:600; color:#555;">UF</label>
+                  <input type="text" id="ch-shipping-state" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="SP" maxlength="2">
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div style="background:rgba(139,92,246,0.03); border:1px solid #8b5cf6; padding:16px; border-radius:8px; text-align:left;">
+              <h4 style="margin:0 0 6px 0; color:#8b5cf6; font-size:14px; font-weight:700;"><i data-lucide="store" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Retirada na Loja Física</h4>
+              <p style="margin:0; font-size:13px; color:#555; line-height:1.5;">
+                Rua Jequirituba, 600 - Jardim Colonial - São Paulo/SP - CEP: 04821-035<br>
+                <strong>Frete: R$ 0,00 (Gratuito)</strong>
+              </p>
+            </div>
+          `}
+
+          <div style="display:flex; justify-content:space-between; margin-top:20px;">
+            <button type="button" id="btn-ch-step2-back" class="btn btn-secondary" style="border:1px solid #eaeaea; padding:10px 20px; border-radius:6px; cursor:pointer; background:white; color:#555;">Voltar</button>
+            <button type="submit" class="btn btn-primary" style="background:#8b5cf6; color:white; border:none; padding:10px 25px; border-radius:6px; font-weight:600; cursor:pointer;">Ir para o Pagamento</button>
+          </div>
+        </form>
+      `;
+    }
+
+    if (checkoutStep === 3) {
+      return `
+        <h3>3. Método de Pagamento</h3>
+        
+        <div style="display:flex; flex-direction:column; gap:15px; margin-top:15px;">
+          <!-- Opção Pix -->
+          <label style="cursor:pointer; display:block; border:2px solid ${selectedPaymentMethod === 'pix' ? '#8b5cf6' : '#eaeaea'}; background:${selectedPaymentMethod === 'pix' ? '#f5f3ff' : 'white'}; padding:16px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; transition:all 0.2s;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input type="radio" name="ch_payment_type" value="pix" ${selectedPaymentMethod === 'pix' ? 'checked' : ''} style="cursor:pointer;">
+              <div style="text-align:left;">
+                <strong style="font-size:14px; color:#111;">Pix (Aprovação Instantânea)</strong>
+                <br><span style="font-size:11px; color:#8b5cf6; font-weight:bold;">Ganhe aprovação imediata no sistema</span>
+              </div>
+            </div>
+            <i data-lucide="qr-code" style="width:24px; height:24px; color:#8b5cf6;"></i>
+          </label>
+
+          <!-- Opção Cartão de Crédito -->
+          <label style="cursor:pointer; display:block; border:2px solid ${selectedPaymentMethod === 'credit' ? '#8b5cf6' : '#eaeaea'}; background:${selectedPaymentMethod === 'credit' ? '#f5f3ff' : 'white'}; padding:16px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; transition:all 0.2s;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input type="radio" name="ch_payment_type" value="credit" ${selectedPaymentMethod === 'credit' ? 'checked' : ''} style="cursor:pointer;">
+              <div style="text-align:left;">
+                <strong style="font-size:14px; color:#111;">Cartão de Crédito</strong>
+                <br><span style="font-size:11px; color:#6b7280;">Parcele em até 6x sem juros</span>
+              </div>
+            </div>
+            <i data-lucide="credit-card" style="width:24px; height:24px; color:#8b5cf6;"></i>
+          </label>
+        </div>
+
+        <form id="checkout-payment-form" style="display:flex; flex-direction:column; gap:16px; margin-top:20px;">
+          ${selectedPaymentMethod === 'credit' ? `
+            <div style="background:#fcfcfc; border:1px solid #eaeaea; padding:16px; border-radius:8px; display:flex; flex-direction:column; gap:12px;">
+              <h4 style="font-size:14px; font-weight:700; margin:0; color:#333;">Dados do Cartão</h4>
+              
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-card-number" style="font-size:11px; font-weight:600; color:#555;">Número do Cartão</label>
+                <input type="text" id="ch-card-number" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="0000 0000 0000 0000">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-card-name" style="font-size:11px; font-weight:600; color:#555;">Nome do Titular (Como no Cartão)</label>
+                <input type="text" id="ch-card-name" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="Ex: JULIANA S SILVA">
+              </div>
+              <div style="display:flex; gap:12px;">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-card-expiry" style="font-size:11px; font-weight:600; color:#555;">Validade</label>
+                  <input type="text" id="ch-card-expiry" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="MM/AA" maxlength="5">
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                  <label for="ch-card-cvv" style="font-size:11px; font-weight:600; color:#555;">CVC / CVV</label>
+                  <input type="text" id="ch-card-cvv" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="123" maxlength="4">
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label for="ch-card-installments" style="font-size:11px; font-weight:600; color:#555;">Parcelamento</label>
+                <select id="ch-card-installments" class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none; background:white;">
+                  <option value="1">1x de R$ ${totalGeral.toFixed(2)} sem juros</option>
+                  <option value="2">2x de R$ ${(totalGeral/2).toFixed(2)} sem juros</option>
+                  <option value="3">3x de R$ ${(totalGeral/3).toFixed(2)} sem juros</option>
+                  <option value="4">4x de R$ ${(totalGeral/4).toFixed(2)} sem juros</option>
+                  <option value="5">5x de R$ ${(totalGeral/5).toFixed(2)} sem juros</option>
+                  <option value="6">6x de R$ ${(totalGeral/6).toFixed(2)} sem juros</option>
+                </select>
+              </div>
+            </div>
+          ` : `
+            <div style="background:rgba(16,185,129,0.03); border:1px solid #10b981; padding:16px; border-radius:8px; text-align:left;">
+              <p style="margin:0; font-size:13px; color:#065f46; line-height:1.5;">
+                <strong>Pix Selecionado!</strong> O QR Code e a chave copia e cola oficiais do Pix serão exibidos na próxima tela imediatamente após a confirmação.
+              </p>
+            </div>
+          `}
+
+          <div style="display:flex; justify-content:space-between; margin-top:20px;">
+            <button type="button" id="btn-ch-step3-back" class="btn btn-secondary" style="border:1px solid #eaeaea; padding:10px 20px; border-radius:6px; cursor:pointer; background:white; color:#555;">Voltar</button>
+            <button type="submit" id="btn-ch-submit-order" class="btn btn-primary" style="background:#10b981; color:white; border:none; padding:12px 30px; border-radius:6px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <i data-lucide="check-circle" style="width:18px; height:18px;"></i> Finalizar Compra
+            </button>
+          </div>
+        </form>
+      `;
+    }
+  }
+
+  function setupCheckoutPageEvents() {
+    // Validador de data de aniversário nos inputs de visitante
+    const birthdayInput = document.getElementById('ch-guest-birthday');
+    if (birthdayInput) {
+      birthdayInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 8) value = value.slice(0, 8);
+        if (value.length > 4) {
+          value = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+        } else if (value.length > 2) {
+          value = `${value.slice(0, 2)}/${value.slice(2)}`;
+        }
+        e.target.value = value;
+      });
+    }
+
+    // Máscara simples de CEP
+    const cepInput = document.getElementById('ch-shipping-cep');
+    if (cepInput) {
+      cepInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 8) value = value.slice(0, 8);
+        if (value.length > 5) {
+          value = `${value.slice(0, 5)}-${value.slice(5)}`;
+        }
+        e.target.value = value;
+      });
+    }
+
+    // Step 1: Login Form
+    const loginForm = document.getElementById('checkout-login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('ch-login-email').value.trim().toLowerCase();
+        const password = document.getElementById('ch-login-password').value;
+        const clients = getClients();
+        const matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+
+        if (matched) {
+          loggedClient = matched;
+          sessionStorage.setItem('purple_ecom_logged_in_client', JSON.stringify(matched));
+          showNotification('Identificado com sucesso!', 'success');
+          checkoutStep = 2;
+          renderCheckoutPage();
+        } else {
+          showNotification('E-mail ou senha incorretos!', 'error');
+        }
+      });
+    }
+
+    // Step 1: Guest Form
+    const guestForm = document.getElementById('checkout-guest-form');
+    if (guestForm) {
+      guestForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('ch-guest-name').value.trim();
+        const email = document.getElementById('ch-guest-email').value.trim();
+        const phone = document.getElementById('ch-guest-phone').value.trim();
+        const cpf = document.getElementById('ch-guest-cpf').value.trim();
+        const birthday = document.getElementById('ch-guest-birthday').value.trim();
+
+        if (birthday) {
+          const parts = birthday.split('/');
+          if (parts.length !== 3 || parts[0].length !== 2 || parts[1].length !== 2 || parts[2].length !== 4) {
+            showNotification('Data de nascimento inválida! Use DD/MM/AAAA', 'error');
+            return;
+          }
+        }
+
+        checkoutGuestData = { name, email, phone, cpf, birthday };
+        checkoutStep = 2;
+        showNotification('Dados de visitante salvos!', 'success');
+        renderCheckoutPage();
+      });
+    }
+
+    // Step 2: Mode selection
+    const modeDeliveryBtn = document.getElementById('btn-ch-mode-delivery');
+    const modePickupBtn = document.getElementById('btn-ch-mode-pickup');
+
+    if (modeDeliveryBtn) {
+      modeDeliveryBtn.addEventListener('click', () => {
+        selectedDeliveryMode = 'delivery';
+        renderCheckoutPage();
+      });
+    }
+    if (modePickupBtn) {
+      modePickupBtn.addEventListener('click', () => {
+        selectedDeliveryMode = 'pickup';
+        selectedShippingPrice = 0;
+        selectedShippingCarrier = '';
+        renderCheckoutPage();
+      });
+    }
+
+    // Step 2: Calculate Shipping
+    const calcShippingBtn = document.getElementById('btn-ch-calc-shipping');
+    if (calcShippingBtn) {
+      calcShippingBtn.addEventListener('click', () => {
+        const cep = cepInput.value.trim();
+        if (cep.length < 8) {
+          showNotification('Por favor, informe um CEP válido!', 'warning');
+          return;
+        }
+        calculatedCep = cep;
+        selectedShippingPrice = 11.50; // PAC as default
+        selectedShippingCarrier = 'Correios PAC';
+        renderCheckoutPage();
+      });
+    }
+
+    // Step 2: Carrier selection
+    const carrierRadios = document.querySelectorAll('input[name="ch_carrier"]');
+    carrierRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        selectedShippingPrice = parseFloat(radio.value);
+        selectedShippingCarrier = radio.getAttribute('data-carrier');
+        renderCheckoutPage(); // re-renders layout to update summary totals
+      });
+    });
+
+    // Step 2: Form submit
+    const shippingForm = document.getElementById('checkout-shipping-form');
+    if (shippingForm) {
+      shippingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        if (selectedDeliveryMode === 'delivery') {
+          if (!selectedShippingCarrier) {
+            showNotification('Por favor, calcule e selecione uma opção de frete!', 'warning');
+            return;
+          }
+          const street = document.getElementById('ch-shipping-street').value;
+          const number = document.getElementById('ch-shipping-number').value;
+          const complement = document.getElementById('ch-shipping-complement').value;
+          const neighborhood = document.getElementById('ch-shipping-neighborhood').value;
+          const city = document.getElementById('ch-shipping-city').value;
+          const state = document.getElementById('ch-shipping-state').value;
+          const cep = document.getElementById('ch-shipping-cep').value;
+
+          const completeAddress = `${street}, nº ${number}${complement ? ' (' + complement + ')' : ''} - Bairro: ${neighborhood}, ${city}/${state} - CEP: ${cep}`;
+          
+          if (loggedClient) {
+            loggedClient.address = completeAddress;
+          } else {
+            checkoutGuestData.address = completeAddress;
+          }
+        } else {
+          const pickupAddress = "Retirada na Loja Física: Rua Jequirituba, 600 - Jardim Colonial - São Paulo/SP - CEP: 04821-035";
+          if (loggedClient) {
+            loggedClient.address = pickupAddress;
+          } else {
+            checkoutGuestData.address = pickupAddress;
+          }
+        }
+        
+        checkoutStep = 3;
+        renderCheckoutPage();
+      });
+    }
+
+    // Step 2: Back Button
+    const step2BackBtn = document.getElementById('btn-ch-step2-back');
+    if (step2BackBtn) {
+      step2BackBtn.addEventListener('click', () => {
+        checkoutStep = 1;
+        renderCheckoutPage();
+      });
+    }
+
+    // Step 3: Payment method change
+    const paymentRadios = document.querySelectorAll('input[name="ch_payment_type"]');
+    paymentRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        selectedPaymentMethod = radio.value;
+        renderCheckoutPage();
+      });
+    });
+
+    // Step 3: Back Button
+    const step3BackBtn = document.getElementById('btn-ch-step3-back');
+    if (step3BackBtn) {
+      step3BackBtn.addEventListener('click', () => {
+        checkoutStep = 2;
+        renderCheckoutPage();
+      });
+    }
+
+    // Step 3: Finalize Order Form
+    const paymentForm = document.getElementById('checkout-payment-form');
+    if (paymentForm) {
+      paymentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-ch-submit-order');
+        if (submitBtn) submitBtn.disabled = true;
+
+        let finalClientId = null;
+        let finalClientName = '';
+        let address = '';
+
+        if (loggedClient) {
+          finalClientId = loggedClient.id;
+          finalClientName = loggedClient.name;
+          address = loggedClient.address || 'Retirada na Loja Física';
+        } else {
+          address = checkoutGuestData.address || 'Retirada na Loja Física';
+          let guestBirthday = '';
+          if (checkoutGuestData.birthday) {
+            const parts = checkoutGuestData.birthday.split('/');
+            guestBirthday = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          }
+          const newClient = addClient({
+            name: checkoutGuestData.name,
+            phone: checkoutGuestData.phone,
+            email: checkoutGuestData.email,
+            cpfCnpj: checkoutGuestData.cpf,
+            birthday: guestBirthday,
+            notes: 'Visitante (sem login) via E-Commerce.',
+            debt: 0
+          });
+          finalClientId = newClient.id;
+          finalClientName = newClient.name;
+        }
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountValue = subtotal * discountPercentage;
+        const finalTotalValue = subtotal - discountValue + selectedShippingPrice;
+
+        const saleData = {
+          items: cart.map(i => ({
+            id: i.id,
+            variationId: i.variationId,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity
+          })),
+          subtotal: subtotal,
+          discount: discountValue,
+          shippingFee: selectedShippingPrice,
+          shippingCarrier: selectedShippingCarrier || null,
+          total: finalTotalValue,
+          clientId: finalClientId,
+          clientName: finalClientName,
+          paymentMethod: selectedPaymentMethod,
+          amountPaid: finalTotalValue,
+          operator: 'Venda Online (E-Commerce)',
+          origin: 'e-commerce',
+          deliveryAddress: address,
+          coupon: discountPercentage > 0 ? 'PARABENSPURPLE' : null
+        };
+
+        try {
+          const completedSale = addSale(saleData);
+          const config = getConfig();
+          const isAsaas = config.asaasMode === 'production';
+          
+          if (isAsaas) {
+            let customerName = finalClientName;
+            let customerEmail = loggedClient ? loggedClient.email : checkoutGuestData.email;
+            let customerPhone = loggedClient ? loggedClient.phone : checkoutGuestData.phone;
+            let customerCpfCnpj = loggedClient ? (loggedClient.cpfCnpj || '') : checkoutGuestData.cpf;
+
+            if (selectedPaymentMethod === 'credit') {
+              // Asaas Credit Card Invoice
+              try {
+                const response = await fetch('/api/asaas', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    amount: completedSale.total,
+                    paymentMethod: 'CREDIT_CARD',
+                    customerName, customerEmail, customerPhone, customerCpfCnpj,
+                    apiKey: config.asaasApiKey,
+                    mode: config.asaasMode,
+                    orderId: completedSale.id
+                  })
+                });
+                const result = await response.json();
+                if (result.success) {
+                  completedSale.asaasCheckoutUrl = result.checkoutUrl;
+                  // Salvamos de volta no banco
+                  const salesList = getSales();
+                  const idx = salesList.findIndex(s => s.id === completedSale.id);
+                  if (idx !== -1) {
+                    salesList[idx].asaasCheckoutUrl = result.checkoutUrl;
+                    saveSales(salesList);
+                  }
+                }
+              } catch(err) {
+                console.error("Asaas credit card link generation failed:", err);
+              }
+            } else {
+              // Asaas Pix QR code
+              try {
+                const response = await fetch('/api/asaas', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    amount: completedSale.total,
+                    paymentMethod: 'PIX',
+                    customerName, customerEmail, customerPhone, customerCpfCnpj,
+                    apiKey: config.asaasApiKey,
+                    mode: config.asaasMode,
+                    orderId: completedSale.id
+                  })
+                });
+                const result = await response.json();
+                if (result.success) {
+                  completedSale.asaasPixKey = result.pixKey;
+                  completedSale.asaasQrCode = result.qrCode;
+                  const salesList = getSales();
+                  const idx = salesList.findIndex(s => s.id === completedSale.id);
+                  if (idx !== -1) {
+                    salesList[idx].asaasPixKey = result.pixKey;
+                    salesList[idx].asaasQrCode = result.qrCode;
+                    saveSales(salesList);
+                  }
+                }
+              } catch(err) {
+                console.error("Asaas Pix generation failed:", err);
+              }
+            }
+          }
+
+          // Limpa carrinho e estados locais
+          cart.splice(0, cart.length);
+          discountPercentage = 0;
+          selectedShippingPrice = 0;
+          selectedShippingCarrier = '';
+          calculatedCep = '';
+          checkoutStep = 1;
+          checkoutGuestData = null;
+          updateCartUI();
+
+          // Atualiza estoque local
+          products = getProducts();
+          
+          showNotification('Compra realizada com sucesso!', 'success');
+          // Redireciona para rastreamento
+          window.location.hash = `#pedido_${completedSale.id}`;
+        } catch (err) {
+          showNotification(err.message, 'error');
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
+  }
+
+  function renderOrderTrackingPage(orderId) {
+    injectCheckoutAccountStyles();
+    
+    const sales = getSales();
+    const sale = sales.find(s => s.id === orderId || s.id.replace('s_', '') === orderId);
+
+    if (!sale) {
+      appContainer.innerHTML = `
+        <div style="background:#fafafa; min-height:100vh; padding:50px 20px; font-family:'Outfit', sans-serif;">
+          <div style="max-width:600px; margin:0 auto; background:white; border:1px solid #eaeaea; border-radius:12px; padding:30px; text-align:center;">
+            <i data-lucide="alert-circle" style="width:48px; height:48px; color:#ef4444; margin:0 auto 15px auto;"></i>
+            <h3>Pedido não encontrado!</h3>
+            <p style="color:#555; margin-top:8px;">Não conseguimos localizar nenhuma venda com o código informado: <strong>${orderId}</strong>.</p>
+            <a href="#home" class="btn btn-primary" style="background:#8b5cf6; color:white; border:none; padding:10px 20px; border-radius:20px; text-decoration:none; display:inline-block; margin-top:15px; font-weight:bold;">Voltar para as Ofertas</a>
+          </div>
+        </div>
+      `;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      return;
+    }
+
+    const orderDate = new Date(sale.timestamp || sale.date).toLocaleString('pt-BR');
+    
+    // Status do pedido stepper
+    const currentStatus = sale.status || 'Preparando';
+    let step1Class = 'completed';
+    let step2Class = 'completed';
+    let step3Class = 'pending';
+    let step4Class = 'pending';
+    let progressWidth = '33%';
+
+    if (currentStatus === 'Enviado' || currentStatus === 'Pronto para Retirada') {
+      step3Class = 'active';
+      progressWidth = '66%';
+    } else if (currentStatus === 'Entregue' || currentStatus === 'Finalizada') {
+      step3Class = 'completed';
+      step4Class = 'completed';
+      progressWidth = '100%';
+    } else {
+      // Preparando
+      step2Class = 'active';
+    }
+
+    appContainer.innerHTML = `
+      <div style="background:#fafafa; min-height:100vh; padding-bottom:50px; font-family:'Outfit', sans-serif;">
+        <!-- Header -->
+        <header style="background:white; border-bottom:1px solid #eaeaea; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+          <a href="#home" style="cursor:pointer;"><img src="/logo-purple-text.png" alt="Purple Logo" style="height:40px;"></a>
+          <a href="#home" style="color:#6a3f97; font-weight:600; text-decoration:none; font-size:14px; display:flex; align-items:center; gap:6px;"><i data-lucide="arrow-left" style="width:16px; height:16px;"></i> Ir para a Loja</a>
+        </header>
+
+        <div style="max-width:800px; margin:40px auto; padding:0 20px;">
+          <!-- Success Hero -->
+          <div style="background:white; border:1px solid #eaeaea; border-radius:12px; padding:30px; box-shadow:0 4px 15px rgba(0,0,0,0.03); text-align:center;">
+            <div style="background:rgba(16,185,129,0.1); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto;">
+              <i data-lucide="check-circle" style="width:36px; height:36px; color:#10b981;"></i>
+            </div>
+            <h2 style="font-size:24px; font-weight:800; color:#111; margin-bottom:5px;">Pedido Recebido com Sucesso!</h2>
+            <p style="color:#555; font-size:14px; margin-top:0;">O pagamento foi aprovado e o estoque da Purple já foi reservado.</p>
+            
+            <div style="display:inline-block; margin-top:15px; background:#f5f3ff; border:1px solid rgba(139,92,246,0.15); padding:8px 16px; border-radius:8px;">
+              <span style="font-size:12px; color:#6b7280; text-transform:uppercase; font-weight:600;">Nº do Pedido</span>
+              <br><strong style="font-size:16px; color:#6a3f97; font-family:monospace;">#${sale.id.split('_')[1] || sale.id}</strong>
+            </div>
+
+            <!-- Stepper Progress -->
+            <div class="tracking-stepper-container">
+              <div class="tracking-stepper-progress-bar" style="width: ${progressWidth};"></div>
+              
+              <div class="tracking-step-node ${step1Class}">
+                <div class="node-circle"><i data-lucide="file-text" style="width:14px; height:14px;"></i></div>
+                <span>Recebido</span>
+              </div>
+              <div class="tracking-step-node ${step2Class}">
+                <div class="node-circle"><i data-lucide="box" style="width:14px; height:14px;"></i></div>
+                <span>Preparando</span>
+              </div>
+              <div class="tracking-step-node ${step3Class}">
+                <div class="node-circle"><i data-lucide="truck" style="width:14px; height:14px;"></i></div>
+                <span>A Caminho</span>
+              </div>
+              <div class="tracking-step-node ${step4Class}">
+                <div class="node-circle"><i data-lucide="gift" style="width:14px; height:14px;"></i></div>
+                <span>Entregue</span>
+              </div>
+            </div>
+
+            <!-- Asaas Pix Details inside tracking screen (if pix details are available) -->
+            ${(sale.paymentMethod === 'pix' && sale.asaasPixKey) ? `
+              <div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:20px; margin-top:25px; text-align:center;">
+                <h4 style="color:#065f46; font-size:14px; font-weight:700; margin:0 0 10px 0;">Chave de Pagamento Pix (Asaas)</h4>
+                ${sale.asaasQrCode ? `
+                  <div style="margin: 10px auto; width: 160px; height: 160px; padding: 10px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.1);">
+                    <img src="${sale.asaasQrCode}" style="max-width:100%; max-height:100%;">
+                  </div>
+                ` : ''}
+                <div style="display:flex; flex-direction:column; gap:8px; max-width:400px; margin:0 auto;">
+                  <input type="text" readonly id="track-pix-copy-key" value="${sale.asaasPixKey}" style="width:100%; text-align:center; padding:8px; font-size:11px; font-family:monospace; background:white; border:1px solid #10b981; color:#333; border-radius:6px; outline:none;">
+                  <button type="button" id="btn-track-copy-pix" class="btn btn-secondary btn-sm" style="width:100%; height:34px; border:none; cursor:pointer; background:#10b981; color:white; border-radius:6px; font-weight:bold;"><i data-lucide="copy" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Copiar Chave Pix</button>
+                </div>
+              </div>
+            ` : ''}
+
+            ${(sale.paymentMethod === 'credit' && sale.asaasCheckoutUrl) ? `
+              <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-top:25px; text-align:center;">
+                <h4 style="color:#111827; font-size:14px; font-weight:700; margin:0 0 10px 0;">Pagamento no Cartão (Asaas)</h4>
+                <p style="font-size:12px; color:#4b5563; margin-bottom:12px;">Se você ainda não preencheu os dados do cartão, clique no botão de pagamento seguro abaixo:</p>
+                <a href="${sale.asaasCheckoutUrl}" target="_blank" class="btn btn-primary" style="display:inline-block; padding:10px 25px; border-radius:20px; background:#48bb78; color:white; font-weight:bold; text-decoration:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);"><i data-lucide="external-link" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Acessar Portal de Pagamento</a>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Resumo Completo do Pedido -->
+          <div style="background:white; border:1px solid #eaeaea; border-radius:12px; padding:24px; box-shadow:0 4px 15px rgba(0,0,0,0.03); margin-top:20px; text-align:left;">
+            <h3 style="margin-top:0; font-size:16px; font-weight:700; border-bottom:1px solid #eaeaea; padding-bottom:8px; margin-bottom:15px; color:#111;">Resumo do Pedido</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+              ${sale.items.map(item => `
+                <div style="display:flex; justify-content:space-between; font-size:13px; color:#333;">
+                  <span>${item.quantity}x ${item.name}</span>
+                  <strong>R$ ${(item.price * item.quantity).toFixed(2)}</strong>
+                </div>
+              `).join('')}
+            </div>
+
+            <div style="border-top:1px solid #eaeaea; padding-top:12px; display:flex; flex-direction:column; gap:6px; font-size:13px; color:#555;">
+              <div style="display:flex; justify-content:space-between;">
+                <span>Subtotal</span>
+                <span>R$ ${sale.subtotal.toFixed(2)}</span>
+              </div>
+              ${sale.discount > 0 ? `
+                <div style="display:flex; justify-content:space-between; color:#10b981;">
+                  <span>Desconto Cupom</span>
+                  <span>- R$ ${sale.discount.toFixed(2)}</span>
+                </div>
+              ` : ''}
+              <div style="display:flex; justify-content:space-between;">
+                <span>Valor de Envio</span>
+                <span>R$ ${sale.shippingFee.toFixed(2)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-weight:700; font-size:15px; color:#6a3f97; border-top:1px solid #eaeaea; padding-top:6px; margin-top:4px;">
+                <span>Total Pago</span>
+                <span>R$ ${sale.total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid #eaeaea; margin-top:15px; padding-top:15px; font-size:13px; color:#555; display:flex; flex-direction:column; gap:6px;">
+              <p style="margin:0;"><strong>Cliente da compra:</strong> ${sale.clientName}</p>
+              <p style="margin:0;"><strong>Método de Pagamento:</strong> ${sale.paymentMethod.toUpperCase()}</p>
+              <p style="margin:0;"><strong>Endereço de Entrega:</strong> ${sale.deliveryAddress || 'Retirada na Loja Física'}</p>
+              <p style="margin:0; font-size:11px; color:#718096; margin-top:4px;">Pedido efetuado em: ${orderDate}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="notifications-container" class="notifications-container"></div>
+    `;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Listener de cópia da chave Pix na tela de rastreamento
+    const btnTrackCopy = document.getElementById('btn-track-copy-pix');
+    if (btnTrackCopy) {
+      btnTrackCopy.addEventListener('click', () => {
+        const input = document.getElementById('track-pix-copy-key');
+        input.select();
+        document.execCommand('copy');
+        showNotification('Chave Pix copiada com sucesso!', 'success');
+      });
+    }
+  }
+
+  function renderMyAccountPage() {
+    injectCheckoutAccountStyles();
+    
+    // Se o cliente não estiver logado, exibe formulários de login/registro (Estilo Sephora)
+    if (!loggedClient) {
+      appContainer.innerHTML = `
+        <div style="background:#fafafa; min-height:100vh; padding-bottom:50px; font-family:'Outfit', sans-serif;">
+          <!-- Header -->
+          <header style="background:white; border-bottom:1px solid #eaeaea; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <a href="#home" style="cursor:pointer;"><img src="/logo-purple-text.png" alt="Purple Logo" style="height:40px;"></a>
+            <a href="#home" style="color:#6a3f97; font-weight:600; text-decoration:none; font-size:14px; display:flex; align-items:center; gap:6px;"><i data-lucide="arrow-left" style="width:16px; height:16px;"></i> Continuar Comprando</a>
+          </header>
+
+          <div style="max-width:550px; margin:50px auto; padding:0 20px;">
+            <div class="checkout-card" style="box-shadow: 0 8px 30px rgba(0,0,0,0.05); border:1px solid #eaeaea;">
+              <div style="display:flex; border-bottom:2px solid #f3f4f6; margin-bottom:20px;">
+                <button id="btn-acc-tab-login" style="flex:1; padding:12px; background:none; border:none; font-size:16px; font-weight:700; color:#8b5cf6; border-bottom:3px solid #8b5cf6; cursor:pointer;">Entrar</button>
+                <button id="btn-acc-tab-register" style="flex:1; padding:12px; background:none; border:none; font-size:16px; font-weight:600; color:#9ca3af; border-bottom:3px solid transparent; cursor:pointer;">Criar Conta</button>
+              </div>
+
+              <!-- Login Form -->
+              <form id="account-login-form" style="display:flex; flex-direction:column; gap:14px; text-align:left;">
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="acc-email" style="font-size:13px; font-weight:600; color:#4b5563;">E-mail</label>
+                  <input type="email" id="acc-email" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:10px; outline:none;" placeholder="ana.silva@email.com">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="acc-password" style="font-size:13px; font-weight:600; color:#4b5563;">Senha</label>
+                  <input type="password" id="acc-password" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:10px; outline:none;" placeholder="Sua senha">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" style="background:#8b5cf6; color:white; border:none; padding:12px; border-radius:6px; font-weight:700; cursor:pointer; margin-top:10px; font-size:14px;">Entrar na Conta</button>
+              </form>
+
+              <!-- Register Form -->
+              <form id="account-register-form" class="hidden" style="display:none; flex-direction:column; gap:14px; text-align:left;">
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="reg-acc-name" style="font-size:13px; font-weight:600; color:#4b5563;">Nome Completo</label>
+                  <input type="text" id="reg-acc-name" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:10px; outline:none;" placeholder="Ex: Juliana Santos">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="reg-acc-email" style="font-size:13px; font-weight:600; color:#4b5563;">E-mail</label>
+                  <input type="email" id="reg-acc-email" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:10px; outline:none;" placeholder="juliana@email.com">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="reg-acc-phone" style="font-size:13px; font-weight:600; color:#4b5563;">WhatsApp</label>
+                  <input type="text" id="reg-acc-phone" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:10px; outline:none;" placeholder="(11) 98888-7777">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label for="reg-acc-password" style="font-size:13px; font-weight:600; color:#4b5563;">Crie uma Senha</label>
+                  <input type="password" id="reg-acc-password" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:10px; outline:none;" placeholder="Mínimo 6 caracteres">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" style="background:#8b5cf6; color:white; border:none; padding:12px; border-radius:6px; font-weight:700; cursor:pointer; margin-top:10px; font-size:14px;">Criar minha Conta</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div id="notifications-container" class="notifications-container"></div>
+      `;
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // Bind login tabs actions
+      const tabLogin = document.getElementById('btn-acc-tab-login');
+      const tabReg = document.getElementById('btn-acc-tab-register');
+      const formLogin = document.getElementById('account-login-form');
+      const formReg = document.getElementById('account-register-form');
+
+      tabLogin.addEventListener('click', () => {
+        tabLogin.style.color = '#8b5cf6';
+        tabLogin.style.borderBottom = '3px solid #8b5cf6';
+        tabReg.style.color = '#9ca3af';
+        tabReg.style.borderBottom = '3px solid transparent';
+        formLogin.style.display = 'flex';
+        formReg.style.display = 'none';
+      });
+
+      tabReg.addEventListener('click', () => {
+        tabReg.style.color = '#8b5cf6';
+        tabReg.style.borderBottom = '3px solid #8b5cf6';
+        tabLogin.style.color = '#9ca3af';
+        tabLogin.style.borderBottom = '3px solid transparent';
+        formLogin.style.display = 'none';
+        formReg.style.display = 'flex';
+      });
+
+      // Login handler
+      formLogin.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('acc-email').value.trim().toLowerCase();
+        const password = document.getElementById('acc-password').value;
+        const clients = getClients();
+        const matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+
+        if (matched) {
+          loggedClient = matched;
+          sessionStorage.setItem('purple_ecom_logged_in_client', JSON.stringify(matched));
+          showNotification('Acesso autorizado!', 'success');
+          renderMyAccountPage();
+        } else {
+          showNotification('E-mail ou senha incorretos!', 'error');
+        }
+      });
+
+      // Registration handler
+      formReg.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('reg-acc-name').value.trim();
+        const email = document.getElementById('reg-acc-email').value.trim();
+        const phone = document.getElementById('reg-acc-phone').value.trim();
+        const password = document.getElementById('reg-acc-password').value;
+
+        const clients = getClients();
+        if (clients.find(c => c.email.toLowerCase() === email.toLowerCase())) {
+          showNotification('E-mail já está em uso por outra conta!', 'error');
+          return;
+        }
+
+        const newClient = addClient({
+          name, phone, email, password,
+          birthday: '', notes: 'Conta criada via E-Commerce.', debt: 0
+        });
+
+        loggedClient = newClient;
+        sessionStorage.setItem('purple_ecom_logged_in_client', JSON.stringify(newClient));
+        showNotification('Conta criada com sucesso!', 'success');
+        renderMyAccountPage();
+      });
+      return;
+    }
+
+    // Se estiver logado, exibe painel estilo Sephora
+    appContainer.innerHTML = `
+      <div style="background:#fafafa; min-height:100vh; padding-bottom:50px; font-family:'Outfit', sans-serif;">
+        <!-- Header -->
+        <header style="background:white; border-bottom:1px solid #eaeaea; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+          <a href="#home" style="cursor:pointer;"><img src="/logo-purple-text.png" alt="Purple Logo" style="height:40px;"></a>
+          <div style="display:flex; gap:15px; align-items:center;">
+            <span style="font-size:13px; color:#555;">Logado como <strong>${loggedClient.name}</strong></span>
+            <a href="#home" style="color:#6a3f97; font-weight:600; text-decoration:none; font-size:14px; display:flex; align-items:center; gap:6px;"><i data-lucide="arrow-left" style="width:16px; height:16px;"></i> Ir para a Loja</a>
+          </div>
+        </header>
+
+        <div class="account-layout">
+          <!-- Sidebar Menu -->
+          <div class="account-sidebar-menu">
+            <h3>Olá, ${loggedClient.name.split(' ')[0]}!</h3>
+            <button class="account-menu-item ${activeAccountTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
+              <i data-lucide="home" style="width:16px; height:16px;"></i> Minha Conta
+            </button>
+            <button class="account-menu-item ${activeAccountTab === 'dados' ? 'active' : ''}" data-tab="dados">
+              <i data-lucide="user" style="width:16px; height:16px;"></i> Meus Dados
+            </button>
+            <button class="account-menu-item ${activeAccountTab === 'pedidos' ? 'active' : ''}" data-tab="pedidos">
+              <i data-lucide="shopping-bag" style="width:16px; height:16px;"></i> Meus Pedidos
+            </button>
+            <button class="account-menu-item ${activeAccountTab === 'enderecos' ? 'active' : ''}" data-tab="enderecos">
+              <i data-lucide="map-pin" style="width:16px; height:16px;"></i> Meus Endereços
+            </button>
+            <div style="margin-top:15px; border-top:1px solid #eaeaea; padding-top:15px;">
+              <button id="btn-profile-logout" class="account-menu-item" style="color:#ef4444; width:100%; border:none; background:none; text-align:left; justify-content:flex-start;">
+                <i data-lucide="log-out" style="width:16px; height:16px;"></i> Sair da Conta
+              </button>
+            </div>
+          </div>
+
+          <!-- Content Pane -->
+          <div class="account-content-pane">
+            <div class="checkout-card" style="box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+              ${renderAccountTabContentHTML()}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="notifications-container" class="notifications-container"></div>
+    `;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setupMyAccountPageEvents();
+  }
+
+  function renderAccountTabContentHTML() {
+    if (activeAccountTab === 'dashboard') {
+      const sales = getSales();
+      const clientSales = sales.filter(s => s.clientId === loggedClient.id);
+      return `
+        <!-- Beauty Club Banner -->
+        <div class="loyalty-banner">
+          <div>
+            <h4>Purple Beauty Club</h4>
+            <p style="margin:0; font-size:12px; opacity:0.8;">Faça parte do clube de vantagens e acumule benefícios em maquiagens.</p>
+          </div>
+          <div class="loyalty-points">
+            <span>Seus pontos</span>
+            <h2>${clientSales.length * 100}</h2>
+          </div>
+        </div>
+
+        <h3 style="font-size:18px; font-weight:700; margin-bottom:15px;">Resumo da Conta</h3>
+        <div class="dashboard-card-grid">
+          <!-- Address box -->
+          <div style="border:1px solid #eaeaea; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:8px;">
+            <h4 style="font-size:14px; font-weight:700; color:#333; margin:0; display:flex; align-items:center; gap:6px;"><i data-lucide="map-pin" style="width:16px; height:16px; color:#8b5cf6;"></i> Endereço Principal</h4>
+            <p style="font-size:13px; color:#555; margin:0; min-height:40px;">${loggedClient.address || 'Você não tem endereços cadastrados.'}</p>
+            <button id="btn-dash-edit-address" class="btn btn-secondary btn-sm" style="border:1px solid #8b5cf6; color:#8b5cf6; padding:6px; border-radius:6px; cursor:pointer; background:transparent; width:fit-content; font-size:11px; font-weight:bold; margin-top:8px;">Editar Endereço</button>
+          </div>
+
+          <!-- Help card -->
+          <div style="border:1px solid #eaeaea; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:8px;">
+            <h4 style="font-size:14px; font-weight:700; color:#333; margin:0; display:flex; align-items:center; gap:6px;"><i data-lucide="help-circle" style="width:16px; height:16px; color:#8b5cf6;"></i> Precisa de Ajuda?</h4>
+            <p style="font-size:13px; color:#555; margin:0; line-height:1.4;">Fale com nosso Atendimento ao Cliente:<br>E-mail: purplemakeup.contato@gmail.com<br>WhatsApp: <strong>(11) 94903-2024</strong></p>
+            <a href="https://wa.me/5511949032024" target="_blank" style="color:#6a3f97; font-weight:bold; font-size:11px; text-decoration:none; margin-top:8px; display:block;">Chamar no WhatsApp ➔</a>
+          </div>
+        </div>
+      `;
+    }
+
+    if (activeAccountTab === 'dados') {
+      return `
+        <h3 style="font-size:18px; font-weight:700; margin-bottom:15px; border-bottom:1px solid #f3f4f6; padding-bottom:8px;">Meus Dados Pessoais</h3>
+        <form id="form-acc-update-profile" style="display:flex; flex-direction:column; gap:14px; max-width:480px;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label for="prof-name" style="font-size:12px; font-weight:600; color:#4b5563;">Nome Completo</label>
+            <input type="text" id="prof-name" value="${loggedClient.name}" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label for="prof-email" style="font-size:12px; font-weight:600; color:#4b5563;">E-mail</label>
+            <input type="email" id="prof-email" value="${loggedClient.email}" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;">
+          </div>
+          <div style="display:flex; gap:12px;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+              <label for="prof-phone" style="font-size:12px; font-weight:600; color:#4b5563;">Celular / WhatsApp</label>
+              <input type="text" id="prof-phone" value="${loggedClient.phone}" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;">
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+              <label for="prof-cpf" style="font-size:12px; font-weight:600; color:#4b5563;">CPF ou CNPJ</label>
+              <input type="text" id="prof-cpf" value="${loggedClient.cpfCnpj || ''}" class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="000.000.000-00">
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label for="prof-birthday" style="font-size:12px; font-weight:600; color:#4b5563;">Data de Nascimento</label>
+            <input type="text" id="prof-birthday" value="${loggedClient.birthday ? loggedClient.birthday.split('-').reverse().join('/') : ''}" class="input-sm" maxlength="10" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;" placeholder="DD/MM/AAAA">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label for="prof-password" style="font-size:12px; font-weight:600; color:#4b5563;">Senha de Acesso</label>
+            <input type="password" id="prof-password" value="${loggedClient.password || ''}" required class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none;">
+          </div>
+          <button type="submit" class="btn btn-primary" style="background:#8b5cf6; color:white; border:none; padding:10px 25px; border-radius:6px; font-weight:600; cursor:pointer; width:fit-content; margin-top:8px;">Salvar Alterações</button>
+        </form>
+      `;
+    }
+
+    if (activeAccountTab === 'pedidos') {
+      const sales = getSales();
+      const clientSales = sales.filter(s => s.clientId === loggedClient.id);
+
+      return `
+        <h3 style="font-size:18px; font-weight:700; margin-bottom:15px; border-bottom:1px solid #f3f4f6; padding-bottom:8px;">Meus Pedidos Realizados</h3>
+        <div style="display:flex; flex-direction:column; gap:15px; margin-top:15px;">
+          ${clientSales.length === 0 ? `
+            <p style="color:#666; text-align:center; padding:30px 0;">Você ainda não realizou nenhuma compra online.</p>
+          ` : clientSales.reverse().map(sale => {
+            const orderDate = new Date(sale.timestamp || sale.date).toLocaleString('pt-BR');
+            const statusBadgeColor = sale.status === 'Entregue' ? '#10b981' : (sale.status === 'Enviado' ? '#3b82f6' : '#f59e0b');
+            return `
+              <div style="border:1px solid #eaeaea; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                  <div>
+                    <span style="font-size:11px; text-transform:uppercase; color:#9ca3af; font-weight:600;">Código do Pedido</span>
+                    <br><strong style="font-size:14px; color:#6a3f97; font-family:monospace;">#${sale.id.split('_')[1] || sale.id}</strong>
+                  </div>
+                  <span style="background:${statusBadgeColor}; color:white; font-size:11px; font-weight:bold; padding:4px 10px; border-radius:12px;">${sale.status || 'Preparando'}</span>
+                </div>
+
+                <div style="font-size:13px; color:#555; background:#fcfcfc; padding:10px; border-radius:6px; border:1px solid #f3f4f6;">
+                  ${sale.items.map(i => `• ${i.quantity}x ${i.name}`).join('<br>')}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-top:1px solid #f3f4f6; padding-top:10px; font-size:12px;">
+                  <span style="color:#6b7280;">Realizado em: ${orderDate}</span>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <strong style="color:#111; font-size:14px;">Total: R$ ${sale.total.toFixed(2)}</strong>
+                    <a href="#pedido_${sale.id}" style="color:#8b5cf6; font-weight:bold; text-decoration:none; display:flex; align-items:center; gap:4px;">Rastrear <i data-lucide="arrow-right" style="width:14px; height:14px;"></i></a>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    if (activeAccountTab === 'enderecos') {
+      return `
+        <h3 style="font-size:18px; font-weight:700; margin-bottom:15px; border-bottom:1px solid #f3f4f6; padding-bottom:8px;">Meus Endereços</h3>
+        <form id="form-acc-update-address" style="display:flex; flex-direction:column; gap:14px; max-width:480px;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label for="prof-address" style="font-size:12px; font-weight:600; color:#4b5563;">Endereço de Entrega Principal</label>
+            <textarea id="prof-address" required style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:10px; outline:none; height:80px; resize:none; font-family:inherit; font-size:13px;" placeholder="Ex: Av. Paulista, 1000 - Apto 51 - Bairro: Bela Vista, São Paulo/SP - CEP: 01310-100">${loggedClient.address || ''}</textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="background:#8b5cf6; color:white; border:none; padding:10px 25px; border-radius:6px; font-weight:600; cursor:pointer; width:fit-content; margin-top:8px;">Salvar Endereço</button>
+        </form>
+      `;
+    }
+  }
+
+  function setupMyAccountPageEvents() {
+    if (!loggedClient) return;
+
+    // Logout
+    const logoutBtn = document.getElementById('btn-profile-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        loggedClient = null;
+        sessionStorage.removeItem('purple_ecom_logged_in_client');
+        showNotification('Sessão finalizada com sucesso!', 'info');
+        window.location.hash = '#home';
+      });
+    }
+
+    // Eventos do Menu Lateral
+    const menuButtons = document.querySelectorAll('.account-menu-item[data-tab]');
+    menuButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeAccountTab = btn.getAttribute('data-tab');
+        renderMyAccountPage();
+      });
+    });
+
+    // Edição de Endereço no Dashboard trigger
+    const editAddrBtn = document.getElementById('btn-dash-edit-address');
+    if (editAddrBtn) {
+      editAddrBtn.addEventListener('click', () => {
+        activeAccountTab = 'enderecos';
+        renderMyAccountPage();
+      });
+    }
+
+    // Formulário de atualização cadastral
+    const updateProfileForm = document.getElementById('form-acc-update-profile');
+    if (updateProfileForm) {
+      const birthdayField = document.getElementById('prof-birthday');
+      if (birthdayField) {
+        birthdayField.addEventListener('input', (e) => {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length > 8) value = value.slice(0, 8);
+          if (value.length > 4) {
+            value = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+          } else if (value.length > 2) {
+            value = `${value.slice(0, 2)}/${value.slice(2)}`;
+          }
+          e.target.value = value;
+        });
+      }
+
+      updateProfileForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('prof-name').value.trim();
+        const email = document.getElementById('prof-email').value.trim();
+        const phone = document.getElementById('prof-phone').value.trim();
+        const cpfCnpj = document.getElementById('prof-cpf').value.trim();
+        const password = document.getElementById('prof-password').value;
+
+        const birthdayRaw = birthdayField.value.trim();
+        let birthday = '';
+        if (birthdayRaw) {
+          const parts = birthdayRaw.split('/');
+          if (parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4) {
+            birthday = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          } else {
+            showNotification('Data de nascimento inválida! Use DD/MM/AAAA', 'error');
+            return;
+          }
+        }
+
+        const updated = updateClient(loggedClient.id, { name, email, phone, cpfCnpj, birthday, password });
+        if (updated) {
+          loggedClient = updated;
+          sessionStorage.setItem('purple_ecom_logged_in_client', JSON.stringify(updated));
+          showNotification('Perfil atualizado com sucesso!', 'success');
+          renderMyAccountPage();
+        } else {
+          showNotification('Erro ao atualizar os dados do perfil.', 'error');
+        }
+      });
+    }
+
+    // Formulário de atualização do endereço
+    const updateAddressForm = document.getElementById('form-acc-update-address');
+    if (updateAddressForm) {
+      updateAddressForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const address = document.getElementById('prof-address').value.trim();
+        const updated = updateClient(loggedClient.id, { address });
+        if (updated) {
+          loggedClient = updated;
+          sessionStorage.setItem('purple_ecom_logged_in_client', JSON.stringify(updated));
+          showNotification('Endereço salvo com sucesso!', 'success');
+          renderMyAccountPage();
+        } else {
+          showNotification('Erro ao salvar endereço.', 'error');
+        }
+      });
+    }
+  }
+
+  function router() {
+    injectCheckoutAccountStyles();
+    const hash = window.location.hash || '#home';
+    
+    // Fecha gavetas do e-commerce se estiverem abertas
+    const cartDrawer = document.getElementById('ecom-cart-drawer');
+    if (cartDrawer) cartDrawer.classList.remove('active');
+    const favDrawer = document.getElementById('ecom-favorites-drawer');
+    if (favDrawer) favDrawer.classList.remove('active');
+
+    // Desativa autoplay do carrossel se não estiver na home
+    if (hash !== '#home' && hash !== '#' && hash !== '') {
+      if (carouselInterval) {
+        clearInterval(carouselInterval);
+        carouselInterval = null;
+      }
+    }
+
+    if (hash.startsWith('#pedido_')) {
+      const orderId = hash.replace('#pedido_', '');
+      renderOrderTrackingPage(orderId);
+    } else if (hash === '#carrinho' || hash === '#checkout') {
+      renderCheckoutPage();
+    } else if (hash.startsWith('#minha-conta')) {
+      renderMyAccountPage();
+    } else {
+      renderLayout();
+    }
+  }
+
+  window.addEventListener('hashchange', router);
+  window.addEventListener('load', router);
+
   function showNotification(msg, type) {
-    const nContainer = document.getElementById('notifications-container');
+    let nContainer = document.getElementById('notifications-container');
+    if (!nContainer) {
+      nContainer = document.createElement('div');
+      nContainer.id = 'notifications-container';
+      nContainer.className = 'notifications-container';
+      document.body.appendChild(nContainer);
+    }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = `<span class="toast-msg">${msg}</span>`;
@@ -2032,6 +3485,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   }
 
-  // Inicializa o layout completo
-  renderLayout();
+  // Inicializa o roteador principal
+  router();
 });
