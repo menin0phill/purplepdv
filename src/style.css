@@ -2667,7 +2667,7 @@ select.select-order-status.status-can {
 .ecom-hero-text-side {
   flex: 1 !important;
   text-align: left !important;
-  max-width: 460px !important;
+  max-width: 580px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
@@ -2688,13 +2688,13 @@ select.select-order-status.status-can {
 }
 
 .ecom-hero-title .title-sub {
-  font-size: 4.2rem !important;
+  font-size: 5.6rem !important;
   letter-spacing: -2px !important;
 }
 
 .ecom-hero-title .title-main {
-  font-size: 6.8rem !important;
-  letter-spacing: -3px !important;
+  font-size: 8.4rem !important;
+  letter-spacing: -4px !important;
   margin-top: -5px !important;
   color: #ffffff !important;
 }
@@ -2720,6 +2720,7 @@ select.select-order-status.status-can {
   justify-content: flex-end !important;
   position: relative !important;
   max-width: 720px !important;
+  transform: translateX(50px) !important; /* Move o carrossel 50px adicionais para a direita */
 }
 
 /* Responsividade Geral E-Commerce */
