@@ -11,6 +11,9 @@ import { getConfig, syncWithSupabase, getOperators } from './db.js';
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app');
   
+  // Sincroniza em segundo plano para carregar novos operadores e configurações
+  syncWithSupabase().catch(err => console.warn("Erro no sync inicial:", err));
+
   // Controle de Sessão de Operador do Caixa
   const activeOperator = sessionStorage.getItem('purple_pdv_active_operator');
   if (!activeOperator) {
@@ -165,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Submit Action
     const loginForm = document.getElementById('purple-login-form');
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!isCaptchaVerified) {
         showNotification('Por favor, marque a caixa de verificação humana!', 'error');
@@ -175,9 +178,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
       
-      const operators = getOperators();
-      const matched = operators.find(op => op.email.toLowerCase() === email.toLowerCase() && op.password === password);
+      let operators = getOperators();
+      let matched = operators.find(op => op.email.toLowerCase() === email.toLowerCase() && op.password === password);
       
+      if (!matched) {
+        // Tenta sincronizar em tempo real com o servidor se o operador não for encontrado localmente
+        const submitBtn = document.getElementById('btn-login-submit');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Verificando...';
+        submitBtn.disabled = true;
+        
+        try {
+          await syncWithSupabase();
+          operators = getOperators();
+          matched = operators.find(op => op.email.toLowerCase() === email.toLowerCase() && op.password === password);
+        } catch (err) {
+          console.warn("Erro ao sincronizar operadores no login:", err);
+        }
+        
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+
       if (matched) {
         sessionStorage.setItem('purple_pdv_active_operator', JSON.stringify(matched));
         if (matched.role === 'admin') {

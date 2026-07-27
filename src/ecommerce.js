@@ -679,13 +679,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Ações de Submit Auth
-    formLogin.addEventListener('submit', (e) => {
+    formLogin.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim();
       const pass = document.getElementById('login-password').value;
 
-      const registeredClients = getClients();
-      const client = registeredClients.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
+      let registeredClients = getClients();
+      let client = registeredClients.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
+
+      if (!client || client.password !== pass) {
+        showNotification('Verificando cadastro no servidor...', 'info');
+        try {
+          await syncWithSupabase();
+          registeredClients = getClients();
+          client = registeredClients.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
+        } catch (err) {
+          console.warn("Erro ao sincronizar clientes no login:", err);
+        }
+      }
 
       if (client && client.password === pass) {
         loggedClient = client;
@@ -2754,12 +2765,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Step 1: Login Form
     const loginForm = document.getElementById('checkout-login-form');
     if (loginForm) {
-      loginForm.addEventListener('submit', (e) => {
+      loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('ch-login-email').value.trim().toLowerCase();
         const password = document.getElementById('ch-login-password').value;
-        const clients = getClients();
-        const matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+        
+        let clients = getClients();
+        let matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+
+        if (!matched) {
+          showNotification('Verificando cadastro no servidor...', 'info');
+          try {
+            await syncWithSupabase();
+            clients = getClients();
+            matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+          } catch (err) {
+            console.warn("Erro ao sincronizar clientes no login:", err);
+          }
+        }
 
         if (matched) {
           loggedClient = matched;
@@ -3394,12 +3417,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       // Login handler
-      formLogin.addEventListener('submit', (e) => {
+      formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('acc-email').value.trim().toLowerCase();
         const password = document.getElementById('acc-password').value;
-        const clients = getClients();
-        const matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+        
+        let clients = getClients();
+        let matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+
+        if (!matched) {
+          showNotification('Verificando cadastro no servidor...', 'info');
+          try {
+            await syncWithSupabase();
+            clients = getClients();
+            matched = clients.find(c => c.email.toLowerCase() === email && c.password === password);
+          } catch (err) {
+            console.warn("Erro ao sincronizar clientes no login:", err);
+          }
+        }
 
         if (matched) {
           loggedClient = matched;
