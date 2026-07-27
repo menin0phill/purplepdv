@@ -762,6 +762,34 @@ export function updateCashOperator(newOperatorName) {
 let isSyncing = false;
 let syncQueued = false;
 
+// Helper para buscar todas as linhas contornando o limite nativo do PostgREST (1000 linhas) via paginação
+async function fetchAllRows(tableName, orderBy = 'updated_at') {
+  if (!supabase) return { data: null, error: 'not_configured' };
+  let allRows = [];
+  let from = 0;
+  const step = 1000;
+  let more = true;
+  while (more) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .order(orderBy, { ascending: true })
+      .range(from, from + step - 1);
+    
+    if (error || !data) {
+      if (allRows.length === 0) return { data: null, error };
+      break;
+    }
+    allRows = allRows.concat(data);
+    if (data.length < step) {
+      more = false;
+    } else {
+      from += step;
+    }
+  }
+  return { data: allRows, error: null };
+}
+
 export async function syncWithSupabase() {
   if (!supabase) {
     console.log("Supabase: Client not configured. Running in LocalStorage-only mode.");
@@ -893,8 +921,8 @@ export async function syncWithSupabase() {
     for (const session of unsyncedSessions) {
       const payload = {
         id: session.id,
-        operator: session.operator || '',
-        open_time: session.openedAt || null,
+        operator: session.operator,
+        open_time: session.openedAt,
         close_time: session.closedAt || null,
         initial_cash: Number(session.initialAmount) || 0,
         final_cash: Number(session.actualAmount) || 0,
@@ -914,10 +942,7 @@ export async function syncWithSupabase() {
 
     // 2. PULL FRESH TABLES FROM REMOTE AND OVERWRITE LOCAL
     // Fetch Products
-    const { data: dbProducts, error: errProducts } = await supabase
-      .from('products')
-      .select('*')
-      .order('updated_at', { ascending: true });
+    const { data: dbProducts, error: errProducts } = await fetchAllRows('products', 'updated_at');
 
     if (!errProducts && dbProducts) {
       const mappedProds = dbProducts.map(p => ({
@@ -949,10 +974,7 @@ export async function syncWithSupabase() {
     }
 
     // Fetch Clients
-    const { data: dbClients, error: errClients } = await supabase
-      .from('clients')
-      .select('*')
-      .order('updated_at', { ascending: true });
+    const { data: dbClients, error: errClients } = await fetchAllRows('clients', 'updated_at');
 
     if (!errClients && dbClients) {
       const mappedClients = dbClients.map(c => ({
@@ -984,10 +1006,7 @@ export async function syncWithSupabase() {
 
     // Fetch Operators
     try {
-      const { data: dbOperators, error: errOperators } = await supabase
-        .from('operators')
-        .select('*')
-        .order('updated_at', { ascending: true });
+      const { data: dbOperators, error: errOperators } = await fetchAllRows('operators', 'updated_at');
 
       if (!errOperators && dbOperators) {
         const mappedOperators = dbOperators.map(o => ({
@@ -1016,10 +1035,7 @@ export async function syncWithSupabase() {
     }
 
     // Fetch Sales
-    const { data: dbSales, error: errSales } = await supabase
-      .from('sales')
-      .select('*')
-      .order('updated_at', { ascending: true });
+    const { data: dbSales, error: errSales } = await fetchAllRows('sales', 'updated_at');
 
     if (!errSales && dbSales) {
       const mappedSales = dbSales.map(s => ({
@@ -1057,10 +1073,7 @@ export async function syncWithSupabase() {
     }
 
     // Fetch Cash Sessions
-    const { data: dbSessions, error: errSessions } = await supabase
-      .from('cash_sessions')
-      .select('*')
-      .order('updated_at', { ascending: true });
+    const { data: dbSessions, error: errSessions } = await fetchAllRows('cash_sessions', 'updated_at');
 
     if (!errSessions && dbSessions) {
       const mappedSessions = dbSessions.map(s => ({
