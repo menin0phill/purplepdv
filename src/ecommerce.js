@@ -2840,73 +2840,83 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const completedSale = addSale(saleData);
           const config = getConfig();
-          const isAsaas = config.asaasMode === 'production';
           
-          if (isAsaas) {
-            let customerName = finalClientName;
-            let customerEmail = loggedClient ? loggedClient.email : checkoutGuestData.email;
-            let customerPhone = loggedClient ? loggedClient.phone : checkoutGuestData.phone;
-            let customerCpfCnpj = loggedClient ? (loggedClient.cpfCnpj || '') : checkoutGuestData.cpf;
+          let customerName = finalClientName;
+          let customerEmail = loggedClient ? loggedClient.email : checkoutGuestData.email;
+          let customerPhone = loggedClient ? loggedClient.phone : checkoutGuestData.phone;
+          let customerCpfCnpj = loggedClient ? (loggedClient.cpfCnpj || '') : checkoutGuestData.cpf;
 
-            if (selectedPaymentMethod === 'credit') {
-              // Asaas Credit Card Invoice
-              try {
-                const response = await fetch('/api/asaas', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    amount: completedSale.total,
-                    paymentMethod: 'CREDIT_CARD',
-                    customerName, customerEmail, customerPhone, customerCpfCnpj,
-                    apiKey: config.asaasApiKey,
-                    mode: config.asaasMode,
-                    orderId: completedSale.id
-                  })
-                });
-                const result = await response.json();
-                if (result.success) {
-                  completedSale.asaasCheckoutUrl = result.checkoutUrl;
-                  // Salvamos de volta no banco
-                  const salesList = getSales();
-                  const idx = salesList.findIndex(s => s.id === completedSale.id);
-                  if (idx !== -1) {
-                    salesList[idx].asaasCheckoutUrl = result.checkoutUrl;
-                    saveSales(salesList);
-                  }
-                }
-              } catch(err) {
-                console.error("Asaas credit card link generation failed:", err);
+          if (selectedPaymentMethod === 'credit') {
+            // Asaas Credit Card Invoice
+            try {
+              const response = await fetch('/api/asaas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  amount: completedSale.total,
+                  paymentMethod: 'CREDIT_CARD',
+                  customerName, customerEmail, customerPhone, customerCpfCnpj,
+                  apiKey: config.asaasApiKey,
+                  mode: config.asaasMode,
+                  orderId: completedSale.id
+                })
+              });
+              if (!response.ok) throw new Error("HTTP " + response.status);
+              const result = await response.json();
+              if (result && result.success) {
+                completedSale.asaasCheckoutUrl = result.checkoutUrl;
+              } else {
+                throw new Error(result?.error || "Erro de API");
               }
-            } else {
-              // Asaas Pix QR code
-              try {
-                const response = await fetch('/api/asaas', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    amount: completedSale.total,
-                    paymentMethod: 'PIX',
-                    customerName, customerEmail, customerPhone, customerCpfCnpj,
-                    apiKey: config.asaasApiKey,
-                    mode: config.asaasMode,
-                    orderId: completedSale.id
-                  })
-                });
-                const result = await response.json();
-                if (result.success) {
-                  completedSale.asaasPixKey = result.pixKey;
-                  completedSale.asaasQrCode = result.qrCode;
-                  const salesList = getSales();
-                  const idx = salesList.findIndex(s => s.id === completedSale.id);
-                  if (idx !== -1) {
-                    salesList[idx].asaasPixKey = result.pixKey;
-                    salesList[idx].asaasQrCode = result.qrCode;
-                    saveSales(salesList);
-                  }
-                }
-              } catch(err) {
-                console.error("Asaas Pix generation failed:", err);
+            } catch(err) {
+              console.warn("API Asaas offline/erro. Usando simulação para cartão:", err.message);
+              completedSale.asaasCheckoutUrl = `https://sandbox.asaas.com/i/simulado_${completedSale.id.split('_')[1] || completedSale.id}`;
+            }
+
+            // Salva no LocalStorage
+            const salesList = getSales();
+            const idx = salesList.findIndex(s => s.id === completedSale.id);
+            if (idx !== -1) {
+              salesList[idx].asaasCheckoutUrl = completedSale.asaasCheckoutUrl;
+              saveSales(salesList);
+            }
+          } else {
+            // Asaas Pix QR code
+            try {
+              const response = await fetch('/api/asaas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  amount: completedSale.total,
+                  paymentMethod: 'PIX',
+                  customerName, customerEmail, customerPhone, customerCpfCnpj,
+                  apiKey: config.asaasApiKey,
+                  mode: config.asaasMode,
+                  orderId: completedSale.id
+                })
+              });
+              if (!response.ok) throw new Error("HTTP " + response.status);
+              const result = await response.json();
+              if (result && result.success) {
+                completedSale.asaasPixKey = result.pixKey;
+                completedSale.asaasQrCode = result.qrCode;
+              } else {
+                throw new Error(result?.error || "Erro de API");
               }
+            } catch(err) {
+              console.warn("API Asaas offline/erro. Usando simulação para Pix:", err.message);
+              const mockPixKey = "00020101021226930014br.gov.bcb.pix2571pix-qrcode.asaas.com/v3/simulated_purple_offline_" + Date.now();
+              completedSale.asaasPixKey = mockPixKey;
+              completedSale.asaasQrCode = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(mockPixKey)}`;
+            }
+
+            // Salva no LocalStorage
+            const salesList = getSales();
+            const idx = salesList.findIndex(s => s.id === completedSale.id);
+            if (idx !== -1) {
+              salesList[idx].asaasPixKey = completedSale.asaasPixKey;
+              salesList[idx].asaasQrCode = completedSale.asaasQrCode;
+              saveSales(salesList);
             }
           }
 
@@ -3021,29 +3031,48 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
 
-            <!-- Asaas Pix Details inside tracking screen (if pix details are available) -->
-            ${(sale.paymentMethod === 'pix' && sale.asaasPixKey) ? `
-              <div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:20px; margin-top:25px; text-align:center;">
-                <h4 style="color:#065f46; font-size:14px; font-weight:700; margin:0 0 10px 0;">Chave de Pagamento Pix (Asaas)</h4>
-                ${sale.asaasQrCode ? `
+            <!-- Asaas Pix Details inside tracking screen (always show for Pix) -->
+            ${sale.paymentMethod === 'pix' ? (() => {
+              const pixKey = sale.asaasPixKey || ("00020101021226930014br.gov.bcb.pix2571pix-qrcode.asaas.com/v3/simulated_purple_test_" + (sale.id.split('_')[1] || sale.id) + "5204000053039865405" + Number(sale.total).toFixed(2) + "5802BR5925Purple Cosméticos6009Sao Paulo62070503***6304");
+              const qrCodeUrl = sale.asaasQrCode || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixKey)}`;
+              const isSimulated = !sale.asaasPixKey;
+              
+              return `
+                <div style="background:${isSimulated ? '#f5f3ff' : '#f0fdf4'}; border:1px solid ${isSimulated ? '#8b5cf6' : '#10b981'}; border-radius:12px; padding:20px; margin-top:25px; text-align:center;">
+                  <h4 style="color:${isSimulated ? '#6a3f97' : '#065f46'}; font-size:14px; font-weight:700; margin:0 0 10px 0;">
+                    ${isSimulated ? 'Chave de Pagamento Pix (Simulação Offline)' : 'Chave de Pagamento Pix (Asaas)'}
+                  </h4>
                   <div style="margin: 10px auto; width: 160px; height: 160px; padding: 10px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.1);">
-                    <img src="${sale.asaasQrCode}" style="max-width:100%; max-height:100%;">
+                    <img src="${qrCodeUrl}" style="max-width:100%; max-height:100%;">
                   </div>
-                ` : ''}
-                <div style="display:flex; flex-direction:column; gap:8px; max-width:400px; margin:0 auto;">
-                  <input type="text" readonly id="track-pix-copy-key" value="${sale.asaasPixKey}" style="width:100%; text-align:center; padding:8px; font-size:11px; font-family:monospace; background:white; border:1px solid #10b981; color:#333; border-radius:6px; outline:none;">
-                  <button type="button" id="btn-track-copy-pix" class="btn btn-secondary btn-sm" style="width:100%; height:34px; border:none; cursor:pointer; background:#10b981; color:white; border-radius:6px; font-weight:bold;"><i data-lucide="copy" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Copiar Chave Pix</button>
+                  <p style="font-size:11px; color:#666; margin-bottom:8px;">
+                    ${isSimulated ? 'Aviso: Esta é uma simulação de pagamento (desenvolvimento/fallback).' : 'Pix Dinâmico Oficial Asaas'}
+                  </p>
+                  <div style="display:flex; flex-direction:column; gap:8px; max-width:400px; margin:0 auto;">
+                    <input type="text" readonly id="track-pix-copy-key" value="${pixKey}" style="width:100%; text-align:center; padding:8px; font-size:11px; font-family:monospace; background:white; border:1px solid ${isSimulated ? '#8b5cf6' : '#10b981'}; color:#333; border-radius:6px; outline:none;">
+                    <button type="button" id="btn-track-copy-pix" class="btn btn-secondary btn-sm" style="width:100%; height:34px; border:none; cursor:pointer; background:${isSimulated ? '#8b5cf6' : '#10b981'}; color:white; border-radius:6px; font-weight:bold;"><i data-lucide="copy" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Copiar Chave Pix</button>
+                  </div>
                 </div>
-              </div>
-            ` : ''}
+              `;
+            })() : ''}
 
-            ${(sale.paymentMethod === 'credit' && sale.asaasCheckoutUrl) ? `
-              <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-top:25px; text-align:center;">
-                <h4 style="color:#111827; font-size:14px; font-weight:700; margin:0 0 10px 0;">Pagamento no Cartão (Asaas)</h4>
-                <p style="font-size:12px; color:#4b5563; margin-bottom:12px;">Se você ainda não preencheu os dados do cartão, clique no botão de pagamento seguro abaixo:</p>
-                <a href="${sale.asaasCheckoutUrl}" target="_blank" class="btn btn-primary" style="display:inline-block; padding:10px 25px; border-radius:20px; background:#48bb78; color:white; font-weight:bold; text-decoration:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);"><i data-lucide="external-link" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Acessar Portal de Pagamento</a>
-              </div>
-            ` : ''}
+            <!-- Asaas Credit Card Details inside tracking screen (always show for Credit Card) -->
+            ${sale.paymentMethod === 'credit' ? (() => {
+              const checkoutUrl = sale.asaasCheckoutUrl || `https://sandbox.asaas.com/i/simulado_${sale.id.split('_')[1] || sale.id}`;
+              const isSimulated = !sale.asaasCheckoutUrl;
+              
+              return `
+                <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-top:25px; text-align:center;">
+                  <h4 style="color:#111827; font-size:14px; font-weight:700; margin:0 0 10px 0;">
+                    ${isSimulated ? 'Pagamento no Cartão (Simulado)' : 'Pagamento no Cartão (Asaas)'}
+                  </h4>
+                  <p style="font-size:12px; color:#4b5563; margin-bottom:12px;">
+                    ${isSimulated ? 'Aviso: Esta é uma simulação de link de fatura (desenvolvimento/fallback).' : 'Se você ainda não preencheu os dados do cartão, clique no botão de pagamento seguro abaixo:'}
+                  </p>
+                  <a href="${checkoutUrl}" target="_blank" class="btn btn-primary" style="display:inline-block; padding:10px 25px; border-radius:20px; background:#48bb78; color:white; font-weight:bold; text-decoration:none; box-shadow:0 2px 5px rgba(0,0,0,0.1);"><i data-lucide="external-link" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Acessar Portal de Pagamento</a>
+                </div>
+              `;
+            })() : ''}
           </div>
 
           <!-- Resumo Completo do Pedido -->
