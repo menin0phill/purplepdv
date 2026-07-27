@@ -941,6 +941,8 @@ export async function syncWithSupabase() {
     localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(localSessions));
 
     // 2. PULL FRESH TABLES FROM REMOTE AND OVERWRITE LOCAL
+    let dataChanged = false;
+
     // Fetch Products
     const { data: dbProducts, error: errProducts } = await fetchAllRows('products', 'updated_at');
 
@@ -970,7 +972,12 @@ export async function syncWithSupabase() {
           merged.push(sp);
         }
       });
-      localStorage.setItem(KEY_PRODUCTS, JSON.stringify(merged));
+      const prevVal = localStorage.getItem(KEY_PRODUCTS);
+      const newVal = JSON.stringify(merged);
+      if (prevVal !== newVal) {
+        localStorage.setItem(KEY_PRODUCTS, newVal);
+        dataChanged = true;
+      }
     }
 
     // Fetch Clients
@@ -1001,7 +1008,12 @@ export async function syncWithSupabase() {
           merged.push(sc);
         }
       });
-      localStorage.setItem(KEY_CLIENTS, JSON.stringify(merged));
+      const prevVal = localStorage.getItem(KEY_CLIENTS);
+      const newVal = JSON.stringify(merged);
+      if (prevVal !== newVal) {
+        localStorage.setItem(KEY_CLIENTS, newVal);
+        dataChanged = true;
+      }
     }
 
     // Fetch Operators
@@ -1028,7 +1040,12 @@ export async function syncWithSupabase() {
             merged.push(so);
           }
         });
-        localStorage.setItem(KEY_OPERATORS, JSON.stringify(merged));
+        const prevVal = localStorage.getItem(KEY_OPERATORS);
+        const newVal = JSON.stringify(merged);
+        if (prevVal !== newVal) {
+          localStorage.setItem(KEY_OPERATORS, newVal);
+          dataChanged = true;
+        }
       }
     } catch (e) {
       console.warn("Supabase Operators sync failed or table missing:", e);
@@ -1069,7 +1086,12 @@ export async function syncWithSupabase() {
           merged.push(ss);
         }
       });
-      localStorage.setItem(KEY_SALES, JSON.stringify(merged));
+      const prevVal = localStorage.getItem(KEY_SALES);
+      const newVal = JSON.stringify(merged);
+      if (prevVal !== newVal) {
+        localStorage.setItem(KEY_SALES, newVal);
+        dataChanged = true;
+      }
     }
 
     // Fetch Cash Sessions
@@ -1098,12 +1120,19 @@ export async function syncWithSupabase() {
           merged.push(ss);
         }
       });
-      localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(merged));
+      const prevVal = localStorage.getItem(KEY_CASH_SESSIONS);
+      const newVal = JSON.stringify(merged);
+      if (prevVal !== newVal) {
+        localStorage.setItem(KEY_CASH_SESSIONS, newVal);
+        dataChanged = true;
+      }
     }
 
-    console.log("Supabase: Background synchronization completed successfully!");
+    console.log("Supabase: Background synchronization completed successfully!", { dataChanged });
     localStorage.removeItem('purple_pdv_last_sync_error');
-    window.dispatchEvent(new CustomEvent('db-synced'));
+    if (dataChanged) {
+      window.dispatchEvent(new CustomEvent('db-synced'));
+    }
     return { success: true };
   } catch (err) {
     console.error("Supabase Sync Failed:", err);

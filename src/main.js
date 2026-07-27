@@ -640,12 +640,13 @@ document.addEventListener('DOMContentLoaded', () => {
       syncWithSupabase().catch(err => console.warn("Erro na sincronização periódica do PDV:", err));
     }, 5000);
 
-    // Atualizar tela quando dados mudarem em background (somente se não houver janela modal aberta no momento)
+    // Atualizar tela quando dados mudarem de fato em background (sem interromper operador com modal aberto, digitando ou no PDV/Caixa)
     window.addEventListener('db-synced', () => {
+      updateNavbarCashStatus();
       const isModalActive = document.querySelector('.modal-overlay.active, .modal.active');
-      if (!isModalActive) {
+      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+      if (!isModalActive && !isTyping && currentScreen !== 'pdv' && currentScreen !== 'caixa') {
         navigate(currentScreen);
-        updateNavbarCashStatus();
       }
     });
   }
