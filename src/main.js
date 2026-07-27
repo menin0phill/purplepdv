@@ -625,10 +625,20 @@ document.addEventListener('DOMContentLoaded', () => {
       updateNavbarCashStatus();
     });
 
-    // Sincronização contínua automática em segundo plano (a cada 10 segundos) para manter todas as máquinas alinhadas
+    // Dispara sincronização imediata ao acordar a tela ou voltar para o app (essencial para celulares, tablets e notebooks em modo espera)
+    window.addEventListener('focus', () => {
+      syncWithSupabase().catch(() => {});
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        syncWithSupabase().catch(() => {});
+      }
+    });
+
+    // Sincronização contínua automática em segundo plano (a cada 5 segundos) para manter todas as máquinas alinhadas
     setInterval(() => {
       syncWithSupabase().catch(err => console.warn("Erro na sincronização periódica do PDV:", err));
-    }, 10000);
+    }, 5000);
 
     // Atualizar tela quando dados mudarem em background (somente se não houver janela modal aberta no momento)
     window.addEventListener('db-synced', () => {

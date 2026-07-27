@@ -362,10 +362,20 @@ document.addEventListener('DOMContentLoaded', () => {
       renderProducts();
     });
 
-    // Sincronização contínua em segundo plano (a cada 10 segundos)
+    // Dispara sincronização imediata ao retornar à aba ou acordar a tela
+    window.addEventListener('focus', () => {
+      syncWithSupabase().catch(() => {});
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        syncWithSupabase().catch(() => {});
+      }
+    });
+
+    // Sincronização contínua em segundo plano (a cada 5 segundos)
     setInterval(() => {
       syncWithSupabase().catch(err => console.warn("Erro no sync contínuo E-Commerce:", err));
-    }, 10000);
+    }, 5000);
 
     // Atualizar UI quando dados mudarem em background
     window.addEventListener('db-synced', () => {

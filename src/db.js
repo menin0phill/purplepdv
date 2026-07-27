@@ -10,6 +10,25 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
+// Configurar escuta em tempo real (WebSockets / Supabase Realtime) para propagar alterações instantaneamente para todos os aparelhos (PC, celular e tablet)
+if (supabase) {
+  setTimeout(() => {
+    try {
+      supabase
+        .channel('purple-pdv-realtime-global')
+        .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+          console.log('⚡ [Realtime Supabase] Alteração recebida de outro dispositivo:', payload);
+          syncWithSupabase().catch(err => console.warn('Erro ao sincronizar via Realtime:', err));
+        })
+        .subscribe((status) => {
+          console.log('⚡ [Realtime Supabase] Status de conexão ao canal global:', status);
+        });
+    } catch (e) {
+      console.warn('Não foi possível iniciar o canal Realtime:', e);
+    }
+  }, 1000);
+}
+
 export function sanitizeHTML(str) {
   if (str === null || str === undefined) return '';
   if (typeof str !== 'string') return String(str);
@@ -740,12 +759,21 @@ export function updateCashOperator(newOperatorName) {
 }
 
 // --- SYNC & MEDIA SUPABASE ---
+let isSyncing = false;
+let syncQueued = false;
+
 export async function syncWithSupabase() {
   if (!supabase) {
     console.log("Supabase: Client not configured. Running in LocalStorage-only mode.");
     return { success: false, reason: 'not_configured' };
   }
 
+  if (isSyncing) {
+    syncQueued = true;
+    return { success: false, reason: 'already_syncing' };
+  }
+
+  isSyncing = true;
   try {
     console.log("Supabase: Starting background synchronization...");
 
@@ -1068,6 +1096,14 @@ export async function syncWithSupabase() {
     console.error("Supabase Sync Failed:", err);
     localStorage.setItem('purple_pdv_last_sync_error', err.message || String(err));
     return { success: false, reason: err.message };
+  } finally {
+    isSyncing = false;
+    if (syncQueued) {
+      syncQueued = false;
+      setTimeout(() => {
+        syncWithSupabase().catch(() => {});
+      }, 500);
+    }
   }
 }
 
