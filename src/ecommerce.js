@@ -966,12 +966,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const totalItems = filtered.length;
-    const totalPages = Math.ceil(totalItems / 20);
+    const totalPages = Math.ceil(totalItems / 12);
     if (currentProductsPage > totalPages) {
       currentProductsPage = 1;
     }
-    const startIdx = (currentProductsPage - 1) * 20;
-    const paginatedProducts = filtered.slice(startIdx, startIdx + 20);
+    const startIdx = (currentProductsPage - 1) * 12;
+    const paginatedProducts = filtered.slice(startIdx, startIdx + 12);
 
     grid.innerHTML = paginatedProducts.map(p => {
       const isOut = p.stock <= 0;
@@ -1061,15 +1061,56 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
       `;
       
-      // Números
-      for (let i = 1; i <= totalPages; i++) {
-        const isActive = i === currentProductsPage;
-        html += `
-          <button class="ecom-pag-btn ${isActive ? 'active' : ''}" data-page="${i}" style="width:36px; height:36px; border-radius:8px; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; cursor:${isActive ? 'default' : 'pointer'}; border:${isActive ? 'none' : '1px solid #eaeaea'}; background:${isActive ? '#6a3f97' : 'white'}; color:${isActive ? 'white' : '#6a3f97'}; transition:all 0.2s;" ${isActive ? 'disabled' : ''}>
-            ${i}
-          </button>
-        `;
+      // Lista de páginas visíveis (Sliding window para evitar muitas páginas no rodapé)
+      let visiblePages = [];
+      if (totalPages <= 5) {
+        for (let i = 1; i <= totalPages; i++) visiblePages.push(i);
+      } else {
+        visiblePages.push(1);
+        
+        let start = Math.max(2, currentProductsPage - 1);
+        let end = Math.min(totalPages - 1, currentProductsPage + 1);
+        
+        // Ajustar limites para exibir sempre 3 botões intermediários
+        if (currentProductsPage <= 3) {
+          end = 4;
+        } else if (currentProductsPage >= totalPages - 2) {
+          start = totalPages - 3;
+        }
+        
+        if (start > 2) {
+          visiblePages.push('ellipsis-start');
+        }
+        
+        for (let i = start; i <= end; i++) {
+          visiblePages.push(i);
+        }
+        
+        if (end < totalPages - 1) {
+          visiblePages.push('ellipsis-end');
+        }
+        
+        visiblePages.push(totalPages);
       }
+
+      // Renderiza os botões de páginas
+      visiblePages.forEach(p => {
+        if (p === 'ellipsis-start' || p === 'ellipsis-end') {
+          html += `
+            <span style="color:#6a3f97; padding:0 6px; font-weight:700; font-family:'Outfit', sans-serif;">...</span>
+          `;
+        } else {
+          const isActive = p === currentProductsPage;
+          const startLabel = p === 1 ? 1 : (p - 1) * 12;
+          const endLabel = Math.min(p * 12, totalItems);
+          
+          html += `
+            <button class="ecom-pag-btn ${isActive ? 'active' : ''}" data-page="${p}" style="min-width:64px; height:36px; padding:0 8px; border-radius:8px; font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; cursor:${isActive ? 'default' : 'pointer'}; border:${isActive ? 'none' : '1px solid #eaeaea'}; background:${isActive ? '#6a3f97' : 'white'}; color:${isActive ? 'white' : '#6a3f97'}; transition:all 0.2s;" ${isActive ? 'disabled' : ''}>
+              ${startLabel}-${endLabel}
+            </button>
+          `;
+        }
+      });
       
       // Botão Próximo
       html += `
