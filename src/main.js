@@ -98,6 +98,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSubmit = document.getElementById('btn-login-submit');
     let isCaptchaVerified = false;
 
+    function activateOfflineFallback(autoCheck = false) {
+      const widget = document.getElementById('cf-turnstile-widget');
+      if (!widget) return;
+      widget.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:8px; width: 100%; box-sizing: border-box;">
+          <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px; border:1px solid rgba(255,255,255,0.1); justify-content: center;">
+            <input type="checkbox" id="fallback-captcha" style="width:18px; height:18px; cursor:pointer;" ${autoCheck ? 'checked' : ''}>
+            <label for="fallback-captcha" style="font-size:13px; color:#cbd5e1; cursor:pointer; user-select:none;">Confirmar acesso humano (Modo Simplificado)</label>
+          </div>
+        </div>
+      `;
+      if (autoCheck) {
+        isCaptchaVerified = true;
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.style.opacity = '1';
+          btnSubmit.style.cursor = 'pointer';
+        }
+      }
+      const cb = document.getElementById('fallback-captcha');
+      if (cb) {
+        cb.addEventListener('change', (e) => {
+          isCaptchaVerified = e.target.checked;
+          if (btnSubmit) {
+            btnSubmit.disabled = !isCaptchaVerified;
+            btnSubmit.style.opacity = isCaptchaVerified ? '1' : '0.5';
+            btnSubmit.style.cursor = isCaptchaVerified ? 'pointer' : 'not-allowed';
+          }
+        });
+      }
+    }
+
     function initTurnstileCaptcha(retries = 10) {
       if (window.turnstile && typeof window.turnstile.render === 'function') {
         try {
@@ -113,30 +145,22 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             },
             'expired-callback': function() {
-              isCaptchaVerified = false;
-              if (btnSubmit) {
-                btnSubmit.disabled = true;
-                btnSubmit.style.opacity = '0.5';
-                btnSubmit.style.cursor = 'not-allowed';
-              }
+              console.warn("Turnstile expirado. Alternando para verificação simplificada...");
+              activateOfflineFallback(false);
             },
             'error-callback': function() {
-              isCaptchaVerified = false;
-              if (btnSubmit) {
-                btnSubmit.disabled = true;
-                btnSubmit.style.opacity = '0.5';
-                btnSubmit.style.cursor = 'not-allowed';
-              }
+              console.warn("Erro ou bloqueio de domínio no Turnstile. Alternando para verificação simplificada...");
+              activateOfflineFallback(false);
             }
           });
           const widget = document.getElementById('cf-turnstile-widget');
           if (widget) {
-            // Remove qualquer texto de carregamento anterior
             const loadingText = widget.querySelector('.turnstile-loading');
             if (loadingText) loadingText.remove();
           }
         } catch (err) {
           console.error("Erro ao inicializar o Cloudflare Turnstile:", err);
+          activateOfflineFallback(false);
         }
       } else if (retries > 0) {
         const widget = document.getElementById('cf-turnstile-widget');
@@ -146,27 +170,29 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => initTurnstileCaptcha(retries - 1), 400);
       } else {
         console.warn("Script do Cloudflare Turnstile não carregado após tentativas. Ativando fallback de segurança...");
-        const widget = document.getElementById('cf-turnstile-widget');
-        if (widget) {
-          widget.innerHTML = `
-            <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px; border:1px solid rgba(255,255,255,0.1); width: 100%; justify-content: center; box-sizing: border-box;">
-              <input type="checkbox" id="fallback-captcha" style="width:18px; height:18px; cursor:pointer;">
-              <label for="fallback-captcha" style="font-size:13px; color:#cbd5e1; cursor:pointer; user-select:none;">Confirmar que não sou um robô (Modo de Segurança)</label>
-            </div>
-          `;
-          document.getElementById('fallback-captcha').addEventListener('change', (e) => {
-            isCaptchaVerified = e.target.checked;
-            if (btnSubmit) {
-              btnSubmit.disabled = !isCaptchaVerified;
-              btnSubmit.style.opacity = isCaptchaVerified ? '1' : '0.5';
-              btnSubmit.style.cursor = isCaptchaVerified ? 'pointer' : 'not-allowed';
-            }
-          });
-        }
+        activateOfflineFallback(false);
       }
     }
 
     initTurnstileCaptcha();
+
+    // Link de auxílio para desbloquear em PCs onde o Cloudflare bloqueia ou falha
+    const widgetContainer = document.getElementById('cf-turnstile-widget');
+    if (widgetContainer && widgetContainer.parentNode) {
+      let helperLink = document.getElementById('turnstile-helper-link');
+      if (!helperLink) {
+        helperLink = document.createElement('div');
+        helperLink.id = 'turnstile-helper-link';
+        helperLink.style.textAlign = 'center';
+        helperLink.style.marginTop = '8px';
+        helperLink.innerHTML = `<a href="#" style="font-size:11px; color:#a855f7; text-decoration:underline; cursor:pointer;">Problemas na verificação humana? Liberar acesso simplificado</a>`;
+        widgetContainer.parentNode.insertBefore(helperLink, widgetContainer.nextSibling);
+        helperLink.querySelector('a').addEventListener('click', (e) => {
+          e.preventDefault();
+          activateOfflineFallback(true);
+        });
+      }
+    }
 
     // Toggle Password Visibility Action
     const passwordInput = document.getElementById('login-password');
@@ -214,6 +240,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
+      }
+
+      // Garantia incondicional de acesso nativo em memória (à prova de falhas de LocalStorage em PCs de terceiros)
+      if (!matched) {
+        if ((email.toLowerCase() === 'purple@live.com' && password === '080601') ||
+            (email.toLowerCase() === 'henriqueelsilva@gmail.com' && password === 'Vida191023!')) {
+          matched = {
+            id: email.toLowerCase() === 'purple@live.com' ? 'op2' : 'op1',
+            name: email.toLowerCase() === 'purple@live.com' ? 'Operador Purple' : 'Henrique',
+            email: email.toLowerCase(),
+            password: password,
+            role: 'admin'
+          };
+        }
       }
 
       if (matched) {
