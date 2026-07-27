@@ -92,7 +92,7 @@ export function renderProdutos(container) {
 
     <!-- Modal Novo/Editar Produto -->
     <div id="modal-produto" class="modal-overlay">
-      <div class="modal-card max-w-lg">
+      <div class="modal-card" style="max-width: 850px; width: 95%; max-height: 90vh; overflow-y: auto;">
         <h3 id="product-modal-title">Novo Produto</h3>
         <form id="form-produto" class="form-grid margin-top-md">
           <input type="hidden" id="prod-id">
@@ -133,6 +133,11 @@ export function renderProdutos(container) {
           <div class="form-col-4">
             <label for="prod-stock">Estoque Geral</label>
             <input type="number" id="prod-stock" placeholder="0" required min="0">
+          </div>
+
+          <div class="form-col-12">
+            <label for="prod-description" style="font-weight: 600; margin-bottom: 2px;">Descrição do Produto (Detalhes, Benefícios e Modo de Uso)</label>
+            <textarea id="prod-description" placeholder="Digite uma descrição detalhada, benefícios, modo de uso, textura e especificações para a loja online..." rows="4" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.25); color: white; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box;"></textarea>
           </div>
 
           <div class="form-col-12" style="display: flex; flex-direction: column; gap: 8px;">
@@ -538,6 +543,7 @@ function setupProductEvents(container) {
       costPrice: parseFloat(document.getElementById('prod-cost').value) || 0,
       price: parseFloat(document.getElementById('prod-price').value) || 0,
       stock: parseInt(document.getElementById('prod-stock').value) || 0,
+      description: document.getElementById('prod-description') ? document.getElementById('prod-description').value.trim() : '',
       image: document.getElementById('prod-image').value || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=150&auto=format&fit=crop&q=60',
       variations: variations
     };
@@ -652,6 +658,9 @@ function setupRowActions(container) {
         document.getElementById('prod-cost').value = product.costPrice;
         document.getElementById('prod-price').value = product.price;
         document.getElementById('prod-stock').value = product.stock;
+        if (document.getElementById('prod-description')) {
+          document.getElementById('prod-description').value = product.description || '';
+        }
         document.getElementById('prod-image').value = product.image || '';
         
         // Atualiza a pré-visualização da imagem no modal

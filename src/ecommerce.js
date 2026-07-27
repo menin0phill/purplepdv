@@ -362,10 +362,18 @@ document.addEventListener('DOMContentLoaded', () => {
       renderProducts();
     });
 
+    // Sincronização contínua em segundo plano (a cada 10 segundos)
+    setInterval(() => {
+      syncWithSupabase().catch(err => console.warn("Erro no sync contínuo E-Commerce:", err));
+    }, 10000);
+
     // Atualizar UI quando dados mudarem em background
     window.addEventListener('db-synced', () => {
-      products = getProducts();
-      renderProducts();
+      const isModalOpen = document.querySelector('.modal-overlay.active, .modal.active');
+      if (!isModalOpen) {
+        products = getProducts();
+        renderProducts();
+      }
     });
 
     // Sincronizar produtos entre abas do navegador (PDV -> E-Commerce em tempo real)

@@ -600,6 +600,8 @@ document.addEventListener('DOMContentLoaded', () => {
       item.addEventListener('click', () => {
         const target = item.getAttribute('data-screen');
         navigate(target);
+        // Sincroniza em segundo plano para capturar atualizações de catálogo ou caixa feitas em outros computadores
+        syncWithSupabase().catch(err => console.warn("Erro ao sincronizar na navegação:", err));
       });
     });
 
@@ -623,10 +625,18 @@ document.addEventListener('DOMContentLoaded', () => {
       updateNavbarCashStatus();
     });
 
-    // Atualizar tela quando dados mudarem em background
+    // Sincronização contínua automática em segundo plano (a cada 10 segundos) para manter todas as máquinas alinhadas
+    setInterval(() => {
+      syncWithSupabase().catch(err => console.warn("Erro na sincronização periódica do PDV:", err));
+    }, 10000);
+
+    // Atualizar tela quando dados mudarem em background (somente se não houver janela modal aberta no momento)
     window.addEventListener('db-synced', () => {
-      navigate(currentScreen);
-      updateNavbarCashStatus();
+      const isModalActive = document.querySelector('.modal-overlay.active, .modal.active');
+      if (!isModalActive) {
+        navigate(currentScreen);
+        updateNavbarCashStatus();
+      }
     });
   }
 });
