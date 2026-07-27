@@ -1,5 +1,5 @@
 import './style.css';
-import { getProducts, addSale, getClients, addClient, getSales, getConfig, syncWithSupabase, sanitizeHTML } from './db.js';
+import { getProducts, addSale, getClients, addClient, getSales, saveSales, getConfig, syncWithSupabase, sanitizeHTML } from './db.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-ecommerce');
