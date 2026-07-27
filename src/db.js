@@ -309,7 +309,7 @@ function initDB() {
   }
 
   if (needsReset) {
-    localStorage.setItem(KEY_PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
+    localStorage.setItem(KEY_PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS.map(p => ({ ...p, synced: true }))));
   }
   if (!localStorage.getItem(KEY_SALES)) {
     localStorage.setItem(KEY_SALES, JSON.stringify([]));
@@ -318,14 +318,14 @@ function initDB() {
     localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEY_CLIENTS)) {
-    localStorage.setItem(KEY_CLIENTS, JSON.stringify(DEFAULT_CLIENTS));
+    localStorage.setItem(KEY_CLIENTS, JSON.stringify(DEFAULT_CLIENTS.map(c => ({ ...c, synced: true }))));
   }
   if (!localStorage.getItem(KEY_CONFIG)) {
     localStorage.setItem(KEY_CONFIG, JSON.stringify({ requireClientCheckout: true }));
   }
   let ops = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
   if (ops.length === 0) {
-    localStorage.setItem(KEY_OPERATORS, JSON.stringify(DEFAULT_OPERATORS));
+    localStorage.setItem(KEY_OPERATORS, JSON.stringify(DEFAULT_OPERATORS.map(o => ({ ...o, synced: true }))));
   } else {
     let mod = false;
     DEFAULT_OPERATORS.forEach(dOp => {
@@ -464,8 +464,14 @@ export function deleteProduct(id) {
   saveProducts(products);
   if (supabase) {
     supabase.from('products').delete().eq('id', id).then(({error}) => {
-      if (error) console.error("Error deleting product from Supabase:", error);
+      if (error) {
+        console.error("Error deleting product from Supabase:", error);
+      } else {
+        syncWithSupabase();
+      }
     });
+  } else {
+    window.dispatchEvent(new CustomEvent('db-synced'));
   }
 }
 
@@ -604,8 +610,14 @@ export function deleteClient(id) {
   saveClients(clients);
   if (supabase) {
     supabase.from('clients').delete().eq('id', id).then(({error}) => {
-      if (error) console.error("Error deleting client from Supabase:", error);
+      if (error) {
+        console.error("Error deleting client from Supabase:", error);
+      } else {
+        syncWithSupabase();
+      }
     });
+  } else {
+    window.dispatchEvent(new CustomEvent('db-synced'));
   }
 }
 
@@ -963,7 +975,10 @@ export async function syncWithSupabase() {
       }));
       
       const localProds = JSON.parse(localStorage.getItem(KEY_PRODUCTS)) || [];
-      const merged = [...localProds];
+      const remoteIds = new Set(mappedProds.map(p => String(p.id)));
+      const remoteCodes = new Set(mappedProds.map(p => String(p.code)).filter(Boolean));
+      const activeLocalProds = localProds.filter(lp => !lp.synced || remoteIds.has(String(lp.id)) || (lp.code && remoteCodes.has(String(lp.code))));
+      const merged = [...activeLocalProds];
       mappedProds.forEach(sp => {
         const idx = merged.findIndex(lp => lp.id === sp.id || (lp.code && lp.code === sp.code));
         if (idx !== -1) {
@@ -999,7 +1014,10 @@ export async function syncWithSupabase() {
       }));
       
       const localClients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
-      const merged = [...localClients];
+      const remoteClientIds = new Set(mappedClients.map(c => String(c.id)));
+      const remoteClientEmails = new Set(mappedClients.map(c => c.email ? c.email.toLowerCase() : '').filter(Boolean));
+      const activeLocalClients = localClients.filter(lc => !lc.synced || remoteClientIds.has(String(lc.id)) || (lc.email && remoteClientEmails.has(lc.email.toLowerCase())));
+      const merged = [...activeLocalClients];
       mappedClients.forEach(sc => {
         const idx = merged.findIndex(lc => lc.id === sc.id || (lc.email && lc.email.toLowerCase() === sc.email.toLowerCase()));
         if (idx !== -1) {
@@ -1031,7 +1049,10 @@ export async function syncWithSupabase() {
         }));
         
         const localOperators = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
-        const merged = [...localOperators];
+        const remoteOpIds = new Set(mappedOperators.map(o => String(o.id)));
+        const remoteOpEmails = new Set(mappedOperators.map(o => o.email ? o.email.toLowerCase() : '').filter(Boolean));
+        const activeLocalOps = localOperators.filter(lo => !lo.synced || remoteOpIds.has(String(lo.id)) || (lo.email && remoteOpEmails.has(lo.email.toLowerCase())));
+        const merged = [...activeLocalOps];
         mappedOperators.forEach(so => {
           const idx = merged.findIndex(lo => lo.id === so.id || lo.email.toLowerCase() === so.email.toLowerCase());
           if (idx !== -1) {
@@ -1077,7 +1098,9 @@ export async function syncWithSupabase() {
       }));
       
       const localSales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
-      const merged = [...localSales];
+      const remoteSaleIds = new Set(mappedSales.map(s => String(s.id)));
+      const activeLocalSales = localSales.filter(ls => !ls.synced || remoteSaleIds.has(String(ls.id)));
+      const merged = [...activeLocalSales];
       mappedSales.forEach(ss => {
         const idx = merged.findIndex(ls => ls.id === ss.id);
         if (idx !== -1) {
@@ -1111,7 +1134,9 @@ export async function syncWithSupabase() {
       }));
       
       const localSessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
-      const merged = [...localSessions];
+      const remoteSessionIds = new Set(mappedSessions.map(s => String(s.id)));
+      const activeLocalSessions = localSessions.filter(ls => !ls.synced || remoteSessionIds.has(String(ls.id)));
+      const merged = [...activeLocalSessions];
       mappedSessions.forEach(ss => {
         const idx = merged.findIndex(ls => ls.id === ss.id);
         if (idx !== -1) {
