@@ -98,59 +98,75 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSubmit = document.getElementById('btn-login-submit');
     let isCaptchaVerified = false;
 
-    if (window.turnstile) {
-      try {
-        window.turnstile.render('#cf-turnstile-widget', {
-          sitekey: import.meta.env.VITE_TURNSTILE_SITEKEY || '1x00000000000000000000AA', 
-          theme: 'dark',
-          callback: function(token) {
-            isCaptchaVerified = true;
-            if (btnSubmit) {
-              btnSubmit.disabled = false;
-              btnSubmit.style.opacity = '1';
-              btnSubmit.style.cursor = 'pointer';
+    function initTurnstileCaptcha(retries = 10) {
+      if (window.turnstile && typeof window.turnstile.render === 'function') {
+        try {
+          window.turnstile.render('#cf-turnstile-widget', {
+            sitekey: import.meta.env.VITE_TURNSTILE_SITEKEY || '1x00000000000000000000AA', 
+            theme: 'dark',
+            callback: function(token) {
+              isCaptchaVerified = true;
+              if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.style.opacity = '1';
+                btnSubmit.style.cursor = 'pointer';
+              }
+            },
+            'expired-callback': function() {
+              isCaptchaVerified = false;
+              if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.style.opacity = '0.5';
+                btnSubmit.style.cursor = 'not-allowed';
+              }
+            },
+            'error-callback': function() {
+              isCaptchaVerified = false;
+              if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.style.opacity = '0.5';
+                btnSubmit.style.cursor = 'not-allowed';
+              }
             }
-          },
-          'expired-callback': function() {
-            isCaptchaVerified = false;
-            if (btnSubmit) {
-              btnSubmit.disabled = true;
-              btnSubmit.style.opacity = '0.5';
-              btnSubmit.style.cursor = 'not-allowed';
-            }
-          },
-          'error-callback': function() {
-            isCaptchaVerified = false;
-            if (btnSubmit) {
-              btnSubmit.disabled = true;
-              btnSubmit.style.opacity = '0.5';
-              btnSubmit.style.cursor = 'not-allowed';
-            }
+          });
+          const widget = document.getElementById('cf-turnstile-widget');
+          if (widget) {
+            // Remove qualquer texto de carregamento anterior
+            const loadingText = widget.querySelector('.turnstile-loading');
+            if (loadingText) loadingText.remove();
           }
-        });
-      } catch (err) {
-        console.error("Erro ao inicializar o Cloudflare Turnstile:", err);
-      }
-    } else {
-      console.warn("Script do Cloudflare Turnstile não carregado. Ativando fallback de segurança...");
-      const widget = document.getElementById('cf-turnstile-widget');
-      if (widget) {
-        widget.innerHTML = `
-          <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px; border:1px solid rgba(255,255,255,0.1); width: 100%; justify-content: center; box-sizing: border-box;">
-            <input type="checkbox" id="fallback-captcha" style="width:18px; height:18px; cursor:pointer;">
-            <label for="fallback-captcha" style="font-size:13px; color:#cbd5e1; cursor:pointer; user-select:none;">Confirmar que não sou um robô (Modo de Segurança)</label>
-          </div>
-        `;
-        document.getElementById('fallback-captcha').addEventListener('change', (e) => {
-          isCaptchaVerified = e.target.checked;
-          if (btnSubmit) {
-            btnSubmit.disabled = !isCaptchaVerified;
-            btnSubmit.style.opacity = isCaptchaVerified ? '1' : '0.5';
-            btnSubmit.style.cursor = isCaptchaVerified ? 'pointer' : 'not-allowed';
-          }
-        });
+        } catch (err) {
+          console.error("Erro ao inicializar o Cloudflare Turnstile:", err);
+        }
+      } else if (retries > 0) {
+        const widget = document.getElementById('cf-turnstile-widget');
+        if (widget && !widget.querySelector('.turnstile-loading')) {
+          widget.innerHTML = `<div class="turnstile-loading" style="color:#a0aec0; font-size:12px; padding:10px; text-align:center; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.08); width:100%; box-sizing:border-box;">Conectando proteção de segurança (Cloudflare Turnstile)...</div>`;
+        }
+        setTimeout(() => initTurnstileCaptcha(retries - 1), 400);
+      } else {
+        console.warn("Script do Cloudflare Turnstile não carregado após tentativas. Ativando fallback de segurança...");
+        const widget = document.getElementById('cf-turnstile-widget');
+        if (widget) {
+          widget.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px; border:1px solid rgba(255,255,255,0.1); width: 100%; justify-content: center; box-sizing: border-box;">
+              <input type="checkbox" id="fallback-captcha" style="width:18px; height:18px; cursor:pointer;">
+              <label for="fallback-captcha" style="font-size:13px; color:#cbd5e1; cursor:pointer; user-select:none;">Confirmar que não sou um robô (Modo de Segurança)</label>
+            </div>
+          `;
+          document.getElementById('fallback-captcha').addEventListener('change', (e) => {
+            isCaptchaVerified = e.target.checked;
+            if (btnSubmit) {
+              btnSubmit.disabled = !isCaptchaVerified;
+              btnSubmit.style.opacity = isCaptchaVerified ? '1' : '0.5';
+              btnSubmit.style.cursor = isCaptchaVerified ? 'pointer' : 'not-allowed';
+            }
+          });
+        }
       }
     }
+
+    initTurnstileCaptcha();
 
     // Toggle Password Visibility Action
     const passwordInput = document.getElementById('login-password');
