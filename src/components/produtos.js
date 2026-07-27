@@ -581,6 +581,16 @@ function setupProductEvents(container) {
   searchInput.addEventListener('input', handleFilter);
   categoryFilter.addEventListener('change', handleFilter);
 
+  // Sincronização ao vivo na tela de Catálogo sem perder foco de pesquisa
+  const handleLiveSync = () => {
+    if (document.getElementById('products-table-body')) {
+      handleFilter();
+    }
+  };
+  window.removeEventListener('db-synced', window._prodSyncHandler);
+  window._prodSyncHandler = handleLiveSync;
+  window.addEventListener('db-synced', handleLiveSync);
+
   // Ações das Linhas (Editar/Excluir)
   setupRowActions(container);
 }

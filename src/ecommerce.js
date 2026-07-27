@@ -377,11 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
       syncWithSupabase().catch(err => console.warn("Erro no sync contínuo E-Commerce:", err));
     }, 5000);
 
-    // Atualizar UI quando dados mudarem em background (somente se não houver modal aberto ou usuário digitando)
+    // Atualizar UI quando dados mudarem em background (somente se não houver modal aberto)
     window.addEventListener('db-synced', () => {
       const isModalOpen = document.querySelector('.modal-overlay.active, .modal.active');
-      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
-      if (!isModalOpen && !isTyping) {
+      if (!isModalOpen) {
         products = getProducts();
         renderProducts();
       }
@@ -391,8 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('storage', (e) => {
       if (e.key === 'purple_pdv_products') {
         const isModalOpen = document.querySelector('.modal-overlay.active, .modal.active');
-        const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
-        if (!isModalOpen && !isTyping) {
+        if (!isModalOpen) {
           products = getProducts();
           renderProducts();
         }
