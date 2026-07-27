@@ -2816,6 +2816,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const discountValue = subtotal * discountPercentage;
         const finalTotalValue = subtotal - discountValue + selectedShippingPrice;
 
+        if (finalTotalValue < 5.00) {
+          showNotification('O valor mínimo para finalização de compra online é R$ 5,00. Adicione mais produtos ao seu carrinho!', 'warning');
+          const submitBtn = document.getElementById('btn-ch-submit-order');
+          if (submitBtn) submitBtn.disabled = false;
+          return;
+        }
+
         const saleData = {
           items: cart.map(i => ({
             id: i.id,
