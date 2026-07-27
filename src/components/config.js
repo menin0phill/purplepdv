@@ -139,6 +139,12 @@ export function renderConfig(container) {
               <input type="password" id="config-asaas-apikey" value="${currentConfig.asaasApiKey || ''}" style="width:100%; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--border-color); border-radius:6px; height:38px; padding:0 8px; font-family:var(--font-sans);" placeholder="aact_prod_...">
             </div>
           </div>
+
+          <div style="margin-top: 15px;">
+            <label for="config-backup-pixkey" style="font-weight:600; display:block; margin-bottom:5px;">Chave Pix de Backup (E-mail, CNPJ, Celular ou Chave Aleatória)</label>
+            <input type="text" id="config-backup-pixkey" value="${currentConfig.backupPixKey || 'purplemakeup.contato@gmail.com'}" style="width:100%; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--border-color); border-radius:6px; height:38px; padding:0 8px; font-family:var(--font-sans);" placeholder="Ex: CNPJ ou e-mail da loja">
+            <span class="text-muted text-xs" style="display:block; margin-top:4px;">Utilizada como contingência caso a API do Asaas esteja offline ou em modo de simulação, gerando um Pix real escaneável para sua conta bancária.</span>
+          </div>
           
           <button type="submit" class="btn btn-primary margin-top-md" style="width:max-content;">
             <i data-lucide="save"></i> Salvar Configuração de Pagamento
@@ -282,13 +288,15 @@ export function renderConfig(container) {
     e.preventDefault();
     const mode = document.getElementById('config-asaas-mode').value;
     const apiKey = document.getElementById('config-asaas-apikey').value.trim();
+    const backupPixKey = document.getElementById('config-backup-pixkey').value.trim();
     
     // Ler config existente para mesclar
     const existing = getConfig();
     saveConfig({
       ...existing,
       asaasMode: mode,
-      asaasApiKey: apiKey
+      asaasApiKey: apiKey,
+      backupPixKey: backupPixKey
     });
     
     showNotification('Configurações de pagamento Asaas salvas!', 'success');

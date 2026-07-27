@@ -1065,3 +1065,39 @@ export async function uploadProductImage(file) {
   return publicUrl;
 }
 
+export function generatePixPayload(key, amount, merchantName = "Purple Cosmetics", merchantCity = "Sao Paulo") {
+  function crc16(str) {
+    let crc = 0xFFFF;
+    for (let c = 0; c < str.length; c++) {
+      crc ^= str.charCodeAt(c) << 8;
+      for (let i = 0; i < 8; i++) {
+        if (crc & 0x8000) {
+          crc = (crc << 1) ^ 0x1021;
+        } else {
+          crc = crc << 1;
+        }
+      }
+    }
+    return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+  }
+
+  // Normaliza o nome e cidade (remover acentos para compatibilidade EMV)
+  const cleanName = merchantName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 25);
+  const cleanCity = merchantCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 15);
+
+  const parts = [
+    "000201",
+    "26" + String(22 + key.length).padStart(2, '0') + "0014br.gov.bcb.pix01" + String(key.length).padStart(2, '0') + key,
+    "52040000",
+    "5303986",
+    "54" + String(Number(amount).toFixed(2).length).padStart(2, '0') + Number(amount).toFixed(2),
+    "5802BR",
+    "59" + String(cleanName.length).padStart(2, '0') + cleanName,
+    "60" + String(cleanCity.length).padStart(2, '0') + cleanCity,
+    "62070503***"
+  ];
+
+  const raw = parts.join("") + "6304";
+  return raw + crc16(raw);
+}
+

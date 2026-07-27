@@ -1,5 +1,5 @@
 import './style.css';
-import { getProducts, addSale, getClients, addClient, getSales, saveSales, getConfig, syncWithSupabase, sanitizeHTML } from './db.js';
+import { getProducts, addSale, getClients, addClient, getSales, saveSales, getConfig, syncWithSupabase, sanitizeHTML, generatePixPayload } from './db.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-ecommerce');
@@ -1933,12 +1933,14 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             } catch (err) {
               showNotification('Erro Asaas: ' + err.message, 'warning');
+              const backupKey = config.backupPixKey || 'purplemakeup.contato@gmail.com';
+              const realStaticPix = generatePixPayload(backupKey, completedSale.total);
               successBox.innerHTML = `
                 <p><strong>Nº do Pedido:</strong> <code>${completedSale.id.split('_')[1] || completedSale.id}</code></p>
                 <p class="text-xs text-danger text-center" style="margin: 5px 0;">Erro: ${err.message}</p>
                 <p class="text-xs text-muted text-center" style="margin: 5px 0;">Usando Pix de backup offline abaixo:</p>
                 <div style="margin: 15px auto; width: 200px; height: 200px; padding: 10px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.1);">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent('00020101021226930014br.gov.bcb.pix2571pix-qrcode.asaas.com/v3/simulated_purple_offline_' + Date.now())}" style="max-width:100%; max-height:100%;">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(realStaticPix)}" style="max-width:100%; max-height:100%;">
                 </div>
               `;
             }
@@ -2904,10 +2906,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(result?.error || "Erro de API");
               }
             } catch(err) {
-              console.warn("API Asaas offline/erro. Usando simulação para Pix:", err.message);
-              const mockPixKey = "00020101021226930014br.gov.bcb.pix2571pix-qrcode.asaas.com/v3/simulated_purple_offline_" + Date.now();
-              completedSale.asaasPixKey = mockPixKey;
-              completedSale.asaasQrCode = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(mockPixKey)}`;
+              console.warn("API Asaas offline/erro. Usando simulação/backup para Pix:", err.message);
+              const backupKey = config.backupPixKey || 'purplemakeup.contato@gmail.com';
+              const realStaticPix = generatePixPayload(backupKey, completedSale.total);
+              completedSale.asaasPixKey = realStaticPix;
+              completedSale.asaasQrCode = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(realStaticPix)}`;
             }
 
             // Salva no LocalStorage
