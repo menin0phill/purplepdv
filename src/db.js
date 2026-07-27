@@ -38,6 +38,13 @@ const DEFAULT_OPERATORS = [
     email: 'henriqueelsilva@gmail.com',
     password: 'Vida191023!',
     role: 'admin'
+  },
+  {
+    id: 'op2',
+    name: 'Operador Purple',
+    email: 'purple@live.com',
+    password: '080601',
+    role: 'admin'
   }
 ];
 
@@ -297,8 +304,18 @@ function initDB() {
   if (!localStorage.getItem(KEY_CONFIG)) {
     localStorage.setItem(KEY_CONFIG, JSON.stringify({ requireClientCheckout: true }));
   }
-  if (!localStorage.getItem(KEY_OPERATORS)) {
+  let ops = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
+  if (ops.length === 0) {
     localStorage.setItem(KEY_OPERATORS, JSON.stringify(DEFAULT_OPERATORS));
+  } else {
+    let mod = false;
+    DEFAULT_OPERATORS.forEach(dOp => {
+      if (!ops.some(o => o.email && o.email.toLowerCase() === dOp.email.toLowerCase())) {
+        ops.push(dOp);
+        mod = true;
+      }
+    });
+    if (mod) localStorage.setItem(KEY_OPERATORS, JSON.stringify(ops));
   }
 }
 
@@ -307,7 +324,20 @@ initDB();
 
 // --- OPERADORES ---
 export function getOperators() {
-  return JSON.parse(localStorage.getItem(KEY_OPERATORS)) || DEFAULT_OPERATORS;
+  let ops = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
+  let mod = false;
+  DEFAULT_OPERATORS.forEach(dOp => {
+    if (!ops.some(o => o.email && o.email.toLowerCase() === dOp.email.toLowerCase())) {
+      ops.push(dOp);
+      mod = true;
+    }
+  });
+  if (mod || ops.length === 0) {
+    const finalOps = ops.length ? ops : DEFAULT_OPERATORS;
+    localStorage.setItem(KEY_OPERATORS, JSON.stringify(finalOps));
+    return finalOps;
+  }
+  return ops;
 }
 
 export function saveOperators(operators) {
