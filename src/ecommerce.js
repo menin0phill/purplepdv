@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const cart = [];
   let products = getProducts();
   let selectedCategory = 'Todos';
+  let currentProductsPage = 1; // Página ativa da vitrine de produtos
+  let selectedInstallments = 1; // Quantidade de parcelas selecionadas no cartão
   let discountPercentage = 0; // Desconto de aniversário (10% = 0.10)
   let selectedShippingPrice = 0;
 
@@ -532,6 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       searchInput.addEventListener('input', (e) => {
         searchQuery = e.target.value;
+        currentProductsPage = 1;
         renderProducts();
       });
       
@@ -806,6 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
           selectedCategory = 'Acessórios';
         }
         
+        currentProductsPage = 1;
         renderProducts();
       });
     });
@@ -878,6 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedCategory = btn.getAttribute('data-cat');
       chipsEl.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
+      currentProductsPage = 1;
       renderProducts();
     });
   }
@@ -955,10 +960,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (filtered.length === 0) {
       grid.innerHTML = `<p class="text-muted text-center pad-md col-span-12">Nenhum produto cadastrado.</p>`;
+      const paginationEl = document.getElementById('ecom-pagination-container');
+      if (paginationEl) paginationEl.innerHTML = '';
       return;
     }
 
-    grid.innerHTML = filtered.map(p => {
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / 20);
+    if (currentProductsPage > totalPages) {
+      currentProductsPage = 1;
+    }
+    const startIdx = (currentProductsPage - 1) * 20;
+    const paginatedProducts = filtered.slice(startIdx, startIdx + 20);
+
+    grid.innerHTML = paginatedProducts.map(p => {
       const isOut = p.stock <= 0;
       const hasVars = p.variations && p.variations.length > 0;
       const isFav = favorites.includes(p.id);
@@ -1024,6 +1039,62 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
     }).join('');
+
+    // Contêiner de Paginação
+    let paginationEl = document.getElementById('ecom-pagination-container');
+    if (!paginationEl) {
+      grid.insertAdjacentHTML('afterend', `<div id="ecom-pagination-container" style="display:flex; justify-content:center; align-items:center; gap:8px; margin: 40px auto 20px auto; flex-wrap:wrap; font-family:'Outfit', sans-serif; z-index:10; position:relative;"></div>`);
+      paginationEl = document.getElementById('ecom-pagination-container');
+    }
+    
+    if (totalPages <= 1) {
+      paginationEl.innerHTML = '';
+      paginationEl.style.display = 'none';
+    } else {
+      paginationEl.style.display = 'flex';
+      let html = '';
+      
+      // Botão Anterior
+      html += `
+        <button class="ecom-pag-btn" data-page="${currentProductsPage - 1}" ${currentProductsPage === 1 ? 'disabled style="opacity:0.5; cursor:not-allowed; background:white; color:#a0aec0; border:1px solid #eaeaea; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center;"' : 'style="background:white; color:#6a3f97; border:1px solid #eaeaea; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;"'}>
+          <i data-lucide="chevron-left" style="width:16px; height:16px;"></i>
+        </button>
+      `;
+      
+      // Números
+      for (let i = 1; i <= totalPages; i++) {
+        const isActive = i === currentProductsPage;
+        html += `
+          <button class="ecom-pag-btn ${isActive ? 'active' : ''}" data-page="${i}" style="width:36px; height:36px; border-radius:8px; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; cursor:${isActive ? 'default' : 'pointer'}; border:${isActive ? 'none' : '1px solid #eaeaea'}; background:${isActive ? '#6a3f97' : 'white'}; color:${isActive ? 'white' : '#6a3f97'}; transition:all 0.2s;" ${isActive ? 'disabled' : ''}>
+            ${i}
+          </button>
+        `;
+      }
+      
+      // Botão Próximo
+      html += `
+        <button class="ecom-pag-btn" data-page="${currentProductsPage + 1}" ${currentProductsPage === totalPages ? 'disabled style="opacity:0.5; cursor:not-allowed; background:white; color:#a0aec0; border:1px solid #eaeaea; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center;"' : 'style="background:white; color:#6a3f97; border:1px solid #eaeaea; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;"'}>
+          <i data-lucide="chevron-right" style="width:16px; height:16px;"></i>
+        </button>
+      `;
+      
+      paginationEl.innerHTML = html;
+      
+      // Cliques na paginação
+      paginationEl.querySelectorAll('.ecom-pag-btn').forEach(btn => {
+        if (btn.hasAttribute('disabled')) return;
+        btn.addEventListener('click', () => {
+          const targetPage = parseInt(btn.getAttribute('data-page'));
+          currentProductsPage = targetPage;
+          renderProducts();
+          
+          const vitrineBar = document.getElementById('ecom-category-chips') || grid;
+          if (vitrineBar) {
+            vitrineBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+    }
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
@@ -2272,6 +2343,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const discountValue = subtotal * discountPercentage;
     const totalGeral = subtotal - discountValue + selectedShippingPrice;
 
+    // Calcula juros do cartão de crédito (taxa repassada) se selecionado
+    const installmentRates = {
+      1: 0.0399, // 3.99%
+      2: 0.0599, // 5.99%
+      3: 0.0799, // 7.99%
+      4: 0.0999, // 9.99%
+      5: 0.1199, // 11.99%
+      6: 0.1399  // 13.99%
+    };
+
+    let activeTotal = totalGeral;
+    let interestValue = 0;
+    if (selectedPaymentMethod === 'credit') {
+      interestValue = totalGeral * (installmentRates[selectedInstallments] || 0.0399);
+      activeTotal = totalGeral + interestValue;
+    }
+
     appContainer.innerHTML = `
       <div style="background:#fafafa; min-height:100vh; padding-bottom:50px;">
         <!-- Header de Checkout -->
@@ -2300,7 +2388,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Card da Etapa Atual -->
             <div class="checkout-card" id="checkout-step-container">
-              ${renderCheckoutStepFormHTML(subtotal, discountValue, totalGeral)}
+              ${renderCheckoutStepFormHTML(subtotal, discountValue, totalGeral, activeTotal)}
             </div>
           </div>
 
@@ -2332,9 +2420,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>Frete</span>
                 <span>${selectedShippingPrice > 0 ? `R$ ${selectedShippingPrice.toFixed(2)}` : 'A calcular'}</span>
               </div>
+              ${selectedPaymentMethod === 'credit' ? `
+                <div style="display:flex; justify-content:space-between; color:#ef4444; font-weight:600;">
+                  <span>Taxa do Cartão (${selectedInstallments}x)</span>
+                  <span>+ R$ ${interestValue.toFixed(2)}</span>
+                </div>
+              ` : ''}
               <div style="display:flex; justify-content:space-between; font-weight:700; font-size:16px; color:#6a3f97; border-top:1px solid #eaeaea; padding-top:8px; margin-top:4px;">
                 <span>Total Geral</span>
-                <span>R$ ${totalGeral.toFixed(2)}</span>
+                <span>R$ ${activeTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -2347,7 +2441,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCheckoutPageEvents();
   }
 
-  function renderCheckoutStepFormHTML(subtotal, discountValue, totalGeral) {
+  function renderCheckoutStepFormHTML(subtotal, discountValue, totalGeral, activeTotal) {
     if (checkoutStep === 1) {
       return `
         <h3>1. Identificação</h3>
@@ -2526,7 +2620,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <input type="radio" name="ch_payment_type" value="credit" ${selectedPaymentMethod === 'credit' ? 'checked' : ''} style="cursor:pointer;">
               <div style="text-align:left;">
                 <strong style="font-size:14px; color:#111;">Cartão de Crédito</strong>
-                <br><span style="font-size:11px; color:#6b7280;">Parcele em até 6x sem juros</span>
+                <br><span style="font-size:11px; color:#6b7280;">Parcele em até 6x (com taxas repassadas)</span>
               </div>
             </div>
             <i data-lucide="credit-card" style="width:24px; height:24px; color:#8b5cf6;"></i>
@@ -2559,12 +2653,12 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="display:flex; flex-direction:column; gap:4px;">
                 <label for="ch-card-installments" style="font-size:11px; font-weight:600; color:#555;">Parcelamento</label>
                 <select id="ch-card-installments" class="input-sm" style="width:100%; border:1px solid #eaeaea; border-radius:6px; padding:8px; outline:none; background:white;">
-                  <option value="1">1x de R$ ${totalGeral.toFixed(2)} sem juros</option>
-                  <option value="2">2x de R$ ${(totalGeral/2).toFixed(2)} sem juros</option>
-                  <option value="3">3x de R$ ${(totalGeral/3).toFixed(2)} sem juros</option>
-                  <option value="4">4x de R$ ${(totalGeral/4).toFixed(2)} sem juros</option>
-                  <option value="5">5x de R$ ${(totalGeral/5).toFixed(2)} sem juros</option>
-                  <option value="6">6x de R$ ${(totalGeral/6).toFixed(2)} sem juros</option>
+                  <option value="1" ${selectedInstallments === 1 ? 'selected' : ''}>1x de R$ ${(totalGeral * 1.0399).toFixed(2)} (Total: R$ ${(totalGeral * 1.0399).toFixed(2)})</option>
+                  <option value="2" ${selectedInstallments === 2 ? 'selected' : ''}>2x de R$ ${((totalGeral * 1.0599) / 2).toFixed(2)} (Total: R$ ${(totalGeral * 1.0599).toFixed(2)})</option>
+                  <option value="3" ${selectedInstallments === 3 ? 'selected' : ''}>3x de R$ ${((totalGeral * 1.0799) / 3).toFixed(2)} (Total: R$ ${(totalGeral * 1.0799).toFixed(2)})</option>
+                  <option value="4" ${selectedInstallments === 4 ? 'selected' : ''}>4x de R$ ${((totalGeral * 1.0999) / 4).toFixed(2)} (Total: R$ ${(totalGeral * 1.0999).toFixed(2)})</option>
+                  <option value="5" ${selectedInstallments === 5 ? 'selected' : ''}>5x de R$ ${((totalGeral * 1.1199) / 5).toFixed(2)} (Total: R$ ${(totalGeral * 1.1199).toFixed(2)})</option>
+                  <option value="6" ${selectedInstallments === 6 ? 'selected' : ''}>6x de R$ ${((totalGeral * 1.1399) / 6).toFixed(2)} (Total: R$ ${(totalGeral * 1.1399).toFixed(2)})</option>
                 </select>
               </div>
             </div>
@@ -2579,7 +2673,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="display:flex; justify-content:space-between; margin-top:20px;">
             <button type="button" id="btn-ch-step3-back" class="btn btn-secondary" style="border:1px solid #eaeaea; padding:10px 20px; border-radius:6px; cursor:pointer; background:white; color:#555;">Voltar</button>
             <button type="submit" id="btn-ch-submit-order" class="btn btn-primary" style="background:#10b981; color:white; border:none; padding:12px 30px; border-radius:6px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
-              <i data-lucide="check-circle" style="width:18px; height:18px;"></i> Finalizar Compra
+              <i data-lucide="check-circle" style="width:18px; height:18px;"></i> Finalizar Compra - R$ ${activeTotal.toFixed(2)}
             </button>
           </div>
         </form>
@@ -2763,9 +2857,18 @@ document.addEventListener('DOMContentLoaded', () => {
     paymentRadios.forEach(radio => {
       radio.addEventListener('change', () => {
         selectedPaymentMethod = radio.value;
+        selectedInstallments = 1; // Reset para 1 parcela ao trocar de método
         renderCheckoutPage();
       });
     });
+
+    const installmentSelect = document.getElementById('ch-card-installments');
+    if (installmentSelect) {
+      installmentSelect.addEventListener('change', (e) => {
+        selectedInstallments = parseInt(e.target.value);
+        renderCheckoutPage(); // Re-renderiza para atualizar os totais no resumo
+      });
+    }
 
     // Step 3: Back Button
     const step3BackBtn = document.getElementById('btn-ch-step3-back');
@@ -2823,6 +2926,23 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
+        // Calcula taxas de parcelamento do cartão de crédito no envio do pedido
+        const installmentRates = {
+          1: 0.0399, // 3.99%
+          2: 0.0599, // 5.99%
+          3: 0.0799, // 7.99%
+          4: 0.0999, // 9.99%
+          5: 0.1199, // 11.99%
+          6: 0.1399  // 13.99%
+        };
+
+        let totalComJuros = finalTotalValue;
+        let interestValue = 0;
+        if (selectedPaymentMethod === 'credit') {
+          interestValue = finalTotalValue * (installmentRates[selectedInstallments] || 0.0399);
+          totalComJuros = finalTotalValue + interestValue;
+        }
+
         const saleData = {
           items: cart.map(i => ({
             id: i.id,
@@ -2835,11 +2955,13 @@ document.addEventListener('DOMContentLoaded', () => {
           discount: discountValue,
           shippingFee: selectedShippingPrice,
           shippingCarrier: selectedShippingCarrier || null,
-          total: finalTotalValue,
+          total: totalComJuros,
           clientId: finalClientId,
           clientName: finalClientName,
           paymentMethod: selectedPaymentMethod,
-          amountPaid: finalTotalValue,
+          amountPaid: totalComJuros,
+          installmentsCount: selectedPaymentMethod === 'credit' ? selectedInstallments : 1,
+          interestFee: interestValue,
           operator: 'Venda Online (E-Commerce)',
           origin: 'e-commerce',
           deliveryAddress: address,
