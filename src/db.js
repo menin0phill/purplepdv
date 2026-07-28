@@ -294,17 +294,7 @@ function initDB() {
 
   const currentProds = localStorage.getItem(KEY_PRODUCTS);
   let needsReset = false;
-  if (currentProds) {
-    try {
-      const parsed = JSON.parse(currentProds);
-      const baseProd = parsed.find(p => p.id === 'p2');
-      if (baseProd && baseProd.variations && baseProd.variations[0] && !baseProd.variations[0].colorCode) {
-        needsReset = true;
-      }
-    } catch(e) {
-      needsReset = true;
-    }
-  } else {
+  if (!currentProds) {
     needsReset = true;
   }
 
