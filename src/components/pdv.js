@@ -498,6 +498,7 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
+    const finalPrice = (variation && variation.price !== undefined && variation.price !== null) ? variation.price : product.price;
 
     const existing = cart.find(item => item.cartKey === cartKey);
     if (existing) {
@@ -514,7 +515,7 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
         variationId: variationId,
         cartKey: cartKey,
         name: name,
-        price: product.price,
+        price: finalPrice,
         quantity: qty,
         maxStock: maxStock
       });
@@ -569,6 +570,7 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
+    const finalPrice = (variation && variation.price !== undefined && variation.price !== null) ? variation.price : product.price;
 
     const existing = cart.find(item => item.cartKey === cartKey);
     if (existing) {
@@ -583,7 +585,7 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
         variationId: variationId,
         cartKey: cartKey,
         name: name,
-        price: product.price,
+        price: finalPrice,
         quantity: 1,
         maxStock: maxStock
       });

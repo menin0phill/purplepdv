@@ -1263,7 +1263,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="text-sm text-muted" style="margin:0;">${product.description || 'Nenhuma descrição detalhada disponível.'}</p>
           
           <div style="font-size:18px; margin-top:5px;">
-            <strong>Preço:</strong> <span class="text-purple font-bold">R$ ${product.price.toFixed(2)}</span>
+            <strong>Preço:</strong> <span class="text-purple font-bold" id="ecom-detail-price-display">R$ ${(hasVars && product.variations[0].price !== undefined && product.variations[0].price !== null ? product.variations[0].price : product.price).toFixed(2)}</span>
           </div>
           
           ${hasVars ? `
@@ -1344,6 +1344,13 @@ document.addEventListener('DOMContentLoaded', () => {
           if (mainImg) {
             mainImg.src = variation.image || product.image;
           }
+          
+          // Troca de preço dinâmico!
+          const priceDisplay = document.getElementById('ecom-detail-price-display');
+          if (priceDisplay) {
+            const finalPrice = (variation.price !== undefined && variation.price !== null) ? variation.price : product.price;
+            priceDisplay.textContent = `R$ ${finalPrice.toFixed(2)}`;
+          }
 
           qty = 1;
           qtyVal.textContent = qty;
@@ -1387,6 +1394,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
+    const finalPrice = (variation && variation.price !== undefined && variation.price !== null) ? variation.price : product.price;
 
     if (maxStock <= 0) {
       showNotification(`O produto/variação ${name} está esgotado!`, 'error');
@@ -1409,7 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
         variationId: variationId,
         cartKey: cartKey,
         name: name,
-        price: product.price,
+        price: finalPrice,
         quantity: initialQty,
         maxStock: maxStock
       });

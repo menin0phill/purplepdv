@@ -359,26 +359,96 @@ function setupProductEvents(container) {
   }
 
   // Função auxiliar para criar linhas de variação no formulário
-  function addVariationLine(name = '', stock = 0, varId = '') {
+  function addVariationLine(name = '', stock = 0, varId = '', costPrice = '', price = '', image = '') {
     const uniqueId = varId || 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     const line = document.createElement('div');
-    line.className = 'variation-form-line margin-bottom-xs';
+    line.className = 'variation-form-line margin-bottom-sm';
     line.id = `var-line-${uniqueId}`;
     line.style.display = 'flex';
+    line.style.flexDirection = 'column';
     line.style.gap = '8px';
-    line.style.alignItems = 'center';
+    line.style.padding = '12px';
+    line.style.background = 'rgba(255,255,255,0.03)';
+    line.style.borderRadius = '8px';
+    line.style.border = '1px solid rgba(255,255,255,0.1)';
+    line.style.position = 'relative';
     
     line.innerHTML = `
       <input type="hidden" class="var-id-input" value="${uniqueId}">
-      <input type="text" class="var-name-input input-sm" placeholder="Nome da variação (Ex: Cor 01)" value="${name}" required style="flex-grow: 1;">
-      <input type="number" class="var-stock-input input-sm" placeholder="Qtd" value="${stock}" required min="0" style="width: 80px;">
-      <button type="button" class="btn-icon text-danger btn-delete-var-line" data-id="${uniqueId}">
-        <i data-lucide="trash-2"></i>
+      <button type="button" class="btn-icon text-danger btn-delete-var-line" data-id="${uniqueId}" style="position:absolute; top:8px; right:8px; width:24px; height:24px; padding:0; background:rgba(255,0,0,0.1); border-radius:4px;">
+        <i data-lucide="x" style="width:14px; height:14px;"></i>
       </button>
+      
+      <div style="display:flex; gap:8px; margin-right: 24px;">
+        <div style="flex:2;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Nome da Variação</label>
+          <input type="text" class="var-name-input input-sm" placeholder="Ex: Cor 01, Tamanho P" value="${name}" required style="width:100%;">
+        </div>
+        <div style="flex:1;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Estoque</label>
+          <input type="number" class="var-stock-input input-sm" placeholder="Qtd" value="${stock}" required min="0" style="width:100%;">
+        </div>
+      </div>
+      
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Custo (R$)</label>
+          <input type="number" class="var-cost-input input-sm" placeholder="Opcional" step="0.01" value="${costPrice}" style="width:100%;">
+        </div>
+        <div style="flex:1;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Venda (R$)</label>
+          <input type="number" class="var-price-input input-sm" placeholder="Opcional" step="0.01" value="${price}" style="width:100%;">
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Imagem da Variação</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" class="var-image-input input-sm" placeholder="URL da Imagem ou Envie Arquivo" value="${image}" style="flex:1;">
+          <input type="file" class="var-image-file" accept="image/*" style="display:none;">
+          <button type="button" class="btn btn-secondary btn-sm var-upload-btn" style="padding:0 10px;">
+            <i data-lucide="upload" style="width:14px; height:14px;"></i>
+          </button>
+        </div>
+      </div>
     `;
     
     varsList.appendChild(line);
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    const fileInput = line.querySelector('.var-image-file');
+    const uploadBtn = line.querySelector('.var-upload-btn');
+    const urlInput = line.querySelector('.var-image-input');
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const oldText = uploadBtn.innerHTML;
+      uploadBtn.innerHTML = '<i data-lucide="loader" style="width:14px; height:14px;" class="spin"></i>';
+      uploadBtn.disabled = true;
+
+      try {
+        if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase) {
+          const publicUrl = await uploadProductImage(file);
+          urlInput.value = publicUrl;
+          showNotification('Foto da variação salva na nuvem!', 'success');
+        } else {
+          const reader = new FileReader();
+          reader.onload = (evt) => { urlInput.value = evt.target.result; };
+          reader.readAsDataURL(file);
+        }
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = (evt) => { urlInput.value = evt.target.result; };
+        reader.readAsDataURL(file);
+      } finally {
+        uploadBtn.innerHTML = oldText;
+        uploadBtn.disabled = false;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    });
 
     // Adiciona listener para recalcular estoque total ao editar
     line.querySelector('.var-stock-input').addEventListener('input', updatePrincipalStockCalculations);
@@ -531,7 +601,10 @@ function setupProductEvents(container) {
       variations.push({
         id: line.querySelector('.var-id-input').value,
         name: line.querySelector('.var-name-input').value,
-        stock: parseInt(line.querySelector('.var-stock-input').value) || 0
+        stock: parseInt(line.querySelector('.var-stock-input').value) || 0,
+        costPrice: line.querySelector('.var-cost-input').value ? parseFloat(line.querySelector('.var-cost-input').value) : undefined,
+        price: line.querySelector('.var-price-input').value ? parseFloat(line.querySelector('.var-price-input').value) : undefined,
+        image: line.querySelector('.var-image-input').value || ''
       });
     });
 
@@ -602,26 +675,96 @@ function setupRowActions(container) {
   const varsList = document.getElementById('variations-form-list');
 
   // Função auxiliar herdada para popular variações ao editar
-  function addVariationLine(name = '', stock = 0, varId = '') {
+  function addVariationLine(name = '', stock = 0, varId = '', costPrice = '', price = '', image = '') {
     const uniqueId = varId || 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     const line = document.createElement('div');
-    line.className = 'variation-form-line margin-bottom-xs';
+    line.className = 'variation-form-line margin-bottom-sm';
     line.id = `var-line-${uniqueId}`;
     line.style.display = 'flex';
+    line.style.flexDirection = 'column';
     line.style.gap = '8px';
-    line.style.alignItems = 'center';
+    line.style.padding = '12px';
+    line.style.background = 'rgba(255,255,255,0.03)';
+    line.style.borderRadius = '8px';
+    line.style.border = '1px solid rgba(255,255,255,0.1)';
+    line.style.position = 'relative';
     
     line.innerHTML = `
       <input type="hidden" class="var-id-input" value="${uniqueId}">
-      <input type="text" class="var-name-input input-sm" placeholder="Nome da variação (Ex: Cor 01)" value="${name}" required style="flex-grow: 1;">
-      <input type="number" class="var-stock-input input-sm" placeholder="Qtd" value="${stock}" required min="0" style="width: 80px;">
-      <button type="button" class="btn-icon text-danger btn-delete-var-line" data-id="${uniqueId}">
-        <i data-lucide="trash-2"></i>
+      <button type="button" class="btn-icon text-danger btn-delete-var-line" data-id="${uniqueId}" style="position:absolute; top:8px; right:8px; width:24px; height:24px; padding:0; background:rgba(255,0,0,0.1); border-radius:4px;">
+        <i data-lucide="x" style="width:14px; height:14px;"></i>
       </button>
+      
+      <div style="display:flex; gap:8px; margin-right: 24px;">
+        <div style="flex:2;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Nome da Variação</label>
+          <input type="text" class="var-name-input input-sm" placeholder="Ex: Cor 01, Tamanho P" value="${name}" required style="width:100%;">
+        </div>
+        <div style="flex:1;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Estoque</label>
+          <input type="number" class="var-stock-input input-sm" placeholder="Qtd" value="${stock}" required min="0" style="width:100%;">
+        </div>
+      </div>
+      
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Custo (R$)</label>
+          <input type="number" class="var-cost-input input-sm" placeholder="Opcional" step="0.01" value="${costPrice}" style="width:100%;">
+        </div>
+        <div style="flex:1;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Venda (R$)</label>
+          <input type="number" class="var-price-input input-sm" placeholder="Opcional" step="0.01" value="${price}" style="width:100%;">
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Imagem da Variação</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" class="var-image-input input-sm" placeholder="URL da Imagem ou Envie Arquivo" value="${image}" style="flex:1;">
+          <input type="file" class="var-image-file" accept="image/*" style="display:none;">
+          <button type="button" class="btn btn-secondary btn-sm var-upload-btn" style="padding:0 10px;">
+            <i data-lucide="upload" style="width:14px; height:14px;"></i>
+          </button>
+        </div>
+      </div>
     `;
     
     varsList.appendChild(line);
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    const fileInput = line.querySelector('.var-image-file');
+    const uploadBtn = line.querySelector('.var-upload-btn');
+    const urlInput = line.querySelector('.var-image-input');
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const oldText = uploadBtn.innerHTML;
+      uploadBtn.innerHTML = '<i data-lucide="loader" style="width:14px; height:14px;" class="spin"></i>';
+      uploadBtn.disabled = true;
+
+      try {
+        if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase) {
+          const publicUrl = await uploadProductImage(file);
+          urlInput.value = publicUrl;
+          showNotification('Foto da variação salva na nuvem!', 'success');
+        } else {
+          const reader = new FileReader();
+          reader.onload = (evt) => { urlInput.value = evt.target.result; };
+          reader.readAsDataURL(file);
+        }
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = (evt) => { urlInput.value = evt.target.result; };
+        reader.readAsDataURL(file);
+      } finally {
+        uploadBtn.innerHTML = oldText;
+        uploadBtn.disabled = false;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    });
 
     // Adiciona recalculadores
     line.querySelector('.var-stock-input').addEventListener('input', () => {
@@ -693,7 +836,7 @@ function setupRowActions(container) {
         varsList.innerHTML = '';
         if (product.variations && product.variations.length > 0) {
           product.variations.forEach(v => {
-            addVariationLine(v.name, v.stock, v.id);
+            addVariationLine(v.name, v.stock, v.id, v.costPrice || '', v.price || '', v.image || '');
           });
           document.getElementById('prod-stock').disabled = true;
         } else {

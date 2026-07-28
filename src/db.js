@@ -427,7 +427,11 @@ export function addProduct(product) {
     description: product.description || '',
     variations: (product.variations || []).map((v, idx) => ({
       ...v,
-      id: v.id || ('v_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 5))
+      id: v.id || ('v_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 5)),
+      stock: parseInt(v.stock) || 0,
+      costPrice: v.costPrice !== undefined ? parseFloat(v.costPrice) || 0 : parseFloat(product.costPrice) || 0,
+      price: v.price !== undefined ? parseFloat(v.price) || 0 : parseFloat(product.price) || 0,
+      image: v.image || ''
     })),
     synced: false
   };
@@ -448,7 +452,14 @@ export function updateProduct(id, updatedData) {
       price: parseFloat(updatedData.price) || 0,
       stock: parseInt(updatedData.stock) || 0,
       description: updatedData.description || '',
-      variations: updatedData.variations || [],
+      variations: (updatedData.variations || []).map((v, idx) => ({
+        ...v,
+        id: v.id || ('v_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 5)),
+        stock: parseInt(v.stock) || 0,
+        costPrice: v.costPrice !== undefined ? parseFloat(v.costPrice) || 0 : parseFloat(updatedData.costPrice) || 0,
+        price: v.price !== undefined ? parseFloat(v.price) || 0 : parseFloat(updatedData.price) || 0,
+        image: v.image || ''
+      })),
       synced: false
     };
     saveProducts(products);
