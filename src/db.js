@@ -680,25 +680,38 @@ export function deleteClient(id) {
   }
 }
 
-export function payClientDebt(clientId, amount, paymentMethod) {
+export function payClientDebt(clientId, amountOrPayments, paymentMethod = null) {
   const clients = getClients();
   const client = clients.find(c => c.id === clientId);
   if (!client) {
     throw new Error('Cliente não encontrado!');
   }
 
-  const payAmount = parseFloat(amount);
-  if (payAmount <= 0) {
+  let totalPaid = 0;
+  if (typeof amountOrPayments === 'object') {
+    totalPaid = Object.values(amountOrPayments).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
+  } else {
+    totalPaid = parseFloat(amountOrPayments) || 0;
+  }
+
+  if (totalPaid <= 0) {
     throw new Error('Valor de pagamento inválido!');
   }
 
-  client.debt = Math.max(0, client.debt - payAmount);
+  client.debt = Math.max(0, client.debt - totalPaid);
   client.synced = false;
   saveClients(clients);
   syncWithSupabase();
 
   // Registrar a entrada no caixa
-  addCashTransaction('suprimento', payAmount, `Recebimento Débito (Fiado) - ${client.name} via ${translatePaymentMethod(paymentMethod)}`);
+  if (typeof amountOrPayments === 'object') {
+    if (amountOrPayments.money > 0) addCashTransaction('suprimento', amountOrPayments.money, `Recebimento Débito (Fiado) - ${client.name} (Dinheiro)`);
+    if (amountOrPayments.pix > 0) addCashTransaction('suprimento', amountOrPayments.pix, `Recebimento Débito (Fiado) - ${client.name} (Pix)`);
+    if (amountOrPayments.credit > 0) addCashTransaction('suprimento', amountOrPayments.credit, `Recebimento Débito (Fiado) - ${client.name} (C. Crédito)`);
+    if (amountOrPayments.debit > 0) addCashTransaction('suprimento', amountOrPayments.debit, `Recebimento Débito (Fiado) - ${client.name} (C. Débito)`);
+  } else {
+    addCashTransaction('suprimento', totalPaid, `Recebimento Débito (Fiado) - ${client.name} via ${translatePaymentMethod(paymentMethod)}`);
+  }
   
   return client;
 }

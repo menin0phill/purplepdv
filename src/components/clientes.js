@@ -82,20 +82,40 @@ export function renderClientes(container) {
         
         <form id="form-quitacao" class="form-group margin-top-md">
           <input type="hidden" id="quit-client-id">
-          
-          <label for="quit-amount">Valor Recebido (R$)</label>
-          <div class="input-prefix">
-            <span class="prefix">R$</span>
-            <input type="number" id="quit-amount" placeholder="0,00" step="0.01" required min="0.01">
+          <div class="payment-split-grid margin-top-md" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="quit-money" style="margin: 0;">Dinheiro</label>
+              <div class="input-prefix" style="width: 150px;">
+                <span class="prefix">R$</span>
+                <input type="number" id="quit-money" class="quit-split-input" placeholder="0.00" step="0.01" min="0">
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="quit-pix" style="margin: 0;">Pix</label>
+              <div class="input-prefix" style="width: 150px;">
+                <span class="prefix">R$</span>
+                <input type="number" id="quit-pix" class="quit-split-input" placeholder="0.00" step="0.01" min="0">
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="quit-credit" style="margin: 0;">Cartão de Crédito</label>
+              <div class="input-prefix" style="width: 150px;">
+                <span class="prefix">R$</span>
+                <input type="number" id="quit-credit" class="quit-split-input" placeholder="0.00" step="0.01" min="0">
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="quit-debit" style="margin: 0;">Cartão de Débito</label>
+              <div class="input-prefix" style="width: 150px;">
+                <span class="prefix">R$</span>
+                <input type="number" id="quit-debit" class="quit-split-input" placeholder="0.00" step="0.01" min="0">
+              </div>
+            </div>
           </div>
-
-          <label for="quit-payment-method" class="margin-top-sm">Forma de Pagamento</label>
-          <select id="quit-payment-method" required>
-            <option value="money">Dinheiro</option>
-            <option value="pix">Pix</option>
-            <option value="credit">Cartão de Crédito</option>
-            <option value="debit">Cartão de Débito</option>
-          </select>
+          <div class="margin-top-sm" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px; border-radius: 8px;">
+            <span class="font-bold">Total Informado:</span>
+            <span id="quit-total-informed" class="font-bold text-primary">R$ 0.00</span>
+          </div>
 
           <div class="modal-actions margin-top-md">
             <button type="button" id="btn-cancel-quit" class="btn btn-secondary">Cancelar</button>
@@ -301,16 +321,43 @@ function setupClientEvents(container) {
     formQuitacao.reset();
   });
 
+  // Atualizar cálculo total
+  function updateQuitTotal() {
+    const money = parseFloat(document.getElementById('quit-money').value) || 0;
+    const pix = parseFloat(document.getElementById('quit-pix').value) || 0;
+    const credit = parseFloat(document.getElementById('quit-credit').value) || 0;
+    const debit = parseFloat(document.getElementById('quit-debit').value) || 0;
+    const total = money + pix + credit + debit;
+    document.getElementById('quit-total-informed').textContent = `R$ ${total.toFixed(2)}`;
+  }
+
+  // Preencher valor automaticamente ao abrir (feito no botão) e registrar listeners
+  document.querySelectorAll('.quit-split-input').forEach(input => {
+    input.addEventListener('input', updateQuitTotal);
+  });
+
   // Confirmar Quitação
   formQuitacao.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('quit-client-id').value;
-    const amount = parseFloat(document.getElementById('quit-amount').value);
-    const method = document.getElementById('quit-payment-method').value;
+    
+    const payments = {
+      money: parseFloat(document.getElementById('quit-money').value) || 0,
+      pix: parseFloat(document.getElementById('quit-pix').value) || 0,
+      credit: parseFloat(document.getElementById('quit-credit').value) || 0,
+      debit: parseFloat(document.getElementById('quit-debit').value) || 0
+    };
+    
+    const totalPaid = payments.money + payments.pix + payments.credit + payments.debit;
+    
+    if (totalPaid <= 0) {
+      showNotification('Informe pelo menos um valor maior que zero!', 'error');
+      return;
+    }
 
     try {
-      const client = payClientDebt(id, amount, method);
-      showNotification(`Recebimento de R$ ${amount.toFixed(2)} registrado!`, 'success');
+      const client = payClientDebt(id, payments);
+      showNotification(`Recebimento de R$ ${totalPaid.toFixed(2)} registrado!`, 'success');
       modalQuitacao.classList.remove('active');
       formQuitacao.reset();
       renderClientes(container);
@@ -359,7 +406,8 @@ function setupTableActions(container) {
       if (client) {
         document.getElementById('quit-client-id').value = client.id;
         document.getElementById('quit-client-desc').innerHTML = `Cliente: <strong>${sanitizeHTML(client.name)}</strong>. Saldo Devedor atual: <strong class="text-danger">R$ ${client.debt.toFixed(2)}</strong>.`;
-        document.getElementById('quit-amount').value = client.debt.toFixed(2);
+        document.getElementById('quit-money').value = client.debt.toFixed(2);
+        updateQuitTotal();
         modalQuitacao.classList.add('active');
       }
     });
