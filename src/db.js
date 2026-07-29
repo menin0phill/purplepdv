@@ -927,8 +927,7 @@ export async function syncWithSupabase() {
     localStorage.setItem(KEY_OPERATORS, JSON.stringify(localOperators));
 
     // Sync Clients
-    const localClients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
-    const unsyncedClients = localClients.filter(c => !c.synced);
+    const unsyncedClients = (JSON.parse(localStorage.getItem(KEY_CLIENTS)) || []).filter(c => !c.synced);
     for (const client of unsyncedClients) {
       const payload = {
         id: client.id,
@@ -946,12 +945,16 @@ export async function syncWithSupabase() {
       
       const { error } = await supabase.from('clients').upsert(payload);
       if (!error) {
-        client.synced = true;
+        const fresh = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
+        const fIdx = fresh.findIndex(x => x.id === client.id);
+        if (fIdx !== -1) {
+          fresh[fIdx].synced = true;
+          localStorage.setItem(KEY_CLIENTS, JSON.stringify(fresh));
+        }
       } else {
         console.error("Error syncing client:", client.id, error);
       }
     }
-    localStorage.setItem(KEY_CLIENTS, JSON.stringify(localClients));
 
     // Sync Sales
     const localSales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
@@ -1080,7 +1083,9 @@ export async function syncWithSupabase() {
       mappedClients.forEach(sc => {
         const idx = merged.findIndex(lc => lc.id === sc.id || (lc.email && lc.email.toLowerCase() === sc.email.toLowerCase()));
         if (idx !== -1) {
-          merged[idx] = { ...merged[idx], ...sc, synced: true };
+          if (merged[idx].synced) {
+            merged[idx] = { ...merged[idx], ...sc, synced: true };
+          }
         } else {
           merged.push(sc);
         }
@@ -1163,7 +1168,9 @@ export async function syncWithSupabase() {
       mappedSales.forEach(ss => {
         const idx = merged.findIndex(ls => ls.id === ss.id);
         if (idx !== -1) {
-          merged[idx] = { ...merged[idx], ...ss, synced: true };
+          if (merged[idx].synced) {
+            merged[idx] = { ...merged[idx], ...ss, synced: true };
+          }
         } else {
           merged.push(ss);
         }
