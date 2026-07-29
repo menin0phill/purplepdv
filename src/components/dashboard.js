@@ -6,9 +6,11 @@ export function renderDashboard(container) {
   const products = getProducts();
   const clients = getClients();
 
+  const activeSales = sales.filter(s => s.status !== 'Cancelada');
+
   // Cálculos gerais
-  const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
-  const totalCost = sales.reduce((sum, s) => {
+  const totalRevenue = activeSales.reduce((sum, s) => sum + s.total, 0);
+  const totalCost = activeSales.reduce((sum, s) => {
     const saleCost = s.items.reduce((costSum, item) => {
       const prod = products.find(p => p.id === item.id);
       const itemCost = prod ? prod.costPrice : 0;
@@ -19,22 +21,32 @@ export function renderDashboard(container) {
 
   const profit = totalRevenue - totalCost;
   const marginPercentage = totalRevenue > 0 ? (profit / totalRevenue * 100) : 0;
-  const totalSalesCount = sales.length;
+  const totalSalesCount = activeSales.length;
   const ticketMedio = totalSalesCount > 0 ? (totalRevenue / totalSalesCount) : 0;
 
   // Faturamento por canal
-  const posSalesTotal = sales.filter(s => s.origin !== 'e-commerce').reduce((sum, s) => sum + s.total, 0);
-  const ecomSalesTotal = sales.filter(s => s.origin === 'e-commerce').reduce((sum, s) => sum + s.total, 0);
+  const posSalesTotal = activeSales.filter(s => s.origin !== 'e-commerce').reduce((sum, s) => sum + s.total, 0);
+  const ecomSalesTotal = activeSales.filter(s => s.origin === 'e-commerce').reduce((sum, s) => sum + s.total, 0);
 
   // Distribuição de pagamento
-  const paymentDistribution = sales.reduce((acc, sale) => {
-    acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + sale.total;
+  const paymentDistribution = activeSales.reduce((acc, sale) => {
+    // Se for objeto 'payments' (novo formato)
+    if (sale.payments) {
+      acc.money += sale.payments.money || 0;
+      acc.credit += sale.payments.credit || 0;
+      acc.debit += sale.payments.debit || 0;
+      acc.pix += sale.payments.pix || 0;
+      acc.fiado += sale.payments.fiado || 0;
+    } else {
+      // Formato antigo
+      acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + sale.total;
+    }
     return acc;
   }, { money: 0, credit: 0, debit: 0, pix: 0, fiado: 0 });
 
   // Produtos mais vendidos
   const productSalesMap = {};
-  sales.forEach(sale => {
+  activeSales.forEach(sale => {
     sale.items.forEach(item => {
       if (!productSalesMap[item.id]) {
         productSalesMap[item.id] = {
