@@ -407,7 +407,7 @@ function setupTableActions(container) {
         document.getElementById('quit-client-id').value = client.id;
         document.getElementById('quit-client-desc').innerHTML = `Cliente: <strong>${sanitizeHTML(client.name)}</strong>. Saldo Devedor atual: <strong class="text-danger">R$ ${client.debt.toFixed(2)}</strong>.`;
         document.getElementById('quit-money').value = client.debt.toFixed(2);
-        updateQuitTotal();
+        document.getElementById('quit-money').dispatchEvent(new Event('input'));
         modalQuitacao.classList.add('active');
       }
     });
