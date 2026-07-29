@@ -82,6 +82,7 @@ export function renderClientes(container) {
         
         <form id="form-quitacao" class="form-group margin-top-md">
           <input type="hidden" id="quit-client-id">
+          <input type="hidden" id="quit-client-debt">
           <div class="payment-split-grid margin-top-md" style="display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <label for="quit-money" style="margin: 0;">Dinheiro</label>
@@ -112,9 +113,19 @@ export function renderClientes(container) {
               </div>
             </div>
           </div>
-          <div class="margin-top-sm" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px; border-radius: 8px;">
-            <span class="font-bold">Total Informado:</span>
-            <span id="quit-total-informed" class="font-bold text-primary">R$ 0.00</span>
+          <div class="margin-top-sm" style="display: flex; flex-direction: column; gap: 5px; background: var(--bg-color); padding: 10px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="font-bold">Total Informado:</span>
+              <span id="quit-total-informed" class="font-bold text-primary">R$ 0.00</span>
+            </div>
+            <div id="quit-container-remaining" style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="font-bold text-muted">Saldo Restante:</span>
+              <span id="quit-label-remaining" class="font-bold text-warning">R$ 0.00</span>
+            </div>
+            <div id="quit-container-change" style="display: none; justify-content: space-between; align-items: center;">
+              <span class="font-bold text-success">Troco:</span>
+              <span id="quit-label-change" class="font-bold text-success">R$ 0.00</span>
+            </div>
           </div>
 
           <div class="modal-actions margin-top-md">
@@ -329,6 +340,28 @@ function setupClientEvents(container) {
     const debit = parseFloat(document.getElementById('quit-debit').value) || 0;
     const total = money + pix + credit + debit;
     document.getElementById('quit-total-informed').textContent = `R$ ${total.toFixed(2)}`;
+
+    const currentDebt = parseFloat(document.getElementById('quit-client-debt').value) || 0;
+    const remaining = currentDebt - total;
+    
+    const containerRemaining = document.getElementById('quit-container-remaining');
+    const containerChange = document.getElementById('quit-container-change');
+    const labelRemaining = document.getElementById('quit-label-remaining');
+    const labelChange = document.getElementById('quit-label-change');
+
+    if (remaining > 0) {
+      containerRemaining.style.display = 'flex';
+      containerChange.style.display = 'none';
+      labelRemaining.textContent = `R$ ${remaining.toFixed(2)}`;
+    } else if (remaining < 0) {
+      containerRemaining.style.display = 'none';
+      containerChange.style.display = 'flex';
+      labelChange.textContent = `R$ ${Math.abs(remaining).toFixed(2)}`;
+    } else {
+      containerRemaining.style.display = 'flex';
+      containerChange.style.display = 'none';
+      labelRemaining.textContent = `R$ 0.00`;
+    }
   }
 
   // Preencher valor automaticamente ao abrir (feito no botão) e registrar listeners
@@ -340,24 +373,32 @@ function setupClientEvents(container) {
   formQuitacao.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('quit-client-id').value;
+    const currentDebt = parseFloat(document.getElementById('quit-client-debt').value) || 0;
     
-    const payments = {
-      money: parseFloat(document.getElementById('quit-money').value) || 0,
-      pix: parseFloat(document.getElementById('quit-pix').value) || 0,
-      credit: parseFloat(document.getElementById('quit-credit').value) || 0,
-      debit: parseFloat(document.getElementById('quit-debit').value) || 0
-    };
+    let money = parseFloat(document.getElementById('quit-money').value) || 0;
+    const pix = parseFloat(document.getElementById('quit-pix').value) || 0;
+    const credit = parseFloat(document.getElementById('quit-credit').value) || 0;
+    const debit = parseFloat(document.getElementById('quit-debit').value) || 0;
     
-    const totalPaid = payments.money + payments.pix + payments.credit + payments.debit;
+    const totalPaid = money + pix + credit + debit;
     
     if (totalPaid <= 0) {
       showNotification('Informe pelo menos um valor maior que zero!', 'error');
       return;
     }
 
+    // Calcular troco para deduzir do dinheiro em caixa
+    if (totalPaid > currentDebt) {
+      const change = totalPaid - currentDebt;
+      money = Math.max(0, money - change);
+    }
+
+    const payments = { money, pix, credit, debit };
+
     try {
       const client = payClientDebt(id, payments);
-      showNotification(`Recebimento de R$ ${totalPaid.toFixed(2)} registrado!`, 'success');
+      const paidAmount = Math.min(totalPaid, currentDebt);
+      showNotification(`Recebimento de R$ ${paidAmount.toFixed(2)} registrado!`, 'success');
       modalQuitacao.classList.remove('active');
       formQuitacao.reset();
       renderClientes(container);
@@ -405,6 +446,7 @@ function setupTableActions(container) {
 
       if (client) {
         document.getElementById('quit-client-id').value = client.id;
+        document.getElementById('quit-client-debt').value = client.debt;
         document.getElementById('quit-client-desc').innerHTML = `Cliente: <strong>${sanitizeHTML(client.name)}</strong>. Saldo Devedor atual: <strong class="text-danger">R$ ${client.debt.toFixed(2)}</strong>.`;
         document.getElementById('quit-money').value = client.debt.toFixed(2);
         document.getElementById('quit-money').dispatchEvent(new Event('input'));
