@@ -94,7 +94,8 @@ export function renderPDV(container) {
 
     <!-- Modal de Checkout / Pagamento (Múltiplas Formas) -->
     <div id="modal-checkout" class="modal-overlay">
-      <div class="modal-card max-w-lg">
+      <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: center; max-width: 95vw; flex-wrap: wrap; max-height: 90vh; overflow-y: auto; padding: 20px;">
+        <div class="modal-card max-w-lg" style="margin: 0; width: 100%; min-width: 350px;">
         <h3>Finalizar Pagamento</h3>
         <p class="text-muted text-sm">Insira o valor recebido em cada forma de pagamento.</p>
         
@@ -174,6 +175,38 @@ export function renderPDV(container) {
           <button type="button" id="btn-cancel-checkout" class="btn btn-secondary">Voltar</button>
           <button type="button" id="btn-confirm-sale" class="btn btn-primary" disabled><i data-lucide="check-circle"></i> Confirmar Venda</button>
         </div>
+        </div>
+      </div>
+      
+      <!-- Teclado Numérico Virtual Purple -->
+      <div class="modal-card numpad-card glass-card border-left-purple" style="margin: 0; width: 320px; display: flex; flex-direction: column; gap: 15px; padding: 20px; min-width: 300px;">
+        <h3 class="text-center" style="font-size: 1.2rem; margin-bottom: 0;">Teclado Virtual</h3>
+        <p class="text-center text-muted text-sm" style="margin-top: -10px;">Toque para digitar no campo ativo</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="1" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">1</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="2" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">2</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="3" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">3</button>
+          
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="4" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">4</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="5" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">5</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="6" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">6</button>
+          
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="7" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">7</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="8" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">8</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="9" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">9</button>
+          
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="C" style="font-size: 1.2rem; padding: 18px; border-radius: 12px; background: rgba(255,100,100,0.1); color: #ff6b6b; font-weight: bold;">C</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="0" style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">0</button>
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="." style="font-size: 1.5rem; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);">.</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+          <button type="button" class="btn btn-secondary numpad-btn" data-val="backspace" style="padding: 12px; border-radius: 10px;"><i data-lucide="delete"></i> Apagar</button>
+          <button type="button" class="btn btn-primary numpad-btn" data-val="exact" style="padding: 12px; border-radius: 10px;">Exato</button>
+        </div>
+      </div>
+      
       </div>
     </div>
 
@@ -839,8 +872,46 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     btnConfirmSale.disabled = !canConfirm;
   }
 
+  let activePaymentInput = null;
+
   splitInputs.forEach(input => {
     input.addEventListener('input', updateSplitCalculations);
+    input.addEventListener('focus', () => {
+      activePaymentInput = input;
+    });
+  });
+
+  // Lógica do Teclado Numérico Virtual
+  document.querySelectorAll('.numpad-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      if (!activePaymentInput) {
+        activePaymentInput = inputMoney;
+      }
+      
+      const val = btn.getAttribute('data-val');
+      let currentStr = activePaymentInput.value || '';
+      
+      if (val === 'C') {
+        currentStr = '';
+      } else if (val === 'backspace') {
+        currentStr = currentStr.slice(0, -1);
+      } else if (val === 'exact') {
+        const vals = getSplitValues();
+        const activeId = activePaymentInput.id.replace('split-', '');
+        vals[activeId] = 0;
+        const sumOutros = Object.values(vals).reduce((a, b) => a + b, 0);
+        const restante = Math.max(0, cartTotal - sumOutros);
+        currentStr = restante.toFixed(2);
+      } else {
+        if (currentStr === '0' || currentStr === '0.00') currentStr = '';
+        currentStr += val;
+      }
+      
+      activePaymentInput.value = currentStr;
+      activePaymentInput.dispatchEvent(new Event('input'));
+    });
   });
 
   btnCheckout.addEventListener('click', () => {
