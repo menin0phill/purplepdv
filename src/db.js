@@ -537,8 +537,8 @@ export function addSale(sale) {
     ...sale,
     origin: sale.origin || 'pos',
     status: sale.status || (sale.origin === 'e-commerce' ? 'Preparando' : 'Finalizada'),
-    id: 's_' + Date.now(),
-    timestamp: new Date().toISOString(),
+    id: 's_' + getRealNow(),
+    timestamp: getRealDate().toISOString(),
     synced: false
   };
   sales.push(newSale);
@@ -634,7 +634,7 @@ export function addClient(client) {
   const clients = getClients();
   const newClient = {
     ...client,
-    id: 'c_' + Date.now(),
+    id: 'c_' + getRealNow(),
     debt: parseFloat(client.debt) || 0,
     birthday: client.birthday || '',
     synced: false
@@ -726,6 +726,30 @@ function translatePaymentMethod(method) {
   return methods[method] || method;
 }
 
+// Sincronização de Tempo
+let timeOffset = 0;
+
+export async function initializeNetworkTime() {
+  try {
+    const res = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=America/Sao_Paulo');
+    if (res.ok) {
+      const data = await res.json();
+      const networkTime = new Date(data.dateTime + '-03:00').getTime();
+      timeOffset = networkTime - Date.now();
+    }
+  } catch (err) {
+    console.warn('Network time sync failed, using local time.', err);
+  }
+}
+
+export function getRealDate() {
+  return new Date(Date.now() + timeOffset);
+}
+
+export function getRealNow() {
+  return Date.now() + timeOffset;
+}
+
 // --- CAIXA (SESSÕES E TRANSAÇÕES) ---
 export function getCashSessions() {
   const sessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
@@ -759,10 +783,10 @@ export function openCash(initialAmount, operatorName = 'Operador Purple') {
   }
 
   const newSession = {
-    id: 'c_' + Date.now(),
+    id: 'c_' + getRealNow(),
     status: 'open',
     operator: operatorName,
-    openedAt: new Date().toISOString(),
+    openedAt: getRealDate().toISOString(),
     closedAt: null,
     initialAmount: parseFloat(initialAmount) || 0,
     expectedAmount: parseFloat(initialAmount) || 0,
@@ -788,10 +812,10 @@ export function addCashTransaction(type, amount, description = '') {
 
   const txAmount = parseFloat(amount);
   const transaction = {
-    id: 't_' + Date.now(),
+    id: 't_' + getRealNow(),
     type,
     amount: txAmount,
-    time: new Date().toISOString(),
+    time: getRealDate().toISOString(),
     description
   };
 
@@ -818,7 +842,7 @@ export function closeCash(actualAmount, notes = '') {
 
   const current = sessions[index];
   current.status = 'closed';
-  current.closedAt = new Date().toISOString();
+  current.closedAt = getRealDate().toISOString();
   current.actualAmount = parseFloat(actualAmount) || 0;
   current.difference = current.actualAmount - current.expectedAmount;
   current.notes = notes;
@@ -906,7 +930,7 @@ export async function syncWithSupabase() {
         image: prod.image || '',
         description: prod.description || '',
         variations: prod.variations || [],
-        updated_at: new Date().toISOString()
+        updated_at: getRealDate().toISOString()
       };
       
       const { error } = await supabase.from('products').upsert(payload);
@@ -928,7 +952,7 @@ export async function syncWithSupabase() {
         email: op.email,
         password: op.password,
         role: op.role || 'operator',
-        updated_at: new Date().toISOString()
+        updated_at: getRealDate().toISOString()
       };
       const { error } = await supabase.from('operators').upsert(payload);
       if (!error) {
@@ -953,7 +977,7 @@ export async function syncWithSupabase() {
         notes: client.notes || '',
         cpf_cnpj: client.cpfCnpj || '',
         address: client.address || '',
-        updated_at: new Date().toISOString()
+        updated_at: getRealDate().toISOString()
       };
       
       const { error } = await supabase.from('clients').upsert(payload);
@@ -977,7 +1001,7 @@ export async function syncWithSupabase() {
         id: sale.id,
         client_id: sale.clientId || null,
         client_name: sale.clientName || '',
-        date: sale.date || sale.timestamp || new Date().toISOString(),
+        date: sale.date || sale.timestamp || getRealDate().toISOString(),
         items: sale.items || [],
         subtotal: Number(sale.subtotal) || 0,
         discount: Number(sale.discount) || 0,
@@ -990,7 +1014,7 @@ export async function syncWithSupabase() {
         coupon: sale.coupon || null,
         shipping_fee: Number(sale.shippingFee) || 0,
         shipping_carrier: sale.shippingCarrier || '',
-        updated_at: new Date().toISOString()
+        updated_at: getRealDate().toISOString()
       };
       
       const { error } = await supabase.from('sales').upsert(payload);
@@ -1015,7 +1039,7 @@ export async function syncWithSupabase() {
         final_cash: Number(session.actualAmount) || 0,
         status: session.status || 'closed',
         transactions: session.transactions || [],
-        updated_at: new Date().toISOString()
+        updated_at: getRealDate().toISOString()
       };
       
       const { error } = await supabase.from('cash_sessions').upsert(payload);
@@ -1313,3 +1337,6 @@ export function generatePixPayload(key, amount, merchantName = "Purple Cosmetics
   return raw + crc16(raw);
 }
 
+
+// Inicializar tempo da rede quando o arquivo � carregado
+initializeNetworkTime();
