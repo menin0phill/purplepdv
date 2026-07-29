@@ -175,7 +175,6 @@ export function renderPDV(container) {
           <button type="button" id="btn-cancel-checkout" class="btn btn-secondary">Voltar</button>
           <button type="button" id="btn-confirm-sale" class="btn btn-primary" disabled><i data-lucide="check-circle"></i> Confirmar Venda</button>
         </div>
-        </div>
       </div>
       
       <!-- Teclado Numérico Virtual Purple -->
