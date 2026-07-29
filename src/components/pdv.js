@@ -94,8 +94,8 @@ export function renderPDV(container) {
 
     <!-- Modal de Checkout / Pagamento (Múltiplas Formas) -->
     <div id="modal-checkout" class="modal-overlay">
-      <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: center; max-width: 95vw; flex-wrap: wrap; max-height: 90vh; overflow-y: auto; padding: 20px;">
-        <div class="modal-card max-w-lg" style="margin: 0; width: 100%; min-width: 350px;">
+      <div class="checkout-layout-wrapper">
+        <div class="modal-card checkout-card-main">
         <h3>Finalizar Pagamento</h3>
         <p class="text-muted text-sm">Insira o valor recebido em cada forma de pagamento.</p>
         
@@ -178,7 +178,7 @@ export function renderPDV(container) {
       </div>
       
       <!-- Teclado Numérico Virtual Purple -->
-      <div class="modal-card numpad-card glass-card border-left-purple" style="margin: 0; width: 320px; display: flex; flex-direction: column; gap: 15px; padding: 20px; min-width: 300px;">
+      <div class="modal-card numpad-card glass-card border-left-purple checkout-numpad" style="display: flex; flex-direction: column; gap: 15px; padding: 20px;">
         <h3 class="text-center" style="font-size: 1.2rem; margin-bottom: 0;">Teclado Virtual</h3>
         <p class="text-center text-muted text-sm" style="margin-top: -10px;">Toque para digitar no campo ativo</p>
         
