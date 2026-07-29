@@ -1338,5 +1338,5 @@ export function generatePixPayload(key, amount, merchantName = "Purple Cosmetics
 }
 
 
-// Inicializar tempo da rede quando o arquivo é carregado
+// Inicializar tempo da rede quando o arquivo Ã© carregado
 initializeNetworkTime();
