@@ -1,4 +1,4 @@
-import { getSales, getProducts, getClients } from '../db.js';
+import { getSales, getProducts, getClients, cancelSale } from '../db.js';
 import { showReceipt } from './receipt.js';
 
 export function renderDashboard(container) {
@@ -308,6 +308,22 @@ export function renderDashboard(container) {
       }
     });
   });
+
+  // Eventos de clique para cancelar vendas
+  document.querySelectorAll('.btn-cancel-sale').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const saleId = btn.getAttribute('data-id');
+      if (confirm('Tem certeza que deseja cancelar esta venda? O estoque será devolvido, e os pagamentos (incluindo fiado) serão estornados.')) {
+        try {
+          cancelSale(saleId);
+          showNotification('Venda cancelada com sucesso.', 'success');
+          renderDashboard(container); // Re-render to update the table
+        } catch (err) {
+          showNotification(err.message, 'error');
+        }
+      }
+    });
+  });
 }
 
 function renderPaymentChart(dist, total) {
@@ -401,16 +417,32 @@ function renderRecentSalesTable(sales) {
         <td class="text-center">
           <span class="badge ${isEcom ? 'badge-info' : 'badge-primary'}">${isEcom ? 'E-Commerce' : 'Loja Física'}</span>
         </td>
-        <td><span class="badge badge-secondary">${translatePayment(sale.paymentMethod)}</span></td>
+        <td>${sale.status === 'Cancelada' ? '<span class="badge badge-danger">Cancelada</span>' : '<span class="badge badge-secondary">' + formatPayments(sale) + '</span>'}</td>
         <td class="text-right"><strong>R$ ${sale.total.toFixed(2)}</strong></td>
-        <td class="text-center">
+        <td class="text-center" style="display: flex; justify-content: center; gap: 5px;">
           <button class="btn-icon btn-view-receipt" data-id="${sale.id}" title="Visualizar Cupom">
             <i data-lucide="eye"></i>
           </button>
+          ${sale.status !== 'Cancelada' ? `
+          <button class="btn-icon btn-cancel-sale text-danger" data-id="${sale.id}" title="Cancelar Venda e Estornar">
+            <i data-lucide="x-circle"></i>
+          </button>
+          ` : ''}
         </td>
       </tr>
     `;
   }).join('');
+}
+
+function formatPayments(sale) {
+  if (!sale.payments) return translatePayment(sale.paymentMethod);
+  const parts = [];
+  if (sale.payments.money > 0) parts.push(`Dinheiro: R$ ${sale.payments.money.toFixed(2)}`);
+  if (sale.payments.pix > 0) parts.push(`Pix: R$ ${sale.payments.pix.toFixed(2)}`);
+  if (sale.payments.credit > 0) parts.push(`C. Crédito: R$ ${sale.payments.credit.toFixed(2)}`);
+  if (sale.payments.debit > 0) parts.push(`C. Débito: R$ ${sale.payments.debit.toFixed(2)}`);
+  if (sale.payments.fiado > 0) parts.push(`Fiado: R$ ${sale.payments.fiado.toFixed(2)}`);
+  return parts.join('<br>') || 'Sem Pagamento';
 }
 
 function translatePayment(method) {

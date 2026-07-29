@@ -74,20 +74,42 @@ export function showReceipt(sale) {
             <span>TOTAL:</span>
             <span>R$ ${sale.total.toFixed(2)}</span>
           </div>
-          <div class="receipt-total-row">
-            <span>Forma de Pagamento:</span>
-            <span>${translatePayment(sale.paymentMethod)}</span>
+          <div class="receipt-divider" style="margin-top: 10px;"></div>
+          <div class="receipt-total-row" style="margin-bottom: 5px;">
+            <strong>Pagamentos Registrados:</strong>
           </div>
-          ${sale.amountPaid ? `
-          <div class="receipt-total-row">
-            <span>Valor Pago:</span>
-            <span>R$ ${sale.amountPaid.toFixed(2)}</span>
-          </div>
-          <div class="receipt-total-row">
-            <span>Troco:</span>
-            <span>R$ ${changeDue.toFixed(2)}</span>
-          </div>
-          ` : ''}
+          ${!sale.payments ? `
+            <div class="receipt-total-row">
+              <span>${translatePayment(sale.paymentMethod)}</span>
+              <span>R$ ${sale.total.toFixed(2)}</span>
+            </div>
+            ${sale.amountPaid ? `
+            <div class="receipt-total-row">
+              <span>Valor Recebido:</span>
+              <span>R$ ${sale.amountPaid.toFixed(2)}</span>
+            </div>
+            <div class="receipt-total-row">
+              <span>Troco:</span>
+              <span>R$ ${changeDue.toFixed(2)}</span>
+            </div>
+            ` : ''}
+          ` : `
+            ${sale.payments.money > 0 ? `<div class="receipt-total-row"><span>Dinheiro:</span><span>R$ ${sale.payments.money.toFixed(2)}</span></div>` : ''}
+            ${sale.payments.pix > 0 ? `<div class="receipt-total-row"><span>Pix:</span><span>R$ ${sale.payments.pix.toFixed(2)}</span></div>` : ''}
+            ${sale.payments.credit > 0 ? `<div class="receipt-total-row"><span>C. Crédito:</span><span>R$ ${sale.payments.credit.toFixed(2)}</span></div>` : ''}
+            ${sale.payments.debit > 0 ? `<div class="receipt-total-row"><span>C. Débito:</span><span>R$ ${sale.payments.debit.toFixed(2)}</span></div>` : ''}
+            ${sale.payments.fiado > 0 ? `<div class="receipt-total-row"><span>Fiado (A Prazo):</span><span>R$ ${sale.payments.fiado.toFixed(2)}</span></div>` : ''}
+            <div class="receipt-total-row" style="margin-top: 5px; color: #666; font-size: 11px;">
+              <span>Total Informado:</span>
+              <span>R$ ${sale.amountPaid.toFixed(2)}</span>
+            </div>
+            ${(sale.amountPaid - sale.total) > 0.01 ? `
+            <div class="receipt-total-row" style="font-weight: bold;">
+              <span>Troco Entregue:</span>
+              <span>R$ ${(sale.amountPaid - sale.total).toFixed(2)}</span>
+            </div>
+            ` : ''}
+          `}
         </div>
         
         ${sale.deliveryAddress ? `

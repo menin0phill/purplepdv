@@ -92,86 +92,87 @@ export function renderPDV(container) {
       </div>
     </div>
 
-    <!-- Modal de Checkout / Pagamento -->
+    <!-- Modal de Checkout / Pagamento (Múltiplas Formas) -->
     <div id="modal-checkout" class="modal-overlay">
       <div class="modal-card max-w-lg">
         <h3>Finalizar Pagamento</h3>
-        <p class="text-muted text-sm">Selecione o método de pagamento e confirme a venda.</p>
+        <p class="text-muted text-sm">Insira o valor recebido em cada forma de pagamento.</p>
         
         <div class="checkout-total-banner margin-top-sm">
-          <span>Valor a Pagar</span>
+          <span>Valor da Venda</span>
           <h2 id="checkout-total-val">R$ 0,00</h2>
         </div>
 
-        <div class="payment-methods-grid margin-top-md">
-          <button class="payment-btn active" data-method="money">
-            <i data-lucide="banknote"></i> Dinheiro
-          </button>
-          <button class="payment-btn" data-method="pix">
-            <i data-lucide="qr-code"></i> Pix
-          </button>
-          <button class="payment-btn" data-method="credit">
-            <i data-lucide="credit-card"></i> C. Crédito
-          </button>
-          <button class="payment-btn" data-method="debit">
-            <i data-lucide="credit-card"></i> C. Débito
-          </button>
-          <button class="payment-btn" data-method="fiado">
-            <i data-lucide="user-minus"></i> Fiado
-          </button>
-        </div>
-
-        <!-- Dinheiro -->
-        <div class="payment-details-container margin-top-md" id="payment-details-money">
-          <div class="form-group">
-            <label for="payment-cash-received">Valor Recebido (R$)</label>
-            <input type="number" id="payment-cash-received" placeholder="0,00" step="0.01" class="input-lg">
-          </div>
-          <div class="change-banner margin-top-sm">
-            <span>Troco a devolver:</span>
-            <strong id="payment-change-val">R$ 0,00</strong>
-          </div>
-        </div>
-
-        <!-- Pix -->
-        <div class="payment-details-container margin-top-md hidden" id="payment-details-pix">
-          <div class="pix-qr-container">
-            <div class="qr-mock">
-              <svg viewBox="0 0 100 100" class="qr-svg">
-                <rect x="0" y="0" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/>
-                <rect x="10" y="10" width="20" height="20" fill="currentColor"/>
-                <rect x="70" y="10" width="20" height="20" fill="currentColor"/>
-                <rect x="10" y="70" width="20" height="20" fill="currentColor"/>
-                <rect x="40" y="40" width="20" height="20" fill="currentColor"/>
-                <rect x="45" y="15" width="10" height="10" fill="currentColor"/>
-                <rect x="15" y="45" width="10" height="10" fill="currentColor"/>
-                <rect x="75" y="45" width="10" height="10" fill="currentColor"/>
-                <rect x="45" y="75" width="10" height="10" fill="currentColor"/>
-              </svg>
+        <div class="payment-split-grid margin-top-md" style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="banknote" class="text-purple"></i> <strong style="font-size: 15px;">Dinheiro</strong>
             </div>
-            <p class="text-xs text-muted margin-top-xs text-center">Pix Copia e Cola / QR Code simulado para o PDV</p>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span class="text-muted">R$</span>
+              <input type="number" id="split-money" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+            </div>
+          </div>
+          <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="qr-code" class="text-purple"></i> <strong style="font-size: 15px;">Pix</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span class="text-muted">R$</span>
+              <input type="number" id="split-pix" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+            </div>
+          </div>
+          <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="credit-card" class="text-purple"></i> <strong style="font-size: 15px;">Cartão de Crédito</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span class="text-muted">R$</span>
+              <input type="number" id="split-credit" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+            </div>
+          </div>
+          <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="credit-card" class="text-purple"></i> <strong style="font-size: 15px;">Cartão de Débito</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span class="text-muted">R$</span>
+              <input type="number" id="split-debit" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+            </div>
+          </div>
+          <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="user-minus" class="text-purple"></i> <strong style="font-size: 15px;">Fiado / A Prazo</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span class="text-muted">R$</span>
+              <input type="number" id="split-fiado" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+            </div>
           </div>
         </div>
-
-        <!-- Cartões -->
-        <div class="payment-details-container margin-top-md hidden" id="payment-details-card">
-          <div class="card-status-mock">
-            <i data-lucide="smartphone" class="icon-lg text-purple animate-pulse"></i>
-            <p class="margin-top-xs">Aguardando inserção ou aproximação do cartão na SmartPOS...</p>
-            <span class="text-xs text-muted">Aprovado pelo TEF integrado</span>
-          </div>
+        
+        <div id="fiado-client-warning" class="text-xs text-danger margin-top-xs hidden font-bold" style="background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 4px; border-left: 3px solid #ef4444;">
+          <i data-lucide="alert-circle" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> É obrigatório selecionar um cliente na tela anterior para lançar fiado!
         </div>
 
-        <!-- Fiado (Contas) -->
-        <div class="payment-details-container margin-top-md hidden" id="payment-details-fiado">
-          <div class="fiado-status-box">
-            <p class="text-sm" id="fiado-client-check-label">Validando cliente...</p>
+        <div class="checkout-summary margin-top-md" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px;">
+            <span class="text-muted">Total Informado:</span>
+            <strong id="split-total-informed">R$ 0,00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #ef4444; font-size: 16px;" id="split-remaining-container">
+            <span>Falta Receber:</span>
+            <strong id="split-remaining">R$ 0,00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; color: #10b981; font-size: 16px; display: none;" id="split-change-container">
+            <span>Troco (Dinheiro):</span>
+            <strong id="split-change">R$ 0,00</strong>
           </div>
         </div>
 
         <div class="modal-actions margin-top-lg">
           <button type="button" id="btn-cancel-checkout" class="btn btn-secondary">Voltar</button>
-          <button type="button" id="btn-confirm-sale" class="btn btn-primary">Confirmar e Imprimir</button>
+          <button type="button" id="btn-confirm-sale" class="btn btn-primary" disabled><i data-lucide="check-circle"></i> Confirmar Venda</button>
         </div>
       </div>
     </div>
@@ -777,43 +778,91 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
       modalQuickClient.classList.add('active');
     });
 
-    // --- CHECKOUT ---
+  // --- CHECKOUT ---
   const modalCheckout = document.getElementById('modal-checkout');
   const checkoutTotalBanner = document.getElementById('checkout-total-val');
-  const paymentButtons = document.querySelectorAll('.payment-btn');
-  const detailsMoney = document.getElementById('payment-details-money');
-  const detailsPix = document.getElementById('payment-details-pix');
-  const detailsCard = document.getElementById('payment-details-card');
-  const detailsFiado = document.getElementById('payment-details-fiado');
-  const fiadoLabel = document.getElementById('fiado-client-check-label');
-  const inputCashReceived = document.getElementById('payment-cash-received');
-  const changeValEl = document.getElementById('payment-change-val');
-  let selectedMethod = 'money';
+  
+  const inputMoney = document.getElementById('split-money');
+  const inputPix = document.getElementById('split-pix');
+  const inputCredit = document.getElementById('split-credit');
+  const inputDebit = document.getElementById('split-debit');
+  const inputFiado = document.getElementById('split-fiado');
+  const splitInputs = [inputMoney, inputPix, inputCredit, inputDebit, inputFiado];
+  
+  const labelInformed = document.getElementById('split-total-informed');
+  const labelRemaining = document.getElementById('split-remaining');
+  const labelChange = document.getElementById('split-change');
+  const containerRemaining = document.getElementById('split-remaining-container');
+  const containerChange = document.getElementById('split-change-container');
+  const warningFiado = document.getElementById('fiado-client-warning');
+  const btnConfirmSale = document.getElementById('btn-confirm-sale');
 
-    btnCheckout.addEventListener('click', () => {
-      // Verificar obrigatoriedade de cliente
-      const currentConfig = getConfig();
-      const clientId = clientSelect.value;
-      
-      if (currentConfig.requireClientCheckout && !clientId) {
-        const alertModal = document.getElementById('modal-client-required-alert');
-        alertModal.classList.add('active');
-        return;
-      }
+  function getSplitValues() {
+    return {
+      money: parseFloat(inputMoney.value) || 0,
+      pix: parseFloat(inputPix.value) || 0,
+      credit: parseFloat(inputCredit.value) || 0,
+      debit: parseFloat(inputDebit.value) || 0,
+      fiado: parseFloat(inputFiado.value) || 0
+    };
+  }
 
-      checkoutTotalBanner.textContent = `R$ ${cartTotal.toFixed(2)}`;
-    inputCashReceived.value = cartTotal.toFixed(2);
-    changeValEl.textContent = 'R$ 0,00';
-    selectedMethod = 'money';
+  function updateSplitCalculations() {
+    const vals = getSplitValues();
+    const totalInformed = vals.money + vals.pix + vals.credit + vals.debit + vals.fiado;
+    const remaining = cartTotal - totalInformed;
     
-    paymentButtons.forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-method="money"]').classList.add('active');
+    labelInformed.textContent = `R$ ${totalInformed.toFixed(2)}`;
+    
+    let canConfirm = true;
 
-    detailsMoney.classList.remove('hidden');
-    detailsPix.classList.add('hidden');
-    detailsCard.classList.add('hidden');
-    detailsFiado.classList.add('hidden');
+    if (remaining > 0) {
+      containerRemaining.style.display = 'flex';
+      containerChange.style.display = 'none';
+      labelRemaining.textContent = `R$ ${remaining.toFixed(2)}`;
+      canConfirm = false;
+    } else {
+      containerRemaining.style.display = 'none';
+      containerChange.style.display = 'flex';
+      const change = Math.abs(remaining);
+      labelChange.textContent = `R$ ${change.toFixed(2)}`;
+    }
 
+    const clientId = clientSelect.value;
+    if (vals.fiado > 0 && !clientId) {
+      warningFiado.classList.remove('hidden');
+      canConfirm = false;
+    } else {
+      warningFiado.classList.add('hidden');
+    }
+
+    btnConfirmSale.disabled = !canConfirm;
+  }
+
+  splitInputs.forEach(input => {
+    input.addEventListener('input', updateSplitCalculations);
+  });
+
+  btnCheckout.addEventListener('click', () => {
+    // Verificar obrigatoriedade de cliente
+    const currentConfig = getConfig();
+    const clientId = clientSelect.value;
+    
+    if (currentConfig.requireClientCheckout && !clientId) {
+      const alertModal = document.getElementById('modal-client-required-alert');
+      alertModal.classList.add('active');
+      return;
+    }
+
+    checkoutTotalBanner.textContent = `R$ ${cartTotal.toFixed(2)}`;
+    
+    inputMoney.value = cartTotal.toFixed(2);
+    inputPix.value = '';
+    inputCredit.value = '';
+    inputDebit.value = '';
+    inputFiado.value = '';
+    
+    updateSplitCalculations();
     modalCheckout.classList.add('active');
   });
 
@@ -821,49 +870,9 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     modalCheckout.classList.remove('active');
   });
 
-  paymentButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      paymentButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedMethod = btn.getAttribute('data-method');
-
-      detailsMoney.classList.add('hidden');
-      detailsPix.classList.add('hidden');
-      detailsCard.classList.add('hidden');
-      detailsFiado.classList.add('hidden');
-
-      if (selectedMethod === 'money') {
-        detailsMoney.classList.remove('hidden');
-        inputCashReceived.value = cartTotal.toFixed(2);
-        changeValEl.textContent = 'R$ 0,00';
-      } else if (selectedMethod === 'pix') {
-        detailsPix.classList.remove('hidden');
-      } else if (selectedMethod === 'fiado') {
-        detailsFiado.classList.remove('hidden');
-        const clientId = clientSelect.value;
-        if (!clientId) {
-          fiadoLabel.textContent = 'ERRO: Venda Fiada requer um cliente selecionado!';
-          fiadoLabel.className = 'text-xs text-danger font-bold margin-top-xs';
-        } else {
-          const client = getClients().find(c => c.id === clientId);
-          fiadoLabel.textContent = `Venda será cobrada na conta de: ${client.name}`;
-          fiadoLabel.className = 'text-xs text-success font-bold margin-top-xs';
-        }
-      } else {
-        detailsCard.classList.remove('hidden');
-      }
-    });
-  });
-
-  inputCashReceived.addEventListener('input', () => {
-    const received = parseFloat(inputCashReceived.value) || 0;
-    const change = Math.max(0, received - cartTotal);
-    changeValEl.textContent = `R$ ${change.toFixed(2)}`;
-  });
-
   // Confirmação de Venda
   let isConfirmingSale = false;
-  document.getElementById('btn-confirm-sale').addEventListener('click', () => {
+  btnConfirmSale.addEventListener('click', () => {
     if (isConfirmingSale) return;
 
     // Verificar se o caixa está aberto antes de fazer qualquer alteração no estoque/db
@@ -877,21 +886,37 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     const client = clientId ? getClients().find(c => c.id === clientId) : null;
     const clientName = client ? client.name : null;
     
-    const amountPaid = selectedMethod === 'money' ? parseFloat(inputCashReceived.value) : cartTotal;
+    const vals = getSplitValues();
+    const totalInformed = vals.money + vals.pix + vals.credit + vals.debit + vals.fiado;
 
-    if (selectedMethod === 'money' && amountPaid < cartTotal) {
+    if (totalInformed < cartTotal) {
       showNotification('Valor pago é insuficiente!', 'error');
       return;
     }
 
-    if (selectedMethod === 'fiado' && !clientId) {
+    if (vals.fiado > 0 && !clientId) {
       showNotification('Venda no fiado exige a seleção de um cliente cadastrado!', 'error');
       return;
     }
 
     isConfirmingSale = true;
-    const confirmBtn = document.getElementById('btn-confirm-sale');
-    if (confirmBtn) confirmBtn.disabled = true;
+    btnConfirmSale.disabled = true;
+
+    // Se o valor informado for maior (troco), o troco sai do dinheiro recebido.
+    // Ex: Total 100. Dinheiro 120. Pagamento real em dinheiro = 100. Troco = 20.
+    let finalMoneyPaid = vals.money;
+    if (totalInformed > cartTotal) {
+      const change = totalInformed - cartTotal;
+      finalMoneyPaid = Math.max(0, vals.money - change); // Reduz o troco do dinheiro
+    }
+
+    const payments = {
+      money: finalMoneyPaid,
+      pix: vals.pix,
+      credit: vals.credit,
+      debit: vals.debit,
+      fiado: vals.fiado
+    };
 
     const saleData = {
       items: cart.map(i => ({
@@ -906,19 +931,20 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
       total: cartTotal,
       clientId: clientId || null,
       clientName: clientName || null,
-      paymentMethod: selectedMethod,
-      amountPaid: selectedMethod === 'fiado' ? 0 : amountPaid,
+      payments: payments, // Objeto de pagamentos múltiplos
+      amountPaid: totalInformed,
       operator: currentSession.operator || 'Operador Purple'
     };
 
     try {
       const completedSale = addSale(saleData);
       
-      if (selectedMethod === 'fiado') {
-        addCashTransaction('venda', 0, `Venda Fiada #${completedSale.id.split('_')[1]} para ${clientName} (A Receber: R$ ${cartTotal.toFixed(2)})`);
-      } else {
-        addCashTransaction('venda', cartTotal, `Venda #${completedSale.id.split('_')[1]} finalizada via ${translatePayment(selectedMethod)}`);
-      }
+      const shortId = completedSale.id.split('_')[1];
+      if (payments.money > 0) addCashTransaction('venda', payments.money, `Venda #${shortId} (Dinheiro)`);
+      if (payments.pix > 0) addCashTransaction('venda', payments.pix, `Venda #${shortId} (Pix)`);
+      if (payments.credit > 0) addCashTransaction('venda', payments.credit, `Venda #${shortId} (Crédito)`);
+      if (payments.debit > 0) addCashTransaction('venda', payments.debit, `Venda #${shortId} (Débito)`);
+      if (payments.fiado > 0) addCashTransaction('venda', 0, `Venda #${shortId} (Fiado: R$ ${payments.fiado.toFixed(2)}) para ${clientName}`);
       
       showNotification('Venda realizada com sucesso!', 'success');
       modalCheckout.classList.remove('active');
@@ -939,7 +965,7 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
       showNotification(err.message, 'error');
     } finally {
       isConfirmingSale = false;
-      if (confirmBtn) confirmBtn.disabled = false;
+      btnConfirmSale.disabled = false;
     }
   });
 }

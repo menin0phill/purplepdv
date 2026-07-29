@@ -521,12 +521,13 @@ export function addSale(sale) {
   });
   saveProducts(products);
 
-  // Se a venda foi no fiado, incrementa o débito do cliente
-  if (sale.clientId && sale.paymentMethod === 'fiado') {
+  // Se a venda teve pagamento no fiado, incrementa o débito do cliente
+  const fiadoAmount = sale.payments && sale.payments.fiado ? sale.payments.fiado : (sale.paymentMethod === 'fiado' ? sale.total : 0);
+  if (sale.clientId && fiadoAmount > 0) {
     const clients = getClients();
     const client = clients.find(c => c.id === sale.clientId);
     if (client) {
-      client.debt = (client.debt || 0) + sale.total;
+      client.debt = (client.debt || 0) + fiadoAmount;
       client.synced = false;
       saveClients(clients);
     }
@@ -557,6 +558,63 @@ export function updateSaleStatus(saleId, newStatus) {
     return sales[index];
   }
   return null;
+}
+
+export function cancelSale(saleId) {
+  const sales = getSales();
+  const saleIndex = sales.findIndex(s => s.id === saleId);
+  if (saleIndex === -1) throw new Error('Venda não encontrada');
+  const sale = sales[saleIndex];
+  
+  if (sale.status === 'Cancelada') throw new Error('A venda já está cancelada');
+
+  // Devolver ao estoque
+  const products = getProducts();
+  sale.items.forEach(item => {
+    const prod = products.find(p => p.id === item.id);
+    if (prod) {
+      if (item.variationId && prod.variations) {
+        const v = prod.variations.find(v => v.id === item.variationId);
+        if (v) v.stock += item.quantity;
+      }
+      prod.stock += item.quantity;
+      prod.synced = false;
+    }
+  });
+  saveProducts(products);
+
+  // Reverter Dívida de Fiado se houver
+  const fiadoAmount = sale.payments && sale.payments.fiado ? sale.payments.fiado : (sale.paymentMethod === 'fiado' ? sale.total : 0);
+  if (sale.clientId && fiadoAmount > 0) {
+    const clients = getClients();
+    const client = clients.find(c => c.id === sale.clientId);
+    if (client) {
+      client.debt = Math.max(0, (client.debt || 0) - fiadoAmount);
+      client.synced = false;
+      saveClients(clients);
+    }
+  }
+
+  // Estornar pagamentos do caixa atual (se houver caixa aberto)
+  const paidAmount = sale.amountPaid || sale.total; // para vendas antigas
+  const amountToRefund = sale.paymentMethod === 'fiado' ? 0 : paidAmount;
+  const shortId = sale.id.split('_')[1] || sale.id;
+  
+  if (sale.payments) {
+    if (sale.payments.money > 0) addCashTransaction('sangria', sale.payments.money, `Estorno de Venda #${shortId} (Dinheiro)`);
+    if (sale.payments.pix > 0) addCashTransaction('sangria', sale.payments.pix, `Estorno de Venda #${shortId} (Pix)`);
+    if (sale.payments.credit > 0) addCashTransaction('sangria', sale.payments.credit, `Estorno de Venda #${shortId} (Crédito)`);
+    if (sale.payments.debit > 0) addCashTransaction('sangria', sale.payments.debit, `Estorno de Venda #${shortId} (Débito)`);
+  } else if (amountToRefund > 0) {
+    addCashTransaction('sangria', amountToRefund, `Estorno de Venda #${shortId}`);
+  }
+
+  // Mudar o status
+  sale.status = 'Cancelada';
+  sale.synced = false;
+  saveSales(sales);
+  syncWithSupabase();
+  return sale;
 }
 
 // --- CLIENTES ---
