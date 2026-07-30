@@ -533,10 +533,10 @@ function renderCaixaHistory(container) {
         <tr>
           <td>${dataStr}</td>
           <td>${s.operator}</td>
-          <td>R$ ${(Number(s.initialAmount)||0).toFixed(2)}</td>
-          <td>R$ ${(Number(s.actualAmount)||0).toFixed(2)}</td>
-          <td>
-            <span class="status-badge ${dif >= 0 ? 'success' : 'danger'}">
+          <td class="text-right">R$ ${(Number(s.initialAmount)||0).toFixed(2)}</td>
+          <td class="text-right">R$ ${(Number(s.actualAmount)||0).toFixed(2)}</td>
+          <td class="text-right">
+            <span class="status-badge ${dif >= 0 ? 'success' : 'danger'}" style="display: inline-block;">
               R$ ${dif.toFixed(2)}
             </span>
           </td>
@@ -553,16 +553,16 @@ function renderCaixaHistory(container) {
           <h1 class="page-title" style="display:inline-block; vertical-align:middle;">Histórico de Fechamentos</h1>
         </div>
       </div>
-      <div class="glass-card margin-top-md">
-        <div class="table-responsive">
-          <table class="table w-full">
+      <div class="glass-card margin-top-md" style="padding: 24px;">
+        <div class="table-container">
+          <table class="data-table">
             <thead>
               <tr>
                 <th>Data/Hora</th>
                 <th>Operador</th>
-                <th>Saldo Inicial</th>
-                <th>Saldo Final Informado</th>
-                <th>Diferença (Quebra)</th>
+                <th class="text-right">Saldo Inicial</th>
+                <th class="text-right">Saldo Final Informado</th>
+                <th class="text-right">Diferença (Quebra)</th>
               </tr>
             </thead>
             <tbody>
