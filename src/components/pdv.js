@@ -111,7 +111,7 @@ export function renderPDV(container) {
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
               <span class="text-muted">R$</span>
-              <input type="number" id="split-money" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+              <input type="text" inputmode="decimal" id="split-money" class="input-sm split-payment-input" placeholder="0,00" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
             </div>
           </div>
           <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
@@ -120,7 +120,7 @@ export function renderPDV(container) {
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
               <span class="text-muted">R$</span>
-              <input type="number" id="split-pix" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+              <input type="text" inputmode="decimal" id="split-pix" class="input-sm split-payment-input" placeholder="0,00" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
             </div>
           </div>
           <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
@@ -129,7 +129,7 @@ export function renderPDV(container) {
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
               <span class="text-muted">R$</span>
-              <input type="number" id="split-credit" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+              <input type="text" inputmode="decimal" id="split-credit" class="input-sm split-payment-input" placeholder="0,00" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
             </div>
           </div>
           <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
@@ -138,7 +138,7 @@ export function renderPDV(container) {
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
               <span class="text-muted">R$</span>
-              <input type="number" id="split-debit" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+              <input type="text" inputmode="decimal" id="split-debit" class="input-sm split-payment-input" placeholder="0,00" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
             </div>
           </div>
           <div class="payment-split-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
@@ -147,7 +147,7 @@ export function renderPDV(container) {
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
               <span class="text-muted">R$</span>
-              <input type="number" id="split-fiado" class="input-sm split-payment-input" placeholder="0,00" step="0.01" min="0" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
+              <input type="text" inputmode="decimal" id="split-fiado" class="input-sm split-payment-input" placeholder="0,00" style="width: 100px; text-align: right; font-weight: bold; font-size: 16px;">
             </div>
           </div>
         </div>

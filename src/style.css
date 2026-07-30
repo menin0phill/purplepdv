@@ -3840,6 +3840,6 @@ select.select-order-status.status-can {
 
 
 .checkout-layout-wrapper { flex-direction: row; display: flex; gap: 20px; align-items: stretch; justify-content: center; width: 100%; max-width: 950px; max-height: 90vh; overflow-y: auto; }
-@media (max-width: 768px) { .checkout-layout-wrapper { flex-direction: column; align-items: center; } }
+@media (max-width: 550px) { .checkout-layout-wrapper { flex-direction: column; align-items: center; } }
 .checkout-card-main { flex: 1; min-width: 300px; margin: 0; }
 .checkout-numpad { width: 300px; flex-shrink: 0; margin: 0; }
