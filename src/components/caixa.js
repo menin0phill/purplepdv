@@ -515,7 +515,20 @@ function renderCaixaHistory(container) {
     sessions.forEach(s => {
       const d = new Date(s.closedAt || s.openedAt);
       const dataStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-      const dif = (Number(s.actualAmount) - Number(s.expectedAmount));
+      
+      let exp = Number(s.expectedAmount) || 0;
+      if (exp === 0) {
+        // Recalcular expectedAmount se estiver zerado (ex: sessões antigas ou puxadas do DB)
+        const sessionSales = getSales().filter(sale => {
+          return new Date(sale.timestamp) >= new Date(s.openedAt) && (!s.closedAt || new Date(sale.timestamp) <= new Date(s.closedAt));
+        });
+        const moneySales = sessionSales.reduce((acc, sale) => acc + (sale.paymentMethod === 'money' ? sale.total : 0), 0);
+        const suprimentos = (s.transactions || []).filter(t => t.type === 'suprimento').reduce((sum, t) => sum + t.amount, 0);
+        const sangrias = (s.transactions || []).filter(t => t.type === 'sangria').reduce((sum, t) => sum + t.amount, 0);
+        exp = Number(s.initialAmount) + moneySales + suprimentos - sangrias;
+      }
+      
+      const dif = (Number(s.actualAmount) - exp);
       rows += `
         <tr>
           <td>${dataStr}</td>
