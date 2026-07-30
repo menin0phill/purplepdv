@@ -407,7 +407,8 @@ function setupProductEvents(container) {
 
       <div>
         <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Imagem da Variação</label>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <img class="var-image-preview" src="" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); flex-shrink:0;">
           <input type="text" class="var-image-input input-sm" placeholder="URL da Imagem ou Envie Arquivo" value="${image}" style="flex:1;">
           <input type="file" class="var-image-file" accept="image/*" style="display:none;">
           <button type="button" class="btn btn-secondary btn-sm var-upload-btn" style="padding:0 10px;">
@@ -423,6 +424,8 @@ function setupProductEvents(container) {
     const fileInput = line.querySelector('.var-image-file');
     const uploadBtn = line.querySelector('.var-upload-btn');
     const urlInput = line.querySelector('.var-image-input');
+    const previewImg = line.querySelector('.var-image-preview');
+    urlInput.addEventListener('input', () => { previewImg.src = urlInput.value || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=150&auto=format&fit=crop&q=60'; });
 
     uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', async (e) => {
@@ -436,16 +439,16 @@ function setupProductEvents(container) {
       try {
         if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase) {
           const publicUrl = await uploadProductImage(file);
-          urlInput.value = publicUrl;
+          urlInput.value = publicUrl; urlInput.dispatchEvent(new Event('input'));
           showNotification('Foto da variação salva na nuvem!', 'success');
         } else {
           const reader = new FileReader();
-          reader.onload = (evt) => { urlInput.value = evt.target.result; };
+          reader.onload = (evt) => { urlInput.value = evt.target.result; urlInput.dispatchEvent(new Event('input')); };
           reader.readAsDataURL(file);
         }
       } catch (err) {
         const reader = new FileReader();
-        reader.onload = (evt) => { urlInput.value = evt.target.result; };
+        reader.onload = (evt) => { urlInput.value = evt.target.result; urlInput.dispatchEvent(new Event('input')); };
         reader.readAsDataURL(file);
       } finally {
         uploadBtn.innerHTML = oldText;
@@ -789,7 +792,8 @@ function setupRowActions(container) {
 
       <div>
         <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Imagem da Variação</label>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <img class="var-image-preview" src="" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); flex-shrink:0;">
           <input type="text" class="var-image-input input-sm" placeholder="URL da Imagem ou Envie Arquivo" value="${image}" style="flex:1;">
           <input type="file" class="var-image-file" accept="image/*" style="display:none;">
           <button type="button" class="btn btn-secondary btn-sm var-upload-btn" style="padding:0 10px;">
@@ -805,6 +809,8 @@ function setupRowActions(container) {
     const fileInput = line.querySelector('.var-image-file');
     const uploadBtn = line.querySelector('.var-upload-btn');
     const urlInput = line.querySelector('.var-image-input');
+    const previewImg = line.querySelector('.var-image-preview');
+    urlInput.addEventListener('input', () => { previewImg.src = urlInput.value || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=150&auto=format&fit=crop&q=60'; });
 
     uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', async (e) => {
@@ -824,16 +830,16 @@ function setupRowActions(container) {
       try {
         if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase) {
           const publicUrl = await uploadProductImage(file);
-          urlInput.value = publicUrl;
+          urlInput.value = publicUrl; urlInput.dispatchEvent(new Event('input'));
           showNotification('Foto da variação salva na nuvem!', 'success');
         } else {
           const reader = new FileReader();
-          reader.onload = (evt) => { urlInput.value = evt.target.result; };
+          reader.onload = (evt) => { urlInput.value = evt.target.result; urlInput.dispatchEvent(new Event('input')); };
           reader.readAsDataURL(file);
         }
       } catch (err) {
         const reader = new FileReader();
-        reader.onload = (evt) => { urlInput.value = evt.target.result; };
+        reader.onload = (evt) => { urlInput.value = evt.target.result; urlInput.dispatchEvent(new Event('input')); };
         reader.readAsDataURL(file);
       } finally {
         uploadBtn.innerHTML = oldText;
