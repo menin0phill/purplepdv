@@ -888,8 +888,9 @@ async function fetchAllRows(tableName, orderBy = 'updated_at') {
       .range(from, from + step - 1);
     
     if (error || !data) {
-      if (allRows.length === 0) return { data: null, error };
-      break;
+      // CRITICAL FIX: If ANY page fails, we must abort and return the error.
+      // Otherwise, we silently return partial data, and the sync engine will incorrectly DELETE all missing items locally!
+      return { data: null, error: error || new Error("Failed to fetch paginated data") };
     }
     allRows = allRows.concat(data);
     if (data.length < step) {
