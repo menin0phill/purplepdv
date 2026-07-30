@@ -715,6 +715,18 @@ function setupProductEvents(container) {
 
   // Ações das Linhas (Editar/Excluir)
   setupRowActions(container);
+
+  // DIAGNOSTIC CHECK FOR ADMIN PC
+  setTimeout(() => {
+    const localProds = JSON.parse(localStorage.getItem('purple_pdv_products')) || [];
+    const unsynced = localProds.filter(p => !p.synced);
+    if (unsynced.length > 0) {
+      const lastErr = localStorage.getItem('purple_pdv_last_upsert_error') || localStorage.getItem('purple_pdv_last_sync_error') || 'Erro desconhecido (Verifique o F12 Console)';
+      alert(`DIAGNÓSTICO ANTIGRAVITY:\nExistem ${unsynced.length} produtos no seu PC que NÃO conseguiram subir para a nuvem.\n\nÚltimo erro de sincronização: ${lastErr}\n\nPor favor, tire um print ou copie esta mensagem e me envie!`);
+    } else {
+      console.log("Diagnóstico: Todos os produtos estão sincronizados com a nuvem.");
+    }
+  }, 4000);
 }
 
 function setupRowActions(container) {

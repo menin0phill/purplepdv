@@ -942,6 +942,7 @@ export async function syncWithSupabase() {
         prod.synced = true;
       } else {
         console.error("Error syncing product:", prod.id, error);
+        localStorage.setItem('purple_pdv_last_upsert_error', `Produto ${prod.name}: ${error.message || JSON.stringify(error)}`);
       }
     }
 
