@@ -312,7 +312,7 @@ function renderProductsGrid(products, category, query) {
     return `
       <div class="product-card ${isOut ? 'out-of-stock' : ''}" data-id="${p.id}">
         <div class="prod-card-image animate-glow" style="background-color: ${p.color || '#8b5cf6'}15; cursor: pointer;">
-          <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300';">
+          <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.style.opacity='0';">
           ${isOut ? '<span class="out-badge">Esgotado</span>' : ''}
         </div>
         <div class="prod-card-body">
@@ -556,21 +556,6 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     }
     updateCartUI();
   }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('pdv-products-grid')) {
-      renderCategories();
-      renderProducts();
-      updateCartUI();
-      
-      // Listen for background sync updates to refresh the products list automatically
-      window.addEventListener('db-synced', () => {
-        products = getProducts();
-        renderCategories();
-        renderProducts();
-      });
-    }
-  });
 
   document.getElementById('btn-close-detail').addEventListener('click', () => {
     document.getElementById('modal-product-details').classList.remove('active');
