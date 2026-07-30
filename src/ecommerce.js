@@ -1013,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="ecom-product-card-premium ${isOut ? 'out-of-stock' : ''}" data-id="${p.id}">
           <!-- Image Wrapper -->
           <div class="ecom-card-image-wrapper" style="position: relative; overflow: hidden; border-radius: 12px; width: 286px; height: 381.33px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; z-index: 1;">
-            <img src="${p.image}" alt="${p.name}" class="ecom-card-main-image" id="img-${p.id}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease, filter 0.4s ease;" onerror="this.style.display='none';">
+            <img src="${p.image}" alt="${p.name}" class="ecom-card-main-image" id="img-${p.id}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease, filter 0.4s ease;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300';">
             
             <button class="ecom-favorite-btn ${isFav ? 'favorited' : ''}" data-id="${p.id}" style="position: absolute; top: 12px; right: 12px; background: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; z-index: 5;">
               <i data-lucide="heart" style="width: 16px; height: 16px; ${isFav ? 'fill: #6a3f97; color: #6a3f97;' : 'color: #777;'}"></i>
