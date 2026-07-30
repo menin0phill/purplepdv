@@ -483,6 +483,45 @@ function setupProductEvents(container) {
     addVariationLine('', 0);
   });
 
+  // Função para comprimir imagem antes do upload ou conversão base64
+  function compressImage(file, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = event => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(blob => {
+            if (blob) {
+              const ext = file.name.split('.').pop() || 'jpg';
+              const compressedFile = new File([blob], file.name.replace(`.${ext}`, '.jpg'), {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('Canvas to Blob failed'));
+            }
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = error => reject(error);
+        img.src = event.target.result;
+      };
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
   // Função auxiliar para atualizar preview de imagem
   const updateImagePreview = (src) => {
     const preview = document.getElementById('prod-image-preview');
@@ -503,7 +542,7 @@ function setupProductEvents(container) {
   if (uploadImgBtn && fileImgInput) {
     uploadImgBtn.addEventListener('click', () => fileImgInput.click());
     fileImgInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
+      let file = e.target.files[0];
       if (!file) return;
 
       filenameImgSpan.textContent = `Carregando: ${file.name}`;
@@ -515,10 +554,18 @@ function setupProductEvents(container) {
       };
       localReader.readAsDataURL(file);
 
+      uploadImgBtn.disabled = true;
+      const oldText = uploadImgBtn.textContent;
+      uploadImgBtn.textContent = 'Otimizando...';
+
+      try {
+        file = await compressImage(file);
+      } catch (err) {
+        console.warn("Erro ao comprimir imagem, usando original", err);
+      }
+
       if (supabase) {
         filenameImgSpan.textContent = 'Enviando para o Supabase...';
-        uploadImgBtn.disabled = true;
-        const oldText = uploadImgBtn.textContent;
         uploadImgBtn.textContent = 'Enviando...';
         
         try {
@@ -738,12 +785,18 @@ function setupRowActions(container) {
 
     uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
+      let file = e.target.files[0];
       if (!file) return;
 
       const oldText = uploadBtn.innerHTML;
       uploadBtn.innerHTML = '<i data-lucide="loader" style="width:14px; height:14px;" class="spin"></i>';
       uploadBtn.disabled = true;
+
+      try {
+        file = await compressImage(file);
+      } catch (err) {
+        console.warn("Erro ao comprimir variação", err);
+      }
 
       try {
         if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase) {
