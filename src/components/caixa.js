@@ -33,11 +33,23 @@ function renderCaixaFechado(container) {
             <i data-lucide="unlock"></i> Abrir Caixa
           </button>
         </form>
+        <div class="margin-top-lg" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+          <button type="button" id="btn-caixa-history" class="btn btn-secondary btn-full">
+            <i data-lucide="history"></i> Histórico de Fechamentos
+          </button>
+        </div>
       </div>
     </div>
   `;
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  const historyBtn = document.getElementById('btn-caixa-history');
+  if (historyBtn) {
+    historyBtn.addEventListener('click', () => {
+      renderCaixaHistory(container);
+    });
+  }
 
   document.getElementById('form-abrir-caixa').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -99,8 +111,13 @@ function renderCaixaAberto(container, session) {
             </button>
           </p>
         </div>
-        <div class="status-badge success">
-          <span class="pulse-indicator"></span> Caixa Aberto
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" id="btn-caixa-history" class="btn btn-secondary">
+            <i data-lucide="history"></i> Histórico
+          </button>
+          <div class="status-badge success">
+            <span class="pulse-indicator"></span> Caixa Aberto
+          </div>
         </div>
       </div>
 
