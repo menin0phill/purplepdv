@@ -43,9 +43,6 @@ export function renderProdutos(container) {
         </div>
         <div style="display:flex; gap:10px;">
           <input type="file" id="import-excel-file" accept=".xlsx, .xls, .csv" style="display: none;">
-          <button id="btn-force-sync" class="btn btn-warning" style="background: #eab308; border-color: #eab308; color: #fff; margin-right: 10px;" title="Apaga a nuvem e envia a lista exata do seu computador">
-            <i data-lucide="cloud-lightning"></i> Forçar Nuvem a Copiar PC
-          </button>
           <button id="btn-import-excel" class="btn btn-secondary" style="display:flex; align-items:center; gap:6px;">
             <i data-lucide="file-spreadsheet" style="width:16px; height:16px;"></i> Importar Planilha
           </button>
@@ -618,41 +615,7 @@ function setupProductEvents(container) {
     }
   });
 
-  // Force Cloud Sync
-  const btnForceSync = document.getElementById('btn-force-sync');
-  if (btnForceSync) {
-    btnForceSync.addEventListener('click', async () => {
-      if (confirm('ATENÇÃO: Isso apagará TODOS os produtos que estão na nuvem atualmente, e enviará APENAS a lista exata que você está vendo no seu computador agora. Isso resolverá o problema de produtos antigos/excluídos que não somem dos celulares. Deseja continuar?')) {
-        const oldText = btnForceSync.innerHTML;
-        btnForceSync.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Sincronizando...';
-        btnForceSync.disabled = true;
-        
-        try {
-          if (!supabase) throw new Error("Supabase não configurado.");
-          
-          // 1. Delete all products from cloud (using neq id = 0 to delete everything)
-          await supabase.from('products').delete().neq('id', '0');
-          
-          // 2. Mark all local products as unsynced
-          const products = getProducts();
-          const forcedProducts = products.map(p => ({ ...p, synced: false }));
-          saveProducts(forcedProducts);
-          
-          // 3. Force push
-          await syncWithSupabase();
-          
-          showNotification('Nuvem substituída com sucesso pelo seu PC!', 'success');
-        } catch (err) {
-          console.error(err);
-          showNotification('Erro ao forçar sincronização: ' + err.message, 'error');
-        } finally {
-          btnForceSync.innerHTML = oldText;
-          btnForceSync.disabled = false;
-          if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-      }
-    });
-  }
+
 
   // Abrir Modal de Criação
   document.getElementById('btn-novo-produto').addEventListener('click', () => {

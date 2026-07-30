@@ -463,14 +463,17 @@ export function deleteProduct(id) {
   let products = getProducts();
   products = products.filter(p => p.id !== id);
   saveProducts(products);
+  
+  // Add to deletion queue for persistent offline deletions
+  const KEY_DELETED_PRODUCTS = 'purple_pdv_deleted_products';
+  let deletedProductIds = JSON.parse(localStorage.getItem(KEY_DELETED_PRODUCTS)) || [];
+  if (!deletedProductIds.includes(id)) {
+    deletedProductIds.push(id);
+    localStorage.setItem(KEY_DELETED_PRODUCTS, JSON.stringify(deletedProductIds));
+  }
+
   if (supabase) {
-    supabase.from('products').delete().eq('id', id).then(({error}) => {
-      if (error) {
-        console.error("Error deleting product from Supabase:", error);
-      } else {
-        syncWithSupabase();
-      }
-    });
+    syncWithSupabase();
   } else {
     window.dispatchEvent(new CustomEvent('db-synced'));
   }
@@ -940,6 +943,23 @@ export async function syncWithSupabase() {
         console.error("Error syncing product:", prod.id, error);
       }
     }
+
+    // Push Deleted Products
+    const KEY_DELETED_PRODUCTS = 'purple_pdv_deleted_products';
+    let deletedProductIds = JSON.parse(localStorage.getItem(KEY_DELETED_PRODUCTS)) || [];
+    if (deletedProductIds.length > 0) {
+      const remainingDeletes = [];
+      for (const id of deletedProductIds) {
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) {
+          console.error("Error pushing delete for product:", id, error);
+          remainingDeletes.push(id);
+        }
+      }
+      deletedProductIds = remainingDeletes;
+      localStorage.setItem(KEY_DELETED_PRODUCTS, JSON.stringify(deletedProductIds));
+    }
+
     localStorage.setItem(KEY_PRODUCTS, JSON.stringify(localProducts));
 
     // Sync Operators
@@ -1079,9 +1099,12 @@ export async function syncWithSupabase() {
       const activeLocalProds = localProds.filter(lp => !lp.synced || remoteIds.has(String(lp.id)) || (lp.code && remoteCodes.has(String(lp.code))));
       const merged = [...activeLocalProds];
       mappedProds.forEach(sp => {
+        if (deletedProductIds.includes(sp.id)) return; // Ignora produtos que estao na fila de exclusao
         const idx = merged.findIndex(lp => lp.id === sp.id || (lp.code && lp.code === sp.code));
         if (idx !== -1) {
-          merged[idx] = { ...merged[idx], ...sp, synced: true };
+          if (merged[idx].synced) { // Só sobrescreve se não houver edições locais pendentes!
+            merged[idx] = { ...merged[idx], ...sp, synced: true };
+          }
         } else {
           merged.push(sp);
         }
