@@ -234,6 +234,13 @@ function renderCaixaAberto(container, session) {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
   setupCaixaAbertoEvents(container, session, expectedPhysicalMoney);
+
+  const historyBtn = document.getElementById('btn-caixa-history');
+  if (historyBtn) {
+    historyBtn.addEventListener('click', () => {
+      renderCaixaHistory(container);
+    });
+  }
 }
 
 function renderTransactionsList(session, sales, suprimentos, sangrias) {
@@ -497,3 +504,66 @@ function updateNavbarCashStatus() {
   }
 }
 export { updateNavbarCashStatus };
+
+function renderCaixaHistory(container) {
+  const sessions = getCashSessions().filter(s => s.status === 'closed').sort((a, b) => new Date(b.openedAt) - new Date(a.openedAt));
+  
+  let rows = '';
+  if (sessions.length === 0) {
+    rows = '<tr><td colspan="5" class="text-center text-muted pad-md">Nenhum fechamento registrado.</td></tr>';
+  } else {
+    sessions.forEach(s => {
+      const d = new Date(s.closedAt || s.openedAt);
+      const dataStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      const dif = (Number(s.actualAmount) - Number(s.expectedAmount));
+      rows += `
+        <tr>
+          <td>${dataStr}</td>
+          <td>${s.operator}</td>
+          <td>R$ ${(Number(s.initialAmount)||0).toFixed(2)}</td>
+          <td>R$ ${(Number(s.actualAmount)||0).toFixed(2)}</td>
+          <td>
+            <span class="status-badge ${dif >= 0 ? 'success' : 'danger'}">
+              R$ ${dif.toFixed(2)}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  container.innerHTML = `
+    <div class="caixa-history-container fade-in">
+      <div class="page-header">
+        <div>
+          <button id="btn-back-caixa" class="btn-icon" style="margin-right: 10px;"><i data-lucide="arrow-left"></i></button>
+          <h1 class="page-title" style="display:inline-block; vertical-align:middle;">Histórico de Fechamentos</h1>
+        </div>
+      </div>
+      <div class="glass-card margin-top-md">
+        <div class="table-responsive">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Operador</th>
+                <th>Saldo Inicial</th>
+                <th>Saldo Final Informado</th>
+                <th>Diferença (Quebra)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  document.getElementById('btn-back-caixa').addEventListener('click', () => {
+    renderCaixa(container);
+  });
+}
