@@ -359,7 +359,7 @@ function setupProductEvents(container) {
   }
 
   // Função auxiliar para criar linhas de variação no formulário
-  function addVariationLine(name = '', stock = 0, varId = '', costPrice = '', price = '', image = '') {
+  function addVariationLine(name = '', stock = 0, varId = '', costPrice = '', price = '', image = '', colorCode = '#8b5cf6') {
     const uniqueId = varId || 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     const line = document.createElement('div');
     line.className = 'variation-form-line margin-bottom-sm';
@@ -392,12 +392,16 @@ function setupProductEvents(container) {
       
       <div style="display:flex; gap:8px;">
         <div style="flex:1;">
-          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Custo (R$)</label>
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Custo (R$)</label>
           <input type="number" class="var-cost-input input-sm" placeholder="Opcional" step="0.01" value="${costPrice}" style="width:100%;">
         </div>
         <div style="flex:1;">
-          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Venda (R$)</label>
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Venda (R$)</label>
           <input type="number" class="var-price-input input-sm" placeholder="Opcional" step="0.01" value="${price}" style="width:100%;">
+        </div>
+        <div style="flex:0.5;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Cor</label>
+          <input type="color" class="var-color-input" value="${colorCode}" style="width:100%; height:32px; padding:0; border:1px solid rgba(255,255,255,0.1); border-radius:6px; cursor:pointer; background:transparent;">
         </div>
       </div>
 
@@ -653,7 +657,8 @@ function setupProductEvents(container) {
         stock: parseInt(line.querySelector('.var-stock-input').value) || 0,
         costPrice: line.querySelector('.var-cost-input').value ? parseFloat(line.querySelector('.var-cost-input').value) : undefined,
         price: line.querySelector('.var-price-input').value ? parseFloat(line.querySelector('.var-price-input').value) : undefined,
-        image: line.querySelector('.var-image-input').value || ''
+        image: line.querySelector('.var-image-input').value || '',
+        colorCode: line.querySelector('.var-color-input') ? line.querySelector('.var-color-input').value : '#8b5cf6'
       });
     });
 
@@ -736,7 +741,7 @@ function setupRowActions(container) {
   const varsList = document.getElementById('variations-form-list');
 
   // Função auxiliar herdada para popular variações ao editar
-  function addVariationLine(name = '', stock = 0, varId = '', costPrice = '', price = '', image = '') {
+  function addVariationLine(name = '', stock = 0, varId = '', costPrice = '', price = '', image = '', colorCode = '#8b5cf6') {
     const uniqueId = varId || 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     const line = document.createElement('div');
     line.className = 'variation-form-line margin-bottom-sm';
@@ -769,12 +774,16 @@ function setupRowActions(container) {
       
       <div style="display:flex; gap:8px;">
         <div style="flex:1;">
-          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Custo (R$)</label>
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Custo (R$)</label>
           <input type="number" class="var-cost-input input-sm" placeholder="Opcional" step="0.01" value="${costPrice}" style="width:100%;">
         </div>
         <div style="flex:1;">
-          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Preço Venda (R$)</label>
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Venda (R$)</label>
           <input type="number" class="var-price-input input-sm" placeholder="Opcional" step="0.01" value="${price}" style="width:100%;">
+        </div>
+        <div style="flex:0.5;">
+          <label class="text-xs text-muted" style="margin-bottom:2px; display:block;">Cor</label>
+          <input type="color" class="var-color-input" value="${colorCode}" style="width:100%; height:32px; padding:0; border:1px solid rgba(255,255,255,0.1); border-radius:6px; cursor:pointer; background:transparent;">
         </div>
       </div>
 
@@ -903,7 +912,7 @@ function setupRowActions(container) {
         varsList.innerHTML = '';
         if (product.variations && product.variations.length > 0) {
           product.variations.forEach(v => {
-            addVariationLine(v.name, v.stock, v.id, v.costPrice || '', v.price || '', v.image || '');
+            addVariationLine(v.name, v.stock, v.id, v.costPrice || '', v.price || '', v.image || '', v.colorCode || '#8b5cf6');
           });
           document.getElementById('prod-stock').disabled = true;
         } else {
