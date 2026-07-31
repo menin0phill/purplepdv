@@ -527,7 +527,7 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
   }
 
   function addProductToCartWithQty(product, variation = null, qty = 1) {
-    const cartKey = variation ? `${product.id}_${variation.id}` : product.id;
+    const cartKey = variation ? `${product.id}_${variation.id}` : String(product.id);
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
@@ -599,7 +599,7 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
   });
 
   function addProductToCart(product, variation = null) {
-    const cartKey = variation ? `${product.id}_${variation.id}` : product.id;
+    const cartKey = variation ? `${product.id}_${variation.id}` : String(product.id);
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
