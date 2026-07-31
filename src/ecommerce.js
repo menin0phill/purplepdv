@@ -572,10 +572,104 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Drawer do carrinho
-    cartBtn.addEventListener('click', () => {
-      cartDrawer.classList.add('active');
+    // Event delegation for cart actions
+    const drawerItems = document.getElementById('ecom-drawer-items');
+    if (drawerItems) {
+      drawerItems.addEventListener('click', (e) => {
+        const btnPlus = e.target.closest('.btn-ecom-plus');
+        const btnMinus = e.target.closest('.btn-ecom-minus');
+        const btnDelete = e.target.closest('.btn-ecom-delete');
+
+        if (btnPlus) {
+          const key = btnPlus.getAttribute('data-key');
+          const item = cart.find(i => i.cartKey === key);
+          if (item && item.quantity < item.maxStock) {
+            item.quantity++;
+            updateCartUI();
+          } else {
+            showNotification('Limite de estoque atingido!', 'warning');
+          }
+        }
+
+        if (btnMinus) {
+          const key = btnMinus.getAttribute('data-key');
+          const item = cart.find(i => i.cartKey === key);
+          if (item) {
+            if (item.quantity > 1) {
+              item.quantity--;
+            } else {
+              const idx = cart.findIndex(i => i.cartKey === key);
+              if (idx !== -1) cart.splice(idx, 1);
+            }
+            updateCartUI();
+          }
+        }
+
+        if (btnDelete) {
+          const key = btnDelete.getAttribute('data-key');
+          const idx = cart.findIndex(i => i.cartKey === key);
+          if (idx !== -1) cart.splice(idx, 1);
+          updateCartUI();
+        }
+      });
+    }
+
+    // Event delegation for cart footer actions
+    const drawerFooter = document.getElementById('ecom-drawer-footer');
+    if (drawerFooter) {
+      drawerFooter.addEventListener('click', (e) => {
+        const btnApply = e.target.closest('#btn-ecom-apply-coupon');
+        
+        if (btnApply) {
+          const couponInput = document.getElementById('ecom-coupon-input');
+          const couponMessage = document.getElementById('ecom-coupon-message');
+          if (couponInput) {
+            const code = couponInput.value.trim().toUpperCase();
+            if (!code) return;
+
+            if (code === 'PARABENSPURPLE') {
+              if (!loggedClient) {
+                if(couponMessage) couponMessage.innerHTML = '<span class="text-danger">Erro: Faça login para validar o aniversário!</span>';
+                discountPercentage = 0;
+              } else {
+                const bdayMonth = loggedClient.birthday ? loggedClient.birthday.split('-')[1] : '';
+                const curMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+                
+                if (bdayMonth === curMonth) {
+                  discountPercentage = 0.10;
+                  if(couponMessage) couponMessage.innerHTML = '<span class="text-success font-bold">Cupom de Aniversário aplicado: 10% de desconto!</span>';
+                  showNotification('Desconto de 10% de aniversário aplicado!', 'success');
+                } else {
+                  discountPercentage = 0;
+                  if(couponMessage) couponMessage.innerHTML = '<span class="text-danger">Erro: Cupom válido apenas no mês do seu aniversário!</span>';
+                  showNotification('Seu aniversário não é neste mês!', 'error');
+                }
+              }
+            } else {
+              discountPercentage = 0;
+              if(couponMessage) couponMessage.innerHTML = '<span class="text-danger">Erro: Cupom inválido!</span>';
+            }
+            updateCartUI();
+          }
+        }
+      });
+    }
+
+    // Event listener to close cart drawer when clicking 'Finalizar a Compra'
+    document.addEventListener('click', (e) => {
+      const btnCheckout = e.target.closest('#btn-go-to-checkout');
+      if (btnCheckout) {
+        const cartDrawer = document.getElementById('ecom-cart-drawer');
+        if (cartDrawer) cartDrawer.classList.remove('active');
+      }
     });
+
+    // Drawer do carrinho
+    if (cartBtn) {
+      cartBtn.addEventListener('click', () => {
+        cartDrawer.classList.add('active');
+      });
+    }
 
     closeCartBtn.addEventListener('click', () => {
       cartDrawer.classList.remove('active');
