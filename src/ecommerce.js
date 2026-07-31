@@ -1723,9 +1723,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ações de alteração de sacola
     const drawerItems = document.getElementById('ecom-drawer-items');
     
-    drawerItems.querySelectorAll('.btn-ecom-plus').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.getAttribute('data-key');
+    // Event delegation for cart actions
+    drawerItems.addEventListener('click', (e) => {
+      const btnPlus = e.target.closest('.btn-ecom-plus');
+      const btnMinus = e.target.closest('.btn-ecom-minus');
+      const btnDelete = e.target.closest('.btn-ecom-delete');
+
+      if (btnPlus) {
+        const key = btnPlus.getAttribute('data-key');
         const item = cart.find(i => i.cartKey === key);
         if (item && item.quantity < item.maxStock) {
           item.quantity++;
@@ -1733,12 +1738,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           showNotification('Limite de estoque atingido!', 'warning');
         }
-      });
-    });
+      }
 
-    drawerItems.querySelectorAll('.btn-ecom-minus').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.getAttribute('data-key');
+      if (btnMinus) {
+        const key = btnMinus.getAttribute('data-key');
         const item = cart.find(i => i.cartKey === key);
         if (item) {
           if (item.quantity > 1) {
@@ -1749,16 +1752,14 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           updateCartUI();
         }
-      });
-    });
+      }
 
-    drawerItems.querySelectorAll('.btn-ecom-delete').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.getAttribute('data-key');
+      if (btnDelete) {
+        const key = btnDelete.getAttribute('data-key');
         const idx = cart.findIndex(i => i.cartKey === key);
         if (idx !== -1) cart.splice(idx, 1);
         updateCartUI();
-      });
+      }
     });
 
     // Evento de Aplicar Cupom
