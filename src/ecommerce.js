@@ -1390,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addEcomProductToCartWithQty(product, variation = null, qty = 1) {
-    const cartKey = variation ? `${product.id}_${variation.id}` : product.id;
+    const cartKey = variation ? `${product.id}_${variation.id}` : String(product.id);
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
@@ -1460,7 +1460,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addEcomProductToCart(product, variation = null) {
-    const cartKey = variation ? `${product.id}_${variation.id}` : product.id;
+    const cartKey = variation ? `${product.id}_${variation.id}` : String(product.id);
     const name = variation ? `${product.name} - ${variation.name}` : product.name;
     const maxStock = variation ? variation.stock : product.stock;
     const variationId = variation ? variation.id : null;
@@ -1557,11 +1557,11 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="coupon-area margin-top-sm" style="background:rgba(255,255,255,0.03); border:1px dashed var(--border-color); padding:10px; border-radius:8px; margin-top: 15px;">
         <label class="text-xs text-muted font-bold block" style="display:block; font-size:11px; color:#cbd5e1; text-align:left;">Cupom de Desconto</label>
         <div class="flex-row" style="display:flex; gap:8px; align-items:center; margin-top:4px;">
-          <input type="text" id="ecom-coupon-input" placeholder="PARABENSPURPLE" class="input-sm" style="flex-grow:1; height:34px; margin:0; background:rgba(255,255,255,0.08); border:1px solid var(--border-color); color:white; border-radius:6px; padding:0 8px;" value="${discountPercentage > 0 ? 'PARABENSPURPLE' : ''}">
+          <input type="text" id="ecom-coupon-input" placeholder="Digite seu cupom" class="input-sm" style="flex-grow:1; height:34px; margin:0; background:rgba(255,255,255,0.08); border:1px solid var(--border-color); color:white; border-radius:6px; padding:0 8px;" value="${discountPercentage > 0 ? 'CUPOM APLICADO' : ''}">
           <button type="button" id="btn-ecom-apply-coupon" class="btn btn-secondary btn-sm" style="height:34px; margin-top:0; padding:0 12px; border-radius:6px; cursor:pointer;">Aplicar</button>
         </div>
         <div id="ecom-coupon-message" class="text-xs margin-top-xs" style="text-align:left; margin-top:4px;">
-          ${discountPercentage > 0 ? '<span style="color:#10b981; font-weight:bold; font-size:11px;">Cupom PARABENSPURPLE aplicado: 10% de desconto!</span>' : ''}
+          ${discountPercentage > 0 ? '<span style="color:#10b981; font-weight:bold; font-size:11px;">Cupom de Aniversário aplicado: 10% de desconto!</span>' : ''}
         </div>
       </div>
 
@@ -1781,7 +1781,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (bdayMonth === curMonth) {
               discountPercentage = 0.10;
-              couponMessage.innerHTML = '<span class="text-success font-bold">Cupom PARABENSPURPLE aplicado: 10% de desconto!</span>';
+              couponMessage.innerHTML = '<span class="text-success font-bold">Cupom de Aniversário aplicado: 10% de desconto!</span>';
               showNotification('Desconto de 10% de aniversário aplicado!', 'success');
             } else {
               discountPercentage = 0;
