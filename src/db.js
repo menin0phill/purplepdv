@@ -844,8 +844,17 @@ export function closeCash(actualAmount, notes = '') {
   }
 
   const current = sessions[index];
+  
+  // Calculate expected amount dynamically to ensure it is always accurate, even after pulling from Supabase
+  const sales = getSales().filter(sale => new Date(sale.timestamp) >= new Date(current.openedAt));
+  const moneySales = sales.reduce((sum, sale) => sum + (sale.paymentMethod === 'money' ? sale.total : 0), 0);
+  const suprimentos = (current.transactions || []).filter(t => t.type === 'suprimento').reduce((sum, t) => sum + t.amount, 0);
+  const sangrias = (current.transactions || []).filter(t => t.type === 'sangria').reduce((sum, t) => sum + t.amount, 0);
+  const expectedAmount = (current.initialAmount || 0) + moneySales + suprimentos - sangrias;
+  
   current.status = 'closed';
   current.closedAt = getRealDate().toISOString();
+  current.expectedAmount = expectedAmount;
   current.actualAmount = parseFloat(actualAmount) || 0;
   current.difference = current.actualAmount - current.expectedAmount;
   current.notes = notes;

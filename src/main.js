@@ -645,8 +645,12 @@ document.addEventListener('DOMContentLoaded', () => {
       updateNavbarCashStatus();
       const isModalActive = document.querySelector('.modal-overlay.active, .modal.active');
       const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
-      if (!isModalActive && !isTyping && currentScreen !== 'pdv' && currentScreen !== 'caixa' && currentScreen !== 'produtos') {
-        navigate(currentScreen);
+      if (!isModalActive && !isTyping) {
+        // We do not re-render pdv or produtos automatically to avoid interrupting the user's flow,
+        // but we DO re-render the 'caixa' screen so the user immediately sees if it was opened/closed on another device.
+        if (currentScreen !== 'pdv' && currentScreen !== 'produtos') {
+          navigate(currentScreen);
+        }
       }
     });
   }
