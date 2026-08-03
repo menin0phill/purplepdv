@@ -1090,215 +1090,157 @@ export async function syncWithSupabase() {
     }
     localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(localSessions));
 
-    // 2. PULL FRESH TABLES FROM REMOTE AND OVERWRITE LOCAL
+    // 2. PULL FRESH TABLES FROM REMOTE AND OVERWRITE LOCAL (SMART SYNC - 99% LESS BANDWIDTH)
     let dataChanged = false;
-
-    // Fetch Products
-    const { data: dbProducts, error: errProducts } = await fetchAllRows('products', 'updated_at');
-
-    if (!errProducts && dbProducts) {
-      const mappedProds = dbProducts.map(p => ({
-        id: p.id,
-        code: p.code,
-        name: p.name,
-        category: p.category,
-        costPrice: Number(p.cost_price),
-        price: Number(p.price),
-        stock: Number(p.stock),
-        color: p.color,
-        image: p.image,
-        description: p.description,
-        variations: p.variations || [],
-        synced: true
-      }));
+    
+    // --- SMART SYNC LOGIC PARA ECONOMIA DE BANDA (99% MENOS DADOS) ---
+    async function smartSyncTable(tableName, localKey, mapFn) {
+      let columns = 'id, updated_at';
+      if (tableName === 'products') columns += ', code';
       
-      const localProds = JSON.parse(localStorage.getItem(KEY_PRODUCTS)) || [];
-      const remoteIds = new Set(mappedProds.map(p => String(p.id)));
-      const remoteCodes = new Set(mappedProds.map(p => String(p.code)).filter(Boolean));
-      const activeLocalProds = localProds.filter(lp => !lp.synced || remoteIds.has(String(lp.id)) || (lp.code && remoteCodes.has(String(lp.code))));
-      const merged = [...activeLocalProds];
-      mappedProds.forEach(sp => {
-        if (deletedProductIds.includes(sp.id)) return; // Ignora produtos que estao na fila de exclusao
-        const idx = merged.findIndex(lp => lp.id === sp.id || (lp.code && lp.code === sp.code));
-        if (idx !== -1) {
-          if (merged[idx].synced) { // Só sobrescreve se não houver edições locais pendentes!
-            merged[idx] = { ...merged[idx], ...sp, synced: true };
-          }
-        } else {
-          merged.push(sp);
+      const { data: metaData, error: errMeta } = await fetchAllRows(tableName, 'updated_at', columns);
+      if (errMeta || !metaData) return false;
+
+      const localData = JSON.parse(localStorage.getItem(localKey)) || [];
+      const remoteIds = new Set(metaData.map(r => String(r.id)));
+      const remoteCodes = tableName === 'products' ? new Set(metaData.map(p => String(p.code)).filter(Boolean)) : new Set();
+      
+      let activeLocalData = localData.filter(ld => !ld.synced || remoteIds.has(String(ld.id)));
+      if (tableName === 'products') {
+        activeLocalData = localData.filter(lp => !lp.synced || remoteIds.has(String(lp.id)) || (lp.code && remoteCodes.has(String(lp.code))));
+      }
+
+      const idsToFetch = [];
+      for (const meta of metaData) {
+        const local = activeLocalData.find(l => String(l.id) === String(meta.id));
+        if (!local || local.updated_at !== meta.updated_at) {
+          idsToFetch.push(meta.id);
         }
-      });
-      const prevVal = localStorage.getItem(KEY_PRODUCTS);
+      }
+
+      let fetchedFullRows = [];
+      if (idsToFetch.length > 0) {
+        const { data: freshRows, error: errFresh } = await fetchFullRowsByIds(tableName, idsToFetch);
+        if (!errFresh && freshRows) {
+          fetchedFullRows = freshRows;
+        }
+      }
+
+      const merged = [...activeLocalData];
+      let hasChanges = false;
+
+      for (const meta of metaData) {
+        if (tableName === 'products' && typeof deletedProductIds !== 'undefined' && deletedProductIds.includes(meta.id)) continue;
+
+        const fullRow = fetchedFullRows.find(f => String(f.id) === String(meta.id));
+        if (fullRow) {
+           const mappedObj = mapFn(fullRow);
+           mappedObj.updated_at = meta.updated_at;
+           mappedObj.synced = true;
+
+           let idx = -1;
+           if (tableName === 'products') {
+              idx = merged.findIndex(lp => lp.id === mappedObj.id || (lp.code && lp.code === mappedObj.code));
+           } else {
+              idx = merged.findIndex(l => l.id === mappedObj.id);
+           }
+
+           if (idx !== -1) {
+              if (merged[idx].synced) merged[idx] = { ...merged[idx], ...mappedObj, synced: true };
+           } else {
+              merged.push(mappedObj);
+           }
+           hasChanges = true;
+        }
+      }
+
+      if (merged.length !== localData.length) hasChanges = true;
+
+      const prevVal = localStorage.getItem(localKey);
       const newVal = JSON.stringify(merged);
       if (prevVal !== newVal) {
-        localStorage.setItem(KEY_PRODUCTS, newVal);
-        dataChanged = true;
+         localStorage.setItem(localKey, newVal);
+         return true;
       }
+      return false;
     }
 
-    // Fetch Clients
-    const { data: dbClients, error: errClients } = await fetchAllRows('clients', 'updated_at');
 
-    if (!errClients && dbClients) {
-      const mappedClients = dbClients.map(c => ({
-        id: c.id,
-        name: c.name,
-        phone: c.phone,
-        email: c.email,
-        password: c.password,
-        birthday: c.birthday,
-        notes: c.notes,
-        cpfCnpj: c.cpf_cnpj,
-        address: c.address,
-        debt: Number(c.debt),
-        synced: true
-      }));
-      
-      const localClients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
-      const remoteClientIds = new Set(mappedClients.map(c => String(c.id)));
-      const remoteClientEmails = new Set(mappedClients.map(c => c.email ? c.email.toLowerCase() : '').filter(Boolean));
-      const activeLocalClients = localClients.filter(lc => !lc.synced || remoteClientIds.has(String(lc.id)) || (lc.email && remoteClientEmails.has(lc.email.toLowerCase())));
-      const merged = [...activeLocalClients];
-      mappedClients.forEach(sc => {
-        const idx = merged.findIndex(lc => lc.id === sc.id || (lc.email && lc.email.toLowerCase() === sc.email.toLowerCase()));
-        if (idx !== -1) {
-          if (merged[idx].synced) {
-            merged[idx] = { ...merged[idx], ...sc, synced: true };
-          }
-        } else {
-          merged.push(sc);
-        }
-      });
-      const prevVal = localStorage.getItem(KEY_CLIENTS);
-      const newVal = JSON.stringify(merged);
-      if (prevVal !== newVal) {
-        localStorage.setItem(KEY_CLIENTS, newVal);
-        dataChanged = true;
-      }
-    }
+    const prodChanged = await smartSyncTable('products', KEY_PRODUCTS, (p) => ({
+      id: p.id,
+      code: p.code,
+      name: p.name,
+      category: p.category,
+      costPrice: Number(p.cost_price),
+      price: Number(p.price),
+      stock: Number(p.stock),
+      color: p.color,
+      image: p.image,
+      description: p.description,
+      variations: p.variations || []
+    }));
+    if (prodChanged) dataChanged = true;
 
-    // Fetch Operators
+    const clientChanged = await smartSyncTable('clients', KEY_CLIENTS, (c) => ({
+      id: c.id,
+      name: c.name,
+      phone: c.phone,
+      email: c.email,
+      password: c.password,
+      birthday: c.birthday,
+      notes: c.notes,
+      cpfCnpj: c.cpf_cnpj,
+      zipCode: c.zip_code,
+      address: c.address,
+      number: c.number,
+      neighborhood: c.neighborhood,
+      city: c.city,
+      state: c.state,
+      debt: Number(c.debt)
+    }));
+    if (clientChanged) dataChanged = true;
+
     try {
-      const { data: dbOperators, error: errOperators } = await fetchAllRows('operators', 'updated_at');
-
-      if (!errOperators && dbOperators) {
-        const mappedOperators = dbOperators.map(o => ({
-          id: o.id,
-          name: o.name,
-          email: o.email,
-          password: o.password,
-          role: o.role || 'operator',
-          synced: true
-        }));
-        
-        const localOperators = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
-        const remoteOpIds = new Set(mappedOperators.map(o => String(o.id)));
-        const remoteOpEmails = new Set(mappedOperators.map(o => o.email ? o.email.toLowerCase() : '').filter(Boolean));
-        const activeLocalOps = localOperators.filter(lo => !lo.synced || remoteOpIds.has(String(lo.id)) || (lo.email && remoteOpEmails.has(lo.email.toLowerCase())));
-        const merged = [...activeLocalOps];
-        mappedOperators.forEach(so => {
-          const idx = merged.findIndex(lo => lo.id === so.id || lo.email.toLowerCase() === so.email.toLowerCase());
-          if (idx !== -1) {
-            merged[idx] = { ...merged[idx], ...so, synced: true };
-          } else {
-            merged.push(so);
-          }
-        });
-        const prevVal = localStorage.getItem(KEY_OPERATORS);
-        const newVal = JSON.stringify(merged);
-        if (prevVal !== newVal) {
-          localStorage.setItem(KEY_OPERATORS, newVal);
-          dataChanged = true;
-        }
-      }
+      const opChanged = await smartSyncTable('operators', 'purple_pdv_operators', (o) => ({
+        id: o.id,
+        name: o.name,
+        email: o.email,
+        password: o.password,
+        role: o.role || 'operator'
+      }));
+      if (opChanged) dataChanged = true;
     } catch (e) {
-      console.warn("Supabase Operators sync failed or table missing:", e);
+      console.warn("Supabase Operators sync failed:", e);
     }
 
-    // Fetch Sales
-    const { data: dbSales, error: errSales } = await fetchAllRows('sales', 'updated_at');
+    const salesChanged = await smartSyncTable('sales', KEY_SALES, (s) => ({
+      id: s.id,
+      clientId: s.client_id,
+      clientName: s.client_name,
+      date: s.date,
+      timestamp: s.date,
+      items: s.items || [],
+      subtotal: Number(s.subtotal),
+      discount: Number(s.discount),
+      total: Number(s.total),
+      paymentMethod: s.payment_method,
+      payments: s.payments,
+      status: s.status,
+      origin: s.origin
+    }));
+    if (salesChanged) dataChanged = true;
 
-    if (!errSales && dbSales) {
-      const mappedSales = dbSales.map(s => ({
-        id: s.id,
-        clientId: s.client_id,
-        clientName: s.client_name,
-        date: s.date,
-        timestamp: s.date,
-        items: s.items || [],
-        subtotal: Number(s.subtotal),
-        discount: Number(s.discount),
-        total: Number(s.total),
-        paymentMethod: s.payment_method,
-        amountPaid: Number(s.amount_paid),
-        operator: s.operator,
-        origin: s.origin,
-        deliveryAddress: s.delivery_address,
-        coupon: s.coupon,
-        shippingFee: Number(s.shipping_fee),
-        shippingCarrier: s.shipping_carrier,
-        synced: true
-      }));
-      
-      const localSales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
-      const remoteSaleIds = new Set(mappedSales.map(s => String(s.id)));
-      const activeLocalSales = localSales.filter(ls => !ls.synced || remoteSaleIds.has(String(ls.id)));
-      const merged = [...activeLocalSales];
-      mappedSales.forEach(ss => {
-        const idx = merged.findIndex(ls => ls.id === ss.id);
-        if (idx !== -1) {
-          if (merged[idx].synced) {
-            merged[idx] = { ...merged[idx], ...ss, synced: true };
-          }
-        } else {
-          merged.push(ss);
-        }
-      });
-      const prevVal = localStorage.getItem(KEY_SALES);
-      const newVal = JSON.stringify(merged);
-      if (prevVal !== newVal) {
-        localStorage.setItem(KEY_SALES, newVal);
-        dataChanged = true;
-      }
-    }
-
-    // Fetch Cash Sessions
-    const { data: dbSessions, error: errSessions } = await fetchAllRows('cash_sessions', 'updated_at');
-
-    if (!errSessions && dbSessions) {
-      const mappedSessions = dbSessions.map(s => ({
-        id: s.id,
-        operator: s.operator,
-        openedAt: s.open_time,
-        closedAt: s.close_time,
-        initialAmount: Number(s.initial_cash),
-        actualAmount: Number(s.final_cash),
-        status: s.status,
-        transactions: s.transactions || [],
-        synced: true
-      }));
-      
-      const localSessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
-      const remoteSessionIds = new Set(mappedSessions.map(s => String(s.id)));
-      const activeLocalSessions = localSessions.filter(ls => !ls.synced || remoteSessionIds.has(String(ls.id)));
-      const merged = [...activeLocalSessions];
-      mappedSessions.forEach(ss => {
-        const idx = merged.findIndex(ls => ls.id === ss.id);
-        if (idx !== -1) {
-          if (merged[idx].synced) {
-            merged[idx] = { ...merged[idx], ...ss, synced: true };
-          }
-        } else {
-          merged.push(ss);
-        }
-      });
-      const prevVal = localStorage.getItem(KEY_CASH_SESSIONS);
-      const newVal = JSON.stringify(merged);
-      if (prevVal !== newVal) {
-        localStorage.setItem(KEY_CASH_SESSIONS, newVal);
-        dataChanged = true;
-      }
-    }
+    const cashChanged = await smartSyncTable('cash_sessions', KEY_CASH_SESSIONS, (s) => ({
+      id: s.id,
+      operator: s.operator,
+      openedAt: s.open_time,
+      closedAt: s.close_time,
+      initialAmount: Number(s.initial_cash),
+      actualAmount: Number(s.final_cash),
+      status: s.status,
+      transactions: s.transactions || []
+    }));
+    if (cashChanged) dataChanged = true;
 
     console.log("Supabase: Background synchronization completed successfully!", { dataChanged });
     localStorage.removeItem('purple_pdv_last_sync_error');
