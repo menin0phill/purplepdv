@@ -74,7 +74,9 @@ function renderCaixaAberto(container, session) {
     return new Date(sale.timestamp) >= new Date(session.openedAt);
   });
 
-  const totals = sales.reduce((acc, sale) => {
+  const validSales = sales.filter(s => s.status !== 'Cancelada');
+
+  const totals = validSales.reduce((acc, sale) => {
     if (sale.payments) {
       acc.money += Number(sale.payments.money) || 0;
       acc.credit += Number(sale.payments.credit) || 0;
@@ -95,7 +97,7 @@ function renderCaixaAberto(container, session) {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const sangrias = session.transactions
-    .filter(t => t.type === 'sangria')
+    .filter(t => t.type === 'sangria' && !t.description.startsWith('Estorno'))
     .reduce((sum, t) => sum + t.amount, 0);
 
   // Dinheiro esperado em caixa físico: inicial + vendas dinheiro + suprimentos - sangrias
@@ -263,16 +265,7 @@ function renderTransactionsList(session, sales, suprimentos, sangrias) {
     class: 'text-purple'
   });
 
-  // Adicionar vendas
-  sales.forEach(sale => {
-    items.push({
-      time: new Date(sale.timestamp),
-      type: 'venda',
-      description: `Venda #${sale.id.split('_')[1]} (${translatePayment(sale.paymentMethod)})`,
-      amount: sale.total,
-      class: 'text-green'
-    });
-  });
+  // Sales are omitted here because they are already accurately logged as individual payment transactions within session.transactions
 
   // Adicionar suprimentos e sangrias da sessão
   session.transactions.forEach(t => {
@@ -530,7 +523,7 @@ function renderCaixaHistory(container) {
         const sessionSales = getSales().filter(sale => {
           return new Date(sale.timestamp) >= new Date(s.openedAt) && (!s.closedAt || new Date(sale.timestamp) <= new Date(s.closedAt));
         });
-        const moneySales = sessionSales.reduce((acc, sale) => {
+        const moneySales = sessionSales.filter(s => s.status !== 'Cancelada').reduce((acc, sale) => {
           if (sale.payments) {
             return acc + (Number(sale.payments.money) || 0);
           } else {
@@ -538,7 +531,7 @@ function renderCaixaHistory(container) {
           }
         }, 0);
         const suprimentos = (s.transactions || []).filter(t => t.type === 'suprimento').reduce((sum, t) => sum + t.amount, 0);
-        const sangrias = (s.transactions || []).filter(t => t.type === 'sangria').reduce((sum, t) => sum + t.amount, 0);
+        const sangrias = (s.transactions || []).filter(t => t.type === 'sangria' && !(t.description || '').startsWith('Estorno')).reduce((sum, t) => sum + t.amount, 0);
         exp = Number(s.initialAmount) + moneySales + suprimentos - sangrias;
       }
       
