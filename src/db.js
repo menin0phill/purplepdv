@@ -891,7 +891,7 @@ let isSyncing = false;
 let syncQueued = false;
 
 // Helper para buscar todas as linhas contornando o limite nativo do PostgREST (1000 linhas) via paginação
-async function fetchAllRows(tableName, orderBy = 'updated_at') {
+async function fetchAllRows(tableName, orderBy = 'updated_at', columns = '*') {
   if (!supabase) return { data: null, error: 'not_configured' };
   let allRows = [];
   let from = 0;
@@ -900,8 +900,9 @@ async function fetchAllRows(tableName, orderBy = 'updated_at') {
   while (more) {
     const { data, error } = await supabase
       .from(tableName)
-      .select('*')
+      .select(columns)
       .order(orderBy, { ascending: true })
+      .order('id', { ascending: true })
       .range(from, from + step - 1);
     
     if (error || !data) {
@@ -1326,3 +1327,16 @@ export function generatePixPayload(key, amount, merchantName = "Purple Cosmetics
 
 // Inicializar tempo da rede quando o arquivo é carregado
 initializeNetworkTime();
+
+async function fetchFullRowsByIds(tableName, ids) {
+  if (!supabase) return { data: null, error: 'not_configured' };
+  let allRows = [];
+  const chunkSize = 100;
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize);
+    const { data, error } = await supabase.from(tableName).select('*').in('id', chunk);
+    if (error || !data) return { data: null, error: error || new Error("Failed chunk fetch") };
+    allRows = allRows.concat(data);
+  }
+  return { data: allRows, error: null };
+}
