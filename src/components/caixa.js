@@ -75,7 +75,15 @@ function renderCaixaAberto(container, session) {
   });
 
   const totals = sales.reduce((acc, sale) => {
-    acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + sale.total;
+    if (sale.payments) {
+      acc.money += Number(sale.payments.money) || 0;
+      acc.credit += Number(sale.payments.credit) || 0;
+      acc.debit += Number(sale.payments.debit) || 0;
+      acc.pix += Number(sale.payments.pix) || 0;
+      acc.fiado += Number(sale.payments.fiado) || 0;
+    } else if (sale.paymentMethod) {
+      acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + sale.total;
+    }
     acc.total += sale.total;
     return acc;
   }, { money: 0, credit: 0, debit: 0, pix: 0, fiado: 0, total: 0 });
@@ -522,7 +530,13 @@ function renderCaixaHistory(container) {
         const sessionSales = getSales().filter(sale => {
           return new Date(sale.timestamp) >= new Date(s.openedAt) && (!s.closedAt || new Date(sale.timestamp) <= new Date(s.closedAt));
         });
-        const moneySales = sessionSales.reduce((acc, sale) => acc + (sale.paymentMethod === 'money' ? sale.total : 0), 0);
+        const moneySales = sessionSales.reduce((acc, sale) => {
+          if (sale.payments) {
+            return acc + (Number(sale.payments.money) || 0);
+          } else {
+            return acc + (sale.paymentMethod === 'money' ? sale.total : 0);
+          }
+        }, 0);
         const suprimentos = (s.transactions || []).filter(t => t.type === 'suprimento').reduce((sum, t) => sum + t.amount, 0);
         const sangrias = (s.transactions || []).filter(t => t.type === 'sangria').reduce((sum, t) => sum + t.amount, 0);
         exp = Number(s.initialAmount) + moneySales + suprimentos - sangrias;
