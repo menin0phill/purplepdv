@@ -832,7 +832,9 @@ export function addCashTransaction(type, amount, description = '') {
   }
 
   saveCashSessions(sessions);
-  syncWithSupabase();
+  if (typeof syncWithSupabase === 'function') {
+    syncWithSupabase();
+  }
   return current;
 }
 
@@ -1283,7 +1285,9 @@ export async function syncWithSupabase() {
       mappedSessions.forEach(ss => {
         const idx = merged.findIndex(ls => ls.id === ss.id);
         if (idx !== -1) {
-          merged[idx] = { ...merged[idx], ...ss, synced: true };
+          if (merged[idx].synced) {
+            merged[idx] = { ...merged[idx], ...ss, synced: true };
+          }
         } else {
           merged.push(ss);
         }
