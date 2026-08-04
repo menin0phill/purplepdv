@@ -635,10 +635,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Sincronização contínua automática em segundo plano (a cada 5 segundos) para manter todas as máquinas alinhadas
-    setInterval(() => {
-      syncWithSupabase().catch(err => console.warn("Erro na sincronização periódica do PDV:", err));
-    }, 5000);
+    // Sincronização via evento de reconexão de rede (o Realtime já cuida da sincronia instantânea)
+    window.addEventListener('online', () => {
+      console.log('🌐 Conexão restaurada! Sincronizando com a nuvem...');
+      syncWithSupabase().catch(err => console.warn("Erro ao sincronizar após reconexão:", err));
+    });
 
     // Atualizar tela quando dados mudarem de fato em background (sem interromper operador com modal aberto, digitando ou no PDV/Caixa/Produtos)
     window.addEventListener('db-synced', () => {
