@@ -1046,7 +1046,7 @@ export async function syncWithSupabase() {
         subtotal: Number(sale.subtotal) || 0,
         discount: Number(sale.discount) || 0,
         total: Number(sale.total) || 0,
-        payment_method: sale.paymentMethod,
+        payment_method: sale.payments ? JSON.stringify(sale.payments) : (sale.paymentMethod || 'dinheiro'),
         amount_paid: Number(sale.amountPaid) || 0,
         operator: sale.operator || '',
         origin: sale.origin || 'pdv',
@@ -1214,21 +1214,27 @@ export async function syncWithSupabase() {
       console.warn("Supabase Operators sync failed:", e);
     }
 
-    const salesChanged = await smartSyncTable('sales', KEY_SALES, (s) => ({
-      id: s.id,
-      clientId: s.client_id,
-      clientName: s.client_name,
-      date: s.date,
-      timestamp: s.date,
-      items: s.items || [],
-      subtotal: Number(s.subtotal),
-      discount: Number(s.discount),
-      total: Number(s.total),
-      paymentMethod: s.payment_method,
-      payments: s.payments,
-      status: s.status,
-      origin: s.origin
-    }));
+    const salesChanged = await smartSyncTable('sales', KEY_SALES, (s) => {
+      let parsedPayments = s.payments || null;
+      if (!parsedPayments && s.payment_method && s.payment_method.startsWith('{')) {
+        try { parsedPayments = JSON.parse(s.payment_method); } catch (e) {}
+      }
+      return {
+        id: s.id,
+        clientId: s.client_id,
+        clientName: s.client_name,
+        date: s.date,
+        timestamp: s.date,
+        items: s.items || [],
+        subtotal: Number(s.subtotal),
+        discount: Number(s.discount),
+        total: Number(s.total),
+        paymentMethod: s.payment_method,
+        payments: parsedPayments,
+        status: s.status,
+        origin: s.origin
+      };
+    });
     if (salesChanged) dataChanged = true;
 
     const cashChanged = await smartSyncTable('cash_sessions', KEY_CASH_SESSIONS, (s) => ({
