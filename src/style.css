@@ -2619,7 +2619,7 @@ select.select-order-status.status-can {
   border-radius: 16px !important;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   /* otimizado: sem backdrop-filter */
-  -webkit-/* otimizado: sem backdrop-filter */
+  /* otimizado: sem webkit-backdrop-filter */
   transition: none; /* otimizado: sem animação geral */
 }
 
@@ -3510,7 +3510,7 @@ select.select-order-status.status-can {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   /* otimizado: sem backdrop-filter */
-  -webkit-/* otimizado: sem backdrop-filter */
+  /* otimizado: sem webkit-backdrop-filter */
   padding: 45px;
   border-radius: 30px;
   max-width: 480px;
