@@ -28,6 +28,8 @@ function createWindow() {
   }
 }
 
+// Desativa aceleração de GPU para rodar liso em Core 2 Duo e GPUs integradas antigas
+app.disableHardwareAcceleration();
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {

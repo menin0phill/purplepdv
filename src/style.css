@@ -48,7 +48,7 @@
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: none; /* otimizado: sem animação geral */
   --glass-blur: blur(12px);
 }
 
@@ -116,7 +116,7 @@ body {
   height: 48px;
   border-radius: 50%;
   border: 2px solid var(--primary);
-  box-shadow: 0 0 10px var(--primary-glow);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   object-fit: cover;
 }
 
@@ -170,7 +170,7 @@ body {
 .nav-item.active {
   background-color: var(--primary);
   color: var(--text-main);
-  box-shadow: 0 4px 15px var(--primary-glow);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .sidebar-footer {
@@ -210,7 +210,7 @@ body {
 .top-navbar {
   height: 70px;
   background-color: rgba(18, 10, 34, 0.7);
-  backdrop-filter: var(--glass-blur);
+  /* otimizado: sem backdrop-filter */
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -264,14 +264,14 @@ body {
   background-color: var(--success);
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 0 8px var(--success);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   animation: pulse-animation 1.5s infinite;
 }
 
 @keyframes pulse-animation {
-  0% { transform: scale(0.9); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.4; }
-  100% { transform: scale(0.9); opacity: 1; }
+  0% { /* otimizado: sem scale */ opacity: 1; }
+  50% { /* otimizado: sem scale */ opacity: 0.4; }
+  100% { /* otimizado: sem scale */ opacity: 1; }
 }
 
 /* Container de Telas */
@@ -285,11 +285,11 @@ body {
 /* Glass Cards */
 .glass-card {
   background: var(--bg-card);
-  backdrop-filter: var(--glass-blur);
+  /* otimizado: sem backdrop-filter */
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 24px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   transition: var(--transition);
 }
 
@@ -339,8 +339,8 @@ body {
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; /* otimizado: sem scale */ }
+  to { opacity: 1; /* otimizado: sem scale */ }
 }
 
 /* Botões */
@@ -378,11 +378,11 @@ body {
 .btn-primary {
   background-color: var(--primary);
   color: var(--text-main);
-  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .btn-primary:hover {
   background-color: var(--primary-hover);
-  box-shadow: 0 6px 15px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   transform: translateY(-1px);
 }
 
@@ -399,11 +399,11 @@ body {
 .btn-danger {
   background-color: var(--danger);
   color: var(--text-main);
-  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .btn-danger:hover {
   background-color: #dc2626;
-  box-shadow: 0 6px 15px rgba(239, 68, 68, 0.5);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   transform: translateY(-1px);
 }
 
@@ -420,11 +420,11 @@ body {
 .btn-success {
   background-color: var(--success);
   color: var(--text-main);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .btn-success:hover {
   background-color: #059669;
-  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   transform: translateY(-1px);
 }
 
@@ -510,7 +510,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .input-sm {
@@ -726,7 +726,7 @@ input:focus, select:focus, textarea:focus {
   width: 100vw;
   height: 100vh;
   background-color: rgba(10, 6, 18, 0.85);
-  backdrop-filter: var(--glass-blur);
+  /* otimizado: sem backdrop-filter */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -747,7 +747,7 @@ input:focus, select:focus, textarea:focus {
   border-radius: var(--radius-lg);
   padding: 30px;
   width: 90%;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .modal-actions {
@@ -772,7 +772,7 @@ input:focus, select:focus, textarea:focus {
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-md);
   padding: 16px 20px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   min-width: 280px;
   max-width: 380px;
   display: flex;
@@ -873,7 +873,7 @@ input:focus, select:focus, textarea:focus {
   background-color: var(--primary);
   border-color: var(--primary);
   color: var(--text-main);
-  box-shadow: 0 4px 10px var(--primary-glow);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .pdv-products-grid {
@@ -909,7 +909,7 @@ input:focus, select:focus, textarea:focus {
 .product-card:hover {
   transform: translateY(-4px);
   border-color: var(--primary);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .prod-card-image {
@@ -929,7 +929,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .product-card:hover .prod-card-image img {
-  transform: scale(1.05);
+  /* otimizado: sem scale */
 }
 
 .out-badge {
@@ -1188,7 +1188,7 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--primary);
   color: var(--text-main);
   background-color: var(--primary);
-  box-shadow: 0 4px 12px var(--primary-glow);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .hidden {
@@ -1270,7 +1270,7 @@ input:focus, select:focus, textarea:focus {
   width: 320px;
   padding: 20px;
   border-radius: var(--radius-sm);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   font-family: var(--font-mono);
   font-size: 11px;
 }
@@ -1622,7 +1622,7 @@ input:focus, select:focus, textarea:focus {
 .ecom-navbar {
   height: 80px;
   background-color: rgba(18, 10, 34, 0.85);
-  backdrop-filter: var(--glass-blur);
+  /* otimizado: sem backdrop-filter */
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -1751,7 +1751,7 @@ input:focus, select:focus, textarea:focus {
 .ecom-product-card:hover {
   transform: translateY(-6px);
   border-color: var(--primary);
-  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.18);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .ecom-product-image {
@@ -1772,7 +1772,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .ecom-product-card:hover .ecom-product-image img {
-  transform: scale(1.05);
+  /* otimizado: sem scale */
 }
 
 .ecom-product-body {
@@ -1852,9 +1852,9 @@ input:focus, select:focus, textarea:focus {
   width: 420px;
   height: 100vh;
   background-color: rgba(18, 10, 34, 0.95);
-  backdrop-filter: var(--glass-blur);
+  /* otimizado: sem backdrop-filter */
   border-left: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   z-index: 1500;
   transition: var(--transition);
 }
@@ -2175,13 +2175,13 @@ input:checked + .slider:before {
   position: relative;
 }
 .color-swatch:hover:not(:disabled) {
-  transform: scale(1.15);
+  /* otimizado: sem scale */
   border-color: var(--purple-accent) !important;
 }
 .color-swatch.active {
   border-color: var(--purple-accent) !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.45);
-  transform: scale(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  /* otimizado: sem scale */
 }
 .color-swatch.out-of-stock {
   opacity: 0.3;
@@ -2245,7 +2245,7 @@ input:checked + .slider:before {
   color: #555;
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: none; /* otimizado: sem animação geral */
 }
 .ecom-menu-link:hover {
   color: #6a3f97 !important;
@@ -2265,7 +2265,7 @@ input:checked + .slider:before {
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: none; /* otimizado: sem animação geral */
   pointer-events: none;
   z-index: 1;
 }
@@ -2273,7 +2273,7 @@ input:checked + .slider:before {
   max-width: 100% !important;
   max-height: 100% !important;
   object-fit: contain !important;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: none; /* otimizado: sem animação geral */
 }
 .carousel-slide.active {
   opacity: 1 !important;
@@ -2284,7 +2284,7 @@ input:checked + .slider:before {
 }
 .carousel-slide.active .carousel-image-box {
   animation: float-active 3.5s ease-in-out infinite !important;
-  box-shadow: 0 15px 35px rgba(188, 13, 242, 0.25) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 .carousel-slide.prev {
@@ -2315,21 +2315,21 @@ input:checked + .slider:before {
 }
 
 .carousel-arrow {
-  transition: all 0.3s ease;
+  transition: none; /* otimizado: sem animação geral */
 }
 .carousel-arrow:hover {
   color: #b794f4 !important;
-  transform: scale(1.2);
+  /* otimizado: sem scale */
 }
 
 #btn-hero-buy-now {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: none; /* otimizado: sem animação geral */
 }
 #btn-hero-buy-now:hover {
-  transform: scale(1.06) !important;
+  /* otimizado: sem scale */
   background-color: #ffffff !important;
   color: #bc0df2 !important;
-  box-shadow: 0 10px 30px rgba(188, 13, 242, 0.5) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .ecom-layout {
@@ -2343,7 +2343,7 @@ input:checked + .slider:before {
   top: 0 !important;
   width: 100% !important;
   z-index: 1000 !important;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.08) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .ecom-menu {
@@ -2384,7 +2384,7 @@ input:checked + .slider:before {
   border: none !important;
   box-shadow: none !important;
   padding: 0 !important;
-  transition: all 0.3s ease !important;
+  transition: none; /* otimizado: sem animação geral */
   overflow: visible !important;
   box-sizing: border-box !important;
   height: auto !important;
@@ -2435,7 +2435,7 @@ input:checked + .slider:before {
 }
 
 .ecom-product-card-premium:hover .ecom-card-main-image {
-  transform: scale(1.05) !important;
+  /* otimizado: sem scale */
 }
 
 .ecom-card-hover-overlay {
@@ -2448,20 +2448,20 @@ input:checked + .slider:before {
 }
 
 .ecom-favorite-btn {
-  transition: all 0.25s ease !important;
+  transition: none; /* otimizado: sem animação geral */
 }
 .ecom-favorite-btn:hover {
-  transform: scale(1.1) !important;
+  /* otimizado: sem scale */
   background-color: #fff0f0 !important;
 }
 
 .card-swatch-circle:hover {
-  transform: scale(1.25) !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.45) !important;
+  /* otimizado: sem scale */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .btn-ecom-quick-add {
-  transition: all 0.25s ease !important;
+  transition: none; /* otimizado: sem animação geral */
 }
 .btn-ecom-quick-add:hover {
   background-color: #6a3f97 !important;
@@ -2506,7 +2506,7 @@ input:checked + .slider:before {
 .ecom-drawer select:-webkit-autofill:hover,
 .ecom-drawer select:-webkit-autofill:focus {
   -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #1c1032 inset !important;
+  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   transition: background-color 5000s ease-in-out 0s;
 }
 
@@ -2559,7 +2559,7 @@ input:checked + .slider:before {
 #modal-ecom-variation-select .modal-card {
   background-color: #5b328a !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Force white text in details and variation selection popups */
@@ -2617,10 +2617,10 @@ select.select-order-status.status-can {
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   padding: 18px 24px !important;
   border-radius: 16px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  /* otimizado: sem backdrop-filter */
+  -webkit-/* otimizado: sem backdrop-filter */
+  transition: none; /* otimizado: sem animação geral */
 }
 
 .gift-card:hover {
@@ -2712,7 +2712,7 @@ select.select-order-status.status-can {
   width: max-content !important;
   white-space: normal !important;
   margin-top: 5px !important;
-  box-shadow: 0 4px 15px rgba(159, 122, 234, 0.25) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .ecom-hero-carousel-side {
@@ -2781,10 +2781,10 @@ select.select-order-status.status-can {
   .carousel-slide {
     width: 260px !important;
     margin-left: -130px !important;
-    transform: scale(0.85) !important;
+    /* otimizado: sem scale */
   }
   .carousel-slide.active {
-    transform: scale(1) !important;
+    /* otimizado: sem scale */
   }
   .carousel-slide.prev,
   .carousel-slide.next {
@@ -3413,13 +3413,13 @@ select.select-order-status.status-can {
   background: #ffffff;
   color: #1a202c;
   box-sizing: border-box;
-  transition: all 0.2s;
+  transition: none; /* otimizado: sem animação geral */
 }
 
 .login-input-group input:focus {
   outline: none;
   border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .password-input-wrapper {
@@ -3457,13 +3457,13 @@ select.select-order-status.status-can {
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: none; /* otimizado: sem animação geral */
   margin-top: 15px;
 }
 
 .btn-login-submit:hover {
   background: #7c3aed;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .login-right-side {
@@ -3509,14 +3509,14 @@ select.select-order-status.status-can {
 .login-right-card {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* otimizado: sem backdrop-filter */
+  -webkit-/* otimizado: sem backdrop-filter */
   padding: 45px;
   border-radius: 30px;
   max-width: 480px;
   width: 100%;
   text-align: left;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   box-sizing: border-box;
   margin-bottom: 70px;
   z-index: 2;
@@ -3562,7 +3562,7 @@ select.select-order-status.status-can {
   height: 8px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.35);
-  transition: all 0.3s ease;
+  transition: none; /* otimizado: sem animação geral */
 }
 
 .login-right-dots .dot.active {
@@ -3609,8 +3609,8 @@ select.select-order-status.status-can {
   align-items: center !important;
   justify-content: center !important;
   background-color: rgba(15, 10, 25, 0.6) !important;
-  backdrop-filter: blur(8px) !important;
-  transition: all 0.3s ease !important;
+  /* otimizado: sem backdrop-filter */
+  transition: none; /* otimizado: sem animação geral */
 }
 
 .auth-light-card {
@@ -3620,7 +3620,7 @@ select.select-order-status.status-can {
   padding: 40px 32px 32px 32px !important;
   width: 90% !important;
   max-width: 420px !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   position: relative !important;
   text-align: center !important;
   font-family: 'Outfit', sans-serif !important;
@@ -3640,7 +3640,7 @@ select.select-order-status.status-can {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-shadow: 0 8px 24px rgba(106, 63, 151, 0.15) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   border: 4px solid #ffffff !important;
   box-sizing: border-box !important;
   z-index: 10 !important;
@@ -3722,7 +3722,7 @@ select.select-order-status.status-can {
   color: #1f2937 !important;
   font-family: 'Outfit', sans-serif !important;
   outline: none !important;
-  transition: all 0.2s ease !important;
+  transition: none; /* otimizado: sem animação geral */
   width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -3734,7 +3734,7 @@ select.select-order-status.status-can {
 .auth-field-group input:focus {
   background-color: #ffffff !important;
   border-color: #8b5cf6 !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .auth-remember-row {
@@ -3771,16 +3771,16 @@ select.select-order-status.status-can {
   font-size: 15px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  transition: none; /* otimizado: sem animação geral */
   text-align: center !important;
   width: 100% !important;
   font-family: 'Outfit', sans-serif !important;
-  box-shadow: 0 4px 12px rgba(106, 63, 151, 0.2) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .auth-submit-btn:hover {
   background: #5b328a !important;
-  box-shadow: 0 6px 16px rgba(106, 63, 151, 0.3) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .auth-footer-links {
@@ -3817,7 +3817,7 @@ select.select-order-status.status-can {
   border-radius: 12px !important;
   padding: 10px 14px !important;
   box-sizing: border-box !important;
-  transition: all 0.2s ease !important;
+  transition: none; /* otimizado: sem animação geral */
 }
 
 #app-ecommerce input:not([type="checkbox"]):not([type="radio"])::placeholder,
@@ -3831,7 +3831,7 @@ select.select-order-status.status-can {
 #app-ecommerce textarea:focus {
   background-color: #ffffff !important;
   border-color: #8b5cf6 !important; /* Destaque roxo */
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   color: #1f2937 !important;
   outline: none !important;
 }
