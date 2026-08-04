@@ -1050,6 +1050,7 @@ export async function syncWithSupabase() {
         amount_paid: Number(sale.amountPaid) || 0,
         operator: sale.operator || '',
         origin: sale.origin || 'pdv',
+          status: sale.status || 'Finalizada',
         delivery_address: sale.deliveryAddress || '',
         coupon: sale.coupon || null,
         shipping_fee: Number(sale.shippingFee) || 0,
