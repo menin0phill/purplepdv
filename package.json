@@ -30,8 +30,9 @@
       "output": "build"
     },
     "win": {
-      "target": "nsis",
-      "icon": "public/logo-purple.jpg"
+      "target": "nsis"
     }
-  }
+  },
+  "author": "Purple PDV",
+  "description": "Sistema de PDV Offline"
 }
