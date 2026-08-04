@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app');
   
   // Sincroniza em segundo plano para carregar novos operadores e configurações
-  syncWithSupabase().catch(err => console.warn("Erro no sync inicial:", err));
+  /* sync disabled */ Promise.resolve().catch(err => console.warn("Erro no sync inicial:", err));
 
   // Controle de Sessão de Operador do Caixa
   const activeOperator = sessionStorage.getItem('purple_pdv_active_operator');
@@ -397,8 +397,13 @@ document.addEventListener('DOMContentLoaded', () => {
               </button>
               <h2 id="navbar-title">Frente de Caixa (PDV)</h2>
             </div>
+            
             <div class="navbar-right">
+              <button id="btn-manual-sync" class="btn btn-secondary" style="margin-right: 12px; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="cloud-upload"></i> Sincronizar Loja Online
+              </button>
               <div id="navbar-cash-status" class="status-indicator closed">
+
                 Caixa Fechado
               </div>
             </div>
@@ -601,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = item.getAttribute('data-screen');
         navigate(target);
         // Sincroniza em segundo plano para capturar atualizações de catálogo ou caixa feitas em outros computadores
-        syncWithSupabase().catch(err => console.warn("Erro ao sincronizar na navegação:", err));
+        /* sync disabled */ Promise.resolve().catch(err => console.warn("Erro ao sincronizar na navegação:", err));
       });
     });
 
@@ -619,26 +624,77 @@ document.addEventListener('DOMContentLoaded', () => {
     // Navega para a tela padrão (PDV)
     navigate('pdv');
 
-    // Sincronização inicial em background
-    syncWithSupabase().then(() => {
+    
+      const btnManualSync = document.getElementById('btn-manual-sync');
+      if (btnManualSync) {
+        // Create Sync Modal
+        const syncModalHTML = `
+          <div id="modal-manual-sync" class="modal-overlay">
+            <div class="modal-card max-w-sm text-center scale-in">
+              <h3>Sincronizando com a Nuvem</h3>
+              <p class="text-muted margin-bottom-md">Enviando vendas e recebendo pedidos do site...</p>
+              <div class="spinner" style="margin: 20px auto; border: 4px solid var(--border); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+              <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+              <p id="sync-status-text" style="font-weight: bold; margin-top: 10px;">Conectando...</p>
+              <button id="btn-close-sync" class="btn btn-primary margin-top-md" style="display: none; width: 100%;">Fechar</button>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', syncModalHTML);
+
+        const modalSync = document.getElementById('modal-manual-sync');
+        const syncStatusText = document.getElementById('sync-status-text');
+        const btnCloseSync = document.getElementById('btn-close-sync');
+        const spinner = modalSync.querySelector('.spinner');
+
+        btnCloseSync.addEventListener('click', () => {
+          modalSync.classList.remove('active');
+          if (typeof navigate === 'function' && currentScreen) navigate(currentScreen);
+        });
+
+        btnManualSync.addEventListener('click', async () => {
+          modalSync.classList.add('active');
+          btnCloseSync.style.display = 'none';
+          spinner.style.display = 'block';
+          syncStatusText.textContent = 'Sincronizando dados...';
+          syncStatusText.style.color = 'var(--text)';
+          
+          try {
+            await syncWithSupabase(true); // Pass true to bypass manual mode check
+            syncStatusText.textContent = 'Sincronização concluída com sucesso!';
+            syncStatusText.style.color = 'var(--success)';
+          } catch (err) {
+            console.error(err);
+            syncStatusText.textContent = 'Erro ao sincronizar: ' + err.message;
+            syncStatusText.style.color = 'var(--danger)';
+          } finally {
+            spinner.style.display = 'none';
+            btnCloseSync.style.display = 'block';
+          }
+        });
+      }
+
+      // Sincronização inicial em background
+
+    /* sync disabled */ Promise.resolve().then(() => {
       navigate(currentScreen);
       updateNavbarCashStatus();
     });
 
     // Dispara sincronização imediata ao acordar a tela ou voltar para o app (essencial para celulares, tablets e notebooks em modo espera)
     window.addEventListener('focus', () => {
-      syncWithSupabase().catch(() => {});
+      /* sync disabled */ Promise.resolve().catch(() => {});
     });
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        syncWithSupabase().catch(() => {});
+        /* sync disabled */ Promise.resolve().catch(() => {});
       }
     });
 
     // Sincronização via evento de reconexão de rede (o Realtime já cuida da sincronia instantânea)
     window.addEventListener('online', () => {
       console.log('🌐 Conexão restaurada! Sincronizando com a nuvem...');
-      syncWithSupabase().catch(err => console.warn("Erro ao sincronizar após reconexão:", err));
+      /* sync disabled */ Promise.resolve().catch(err => console.warn("Erro ao sincronizar após reconexão:", err));
     });
 
     // Atualizar tela quando dados mudarem de fato em background (sem interromper operador com modal aberto, digitando ou no PDV/Caixa/Produtos)

@@ -7,13 +7,31 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "start:electron": "concurrently \"npm run dev\" \"wait-on tcp:5173 && electron . --dev\"",
+    "build:win": "npm run build && electron-builder --win"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4",
-    "vite": "^8.1.1"
+    "concurrently": "^10.0.4",
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3",
+    "vite": "^8.1.1",
+    "wait-on": "^9.1.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7"
+  },
+  "main": "main.electron.cjs",
+  "build": {
+    "appId": "com.purple.pdv",
+    "productName": "Purple PDV",
+    "directories": {
+      "output": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/logo-purple.jpg"
+    }
   }
 }
