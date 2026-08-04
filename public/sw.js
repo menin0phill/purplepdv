@@ -1,4 +1,4 @@
-const CACHE_NAME = 'purple-pdv-v1';
+const CACHE_NAME = 'purple-pdv-v2';
 const ASSETS = [
   '/pdv.html',
   '/logo-purple.jpg'
