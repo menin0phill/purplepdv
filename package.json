@@ -29,6 +29,12 @@
     "directories": {
       "output": "build"
     },
+    "files": [
+      "dist/**/*",
+      "main.electron.cjs",
+      "public/**/*",
+      "package.json"
+    ],
     "win": {
       "target": "nsis"
     }
