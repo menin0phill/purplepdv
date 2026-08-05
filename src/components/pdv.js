@@ -1010,11 +1010,10 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
       const completedSale = addSale(saleData);
       
       const shortId = completedSale.id.split('_')[1];
-      if (payments.money > 0) addCashTransaction('venda', payments.money, `Venda #${shortId} (Dinheiro)`);
-      if (payments.pix > 0) addCashTransaction('venda', payments.pix, `Venda #${shortId} (Pix)`);
-      if (payments.credit > 0) addCashTransaction('venda', payments.credit, `Venda #${shortId} (Crédito)`);
-      if (payments.debit > 0) addCashTransaction('venda', payments.debit, `Venda #${shortId} (Débito)`);
-      if (payments.fiado > 0) addCashTransaction('venda', 0, `Venda #${shortId} (Fiado: R$ ${payments.fiado.toFixed(2)}) para ${clientName}`);
+      // Apenas dinheiro entra no fluxo de caixa FÍSICO
+      if (payments.money > 0) {
+        addCashTransaction('venda', payments.money, `Venda #${shortId} (Dinheiro)`);
+      }
       
       showNotification('Venda realizada com sucesso!', 'success');
       modalCheckout.classList.remove('active');
@@ -1036,6 +1035,30 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     } finally {
       isConfirmingSale = false;
       btnConfirmSale.disabled = false;
+    }
+  });
+
+  // Atalhos de Teclado PDV para Velocidade
+  document.addEventListener('keydown', (e) => {
+    // Só aplica se a tela do PDV estiver visível (pesquisa existe)
+    if (!document.getElementById('pdv-search-input')) return;
+
+    if (e.key === 'F2') {
+      e.preventDefault();
+      if (!btnCheckout.disabled && !modalCheckout.classList.contains('active')) btnCheckout.click();
+    } else if (e.key === 'F3') {
+      e.preventDefault();
+      document.getElementById('pdv-search-input').focus();
+    } else if (e.key === 'Enter') {
+      if (modalCheckout.classList.contains('active') && !btnConfirmSale.disabled) {
+        e.preventDefault();
+        btnConfirmSale.click();
+      }
+    } else if (e.key === 'Escape') {
+      if (modalCheckout.classList.contains('active')) {
+        e.preventDefault();
+        document.getElementById('btn-cancel-checkout').click();
+      }
     }
   });
 }
