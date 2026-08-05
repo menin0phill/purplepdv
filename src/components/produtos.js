@@ -437,7 +437,7 @@ function setupProductEvents(container) {
       uploadBtn.disabled = true;
 
       try {
-        if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase) {
+        if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase && navigator.onLine) {
           const publicUrl = await uploadProductImage(file);
           urlInput.value = publicUrl; urlInput.dispatchEvent(new Event('input'));
           showNotification('Foto da variação salva na nuvem!', 'success');
@@ -571,7 +571,7 @@ function setupProductEvents(container) {
         console.warn("Erro ao comprimir imagem, usando original", err);
       }
 
-      if (supabase) {
+      if (typeof supabase !== 'undefined' && supabase && navigator.onLine) {
         filenameImgSpan.textContent = 'Enviando para o Supabase...';
         uploadImgBtn.textContent = 'Enviando...';
         
@@ -596,11 +596,13 @@ function setupProductEvents(container) {
           uploadImgBtn.textContent = oldText;
         }
       } else {
-        // Fallback síncrono local se Supabase não configurado
+        // Fallback síncrono instantâneo local (Modo Offline)
         const reader = new FileReader();
         reader.onload = (evt) => {
           urlImgInput.value = evt.target.result;
-          filenameImgSpan.textContent = 'Salvo localmente (Base64)';
+          filenameImgSpan.textContent = 'Salvo localmente (Modo Offline)';
+          uploadImgBtn.disabled = false;
+          uploadImgBtn.textContent = oldText;
         };
         reader.readAsDataURL(file);
       }
@@ -828,7 +830,7 @@ function setupRowActions(container) {
       }
 
       try {
-        if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase) {
+        if (typeof uploadProductImage === 'function' && typeof supabase !== 'undefined' && supabase && navigator.onLine) {
           const publicUrl = await uploadProductImage(file);
           urlInput.value = publicUrl; urlInput.dispatchEvent(new Event('input'));
           showNotification('Foto da variação salva na nuvem!', 'success');
