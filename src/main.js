@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="purple-login-page" style="display:flex; justify-content:center; align-items:center; min-height:100vh; background: #0f0a1f;">
         <div class="login-left-container" style="max-width:400px; width:100%; background:rgba(255,255,255,0.03); padding:40px; border-radius:24px; border:1px solid rgba(255,255,255,0.1); backdrop-filter:none; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
           <div class="login-logo-header" style="justify-content:center; margin-bottom:30px;">
-            <img src="/logo-purple.jpg" alt="Purple Logo" class="login-logo" style="width:60px; height:60px; border-radius:16px;">
+            <img src="./logo-purple.jpg" alt="Purple Logo" class="login-logo" style="width:60px; height:60px; border-radius:16px;">
           </div>
           
           <h2 style="text-align:center; font-size:24px; margin-bottom:10px; color:white;">Acesso ao PDV</h2>
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const pin = document.getElementById('login-pin').value;
       
       if (pin === '080601') {
-        sessionStorage.setItem('purple_pdv_active_operator', 'Purple Administrador');
+        sessionStorage.setItem('purple_pdv_active_operator', JSON.stringify({ name: 'Purple Administrador', id: 'admin' }));
         initializeDashboard();
       } else {
         const container = document.getElementById('notifications-container');
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- Sidebar de Navegação -->
         <aside class="sidebar">
           <div class="sidebar-header">
-            <img src="/logo-purple.jpg" alt="Purple Logo" class="sidebar-logo" onerror="this.src='https://instagram.fcgh13-1.fna.fbcdn.net/v/t51.82787-19/651031849_17966874450019045_9100807247552984597_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby44NDAuYzIifQ&_nc_ht=instagram.fcgh13-1.fna.fbcdn.net&_nc_cat=101&_nc_oc=Q6cZ2gHycOL9sD5xHY5FxNSgRSX2zXUNVbGhAFMCU2-eHb6Rysf1xxtGQbgLfuARnbBShC1lgu2RruKYQIc0-pCxF8Jl&_nc_ohc=EZMEJ4HLGO4Q7kNvwGewcRG&_nc_gid=6p0a7wHTtBkcfZVdLzYGpA&edm=APoiHPcBAAAA&ccb=7-5&oh=00_AQBAhoUNv7U6FBEqNAlimY0YwkPKb_5xZ83ur54LbSVd8g&oe=6A62003B&_nc_sid=22de04'">
+            <img src="./logo-purple.jpg" alt="Purple Logo" class="sidebar-logo" onerror="this.src='https://instagram.fcgh13-1.fna.fbcdn.net/v/t51.82787-19/651031849_17966874450019045_9100807247552984597_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby44NDAuYzIifQ&_nc_ht=instagram.fcgh13-1.fna.fbcdn.net&_nc_cat=101&_nc_oc=Q6cZ2gHycOL9sD5xHY5FxNSgRSX2zXUNVbGhAFMCU2-eHb6Rysf1xxtGQbgLfuARnbBShC1lgu2RruKYQIc0-pCxF8Jl&_nc_ohc=EZMEJ4HLGO4Q7kNvwGewcRG&_nc_gid=6p0a7wHTtBkcfZVdLzYGpA&edm=APoiHPcBAAAA&ccb=7-5&oh=00_AQBAhoUNv7U6FBEqNAlimY0YwkPKb_5xZ83ur54LbSVd8g&oe=6A62003B&_nc_sid=22de04'">
             <div class="sidebar-brand-text">
               <h2>Purple</h2>
               <span>Frente de Caixa</span>
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </nav>
 
           <div class="sidebar-footer">
-            <img src="/logo-purple.jpg" alt="Purple Logo" class="footer-logo" onerror="this.src='https://instagram.fcgh13-1.fna.fbcdn.net/v/t51.82787-19/651031849_17966874450019045_9100807247552984597_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby44NDAuYzIifQ&_nc_ht=instagram.fcgh13-1.fna.fbcdn.net&_nc_cat=101&_nc_oc=Q6cZ2gHycOL9sD5xHY5FxNSgRSX2zXUNVbGhAFMCU2-eHb6Rysf1xxtGQbgLfuARnbBShC1lgu2RruKYQIc0-pCxF8Jl&_nc_ohc=EZMEJ4HLGO4Q7kNvwGewcRG&_nc_gid=6p0a7wHTtBkcfZVdLzYGpA&edm=APoiHPcBAAAA&ccb=7-5&oh=00_AQBAhoUNv7U6FBEqNAlimY0YwkPKb_5xZ83ur54LbSVd8g&oe=6A62003B&_nc_sid=22de04'">
+            <img src="./logo-purple.jpg" alt="Purple Logo" class="footer-logo" onerror="this.src='https://instagram.fcgh13-1.fna.fbcdn.net/v/t51.82787-19/651031849_17966874450019045_9100807247552984597_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby44NDAuYzIifQ&_nc_ht=instagram.fcgh13-1.fna.fbcdn.net&_nc_cat=101&_nc_oc=Q6cZ2gHycOL9sD5xHY5FxNSgRSX2zXUNVbGhAFMCU2-eHb6Rysf1xxtGQbgLfuARnbBShC1lgu2RruKYQIc0-pCxF8Jl&_nc_ohc=EZMEJ4HLGO4Q7kNvwGewcRG&_nc_gid=6p0a7wHTtBkcfZVdLzYGpA&edm=APoiHPcBAAAA&ccb=7-5&oh=00_AQBAhoUNv7U6FBEqNAlimY0YwkPKb_5xZ83ur54LbSVd8g&oe=6A62003B&_nc_sid=22de04'">
             <span class="text-xs text-muted">© 2026 Purple Cosméticos</span>
           </div>
         </aside>
