@@ -24,318 +24,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderLoginScreen() {
     appContainer.innerHTML = `
-      <div class="purple-login-page">
-        <!-- Left Side: Form -->
-        <div class="login-left-side">
-          <div class="login-left-container">
-            <div class="login-logo-header">
-              <img src="/logo-purple.jpg" alt="Purple Logo" class="login-logo" onerror="this.src='https://instagram.fcgh13-1.fna.fbcdn.net/v/t51.82787-19/651031849_17966874450019045_9100807247552984597_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby44NDAuYzIifQ&_nc_ht=instagram.fcgh13-1.fna.fbcdn.net&_nc_cat=101&_nc_oc=Q6cZ2gHycOL9sD5xHY5FxNSgRSX2zXUNVbGhAFMCU2-eHb6Rysf1xxtGQbgLfuARnbBShC1lgu2RruKYQIc0-pCxF8Jl&_nc_ohc=EZMEJ4HLGO4Q7kNvwGewcRG&_nc_gid=6p0a7wHTtBkcfZVdLzYGpA&edm=APoiHPcBAAAA&ccb=7-5&oh=00_AQBAhoUNv7U6FBEqNAlimY0YwkPKb_5xZ83ur54LbSVd8g&oe=6A62003B&_nc_sid=22de04'">
-              <span class="login-logo-text">Purple</span>
-            </div>
-            
-            <div class="login-form-wrapper">
-              <h2>Bem-vindo ao Purple PDV 👋</h2>
-              <p class="login-subtitle">Preencha os seus dados de acesso abaixo para entrar no PDV.</p>
-              
-              <form id="purple-login-form">
-                <div class="login-input-group">
-                  <label for="login-email">Endereço de E-mail</label>
-                  <input type="email" id="login-email" required placeholder="seu-email@gmail.com">
-                </div>
-                
-                <div class="login-input-group" style="margin-bottom:20px;">
-                  <label for="login-password">Senha de Acesso</label>
-                  <div class="password-input-wrapper">
-                    <input type="password" id="login-password" required placeholder="••••••••••••">
-                    <button type="button" id="btn-toggle-login-password" class="btn-toggle-login-password">
-                      <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Widget Real do Cloudflare Turnstile -->
-                <div style="margin: 15px 0 25px 0; display: flex; justify-content: center; min-height: 65px;">
-                  <div id="cf-turnstile-widget"></div>
-                </div>
-                
-                <button type="submit" id="btn-login-submit" class="btn-login-submit" disabled style="opacity: 0.5; cursor: not-allowed; transition: all 0.3s ease;">Entrar no PDV</button>
-              </form>
-            </div>
-            
-            <div style="font-size:12px; color:#a0aec0; margin-top:30px;">
-              © 2026 Purple Cosméticos. Todos os direitos reservados.
-            </div>
-          </div>
-        </div>
-        
-        <!-- Right Side: Graphic Visuals -->
-        <div class="login-right-side">
-          <div class="login-right-card">
-            <h3>Conectando Beleza e Tecnologia</h3>
-            <p>Acesse o sistema de gerenciamento de vendas e controle de estoque de forma segura e rápida.</p>
+      <div class="purple-login-page" style="display:flex; justify-content:center; align-items:center; min-height:100vh; background: #0f0a1f;">
+        <div class="login-left-container" style="max-width:400px; width:100%; background:rgba(255,255,255,0.03); padding:40px; border-radius:24px; border:1px solid rgba(255,255,255,0.1); backdrop-filter:none; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+          <div class="login-logo-header" style="justify-content:center; margin-bottom:30px;">
+            <img src="/logo-purple.jpg" alt="Purple Logo" class="login-logo" style="width:60px; height:60px; border-radius:16px;">
           </div>
           
-          <div class="login-right-slogan">
-            Beleza que Inspira
-          </div>
+          <h2 style="text-align:center; font-size:24px; margin-bottom:10px; color:white;">Acesso ao PDV</h2>
+          <p style="text-align:center; color:#a0aec0; font-size:14px; margin-bottom:30px;">Insira o código de acesso para continuar.</p>
           
-          <div class="login-right-dots">
-            <span class="dot-arrow">&lt;</span>
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot-arrow">&gt;</span>
-          </div>
+          <form id="purple-login-form">
+            <div class="login-input-group" style="margin-bottom:20px;">
+              <input type="password" id="login-pin" required placeholder="Código de 6 dígitos" style="text-align:center; font-size:24px; letter-spacing:8px; padding:15px; border-radius:12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:white; width:100%; box-sizing:border-box;" autocomplete="off" inputmode="numeric" maxlength="6">
+            </div>
+            
+            <button type="submit" id="btn-login-submit" class="btn-primary" style="width:100%; padding:14px; font-size:16px; font-weight:600; border-radius:10px; background:linear-gradient(135deg, #a855f7, #ec4899); color:white; border:none; cursor:pointer;">Entrar no Sistema</button>
+          </form>
         </div>
       </div>
       <div id="notifications-container" class="notifications-container"></div>
     `;
 
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    // Inicialização da verificação do Cloudflare Turnstile Real com Fallback Off-line
-    const btnSubmit = document.getElementById('btn-login-submit');
-    let isCaptchaVerified = false;
-
-    function activateOfflineFallback(autoCheck = false) {
-      const widget = document.getElementById('cf-turnstile-widget');
-      if (!widget) return;
-      widget.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:8px; width: 100%; box-sizing: border-box;">
-          <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:6px; border:1px solid rgba(255,255,255,0.1); justify-content: center;">
-            <input type="checkbox" id="fallback-captcha" style="width:18px; height:18px; cursor:pointer;" ${autoCheck ? 'checked' : ''}>
-            <label for="fallback-captcha" style="font-size:13px; color:#cbd5e1; cursor:pointer; user-select:none;">Confirmar acesso humano (Modo Simplificado)</label>
-          </div>
-        </div>
-      `;
-      if (autoCheck) {
-        isCaptchaVerified = true;
-        if (btnSubmit) {
-          btnSubmit.disabled = false;
-          btnSubmit.style.opacity = '1';
-          btnSubmit.style.cursor = 'pointer';
-        }
-      }
-      const cb = document.getElementById('fallback-captcha');
-      if (cb) {
-        cb.addEventListener('change', (e) => {
-          isCaptchaVerified = e.target.checked;
-          if (btnSubmit) {
-            btnSubmit.disabled = !isCaptchaVerified;
-            btnSubmit.style.opacity = isCaptchaVerified ? '1' : '0.5';
-            btnSubmit.style.cursor = isCaptchaVerified ? 'pointer' : 'not-allowed';
-          }
-        });
-      }
-    }
-
-    function initTurnstileCaptcha(retries = 10) {
-      if (window.turnstile && typeof window.turnstile.render === 'function') {
-        try {
-          window.turnstile.render('#cf-turnstile-widget', {
-            sitekey: import.meta.env.VITE_TURNSTILE_SITEKEY || '1x00000000000000000000AA', 
-            theme: 'dark',
-            callback: function(token) {
-              isCaptchaVerified = true;
-              if (btnSubmit) {
-                btnSubmit.disabled = false;
-                btnSubmit.style.opacity = '1';
-                btnSubmit.style.cursor = 'pointer';
-              }
-            },
-            'expired-callback': function() {
-              console.warn("Turnstile expirado. Alternando para verificação simplificada...");
-              activateOfflineFallback(false);
-            },
-            'error-callback': function() {
-              console.warn("Erro ou bloqueio de domínio no Turnstile. Alternando para verificação simplificada...");
-              activateOfflineFallback(false);
-            }
-          });
-          const widget = document.getElementById('cf-turnstile-widget');
-          if (widget) {
-            const loadingText = widget.querySelector('.turnstile-loading');
-            if (loadingText) loadingText.remove();
-          }
-        } catch (err) {
-          console.error("Erro ao inicializar o Cloudflare Turnstile:", err);
-          activateOfflineFallback(false);
-        }
-      } else if (retries > 0) {
-        const widget = document.getElementById('cf-turnstile-widget');
-        if (widget && !widget.querySelector('.turnstile-loading')) {
-          widget.innerHTML = `<div class="turnstile-loading" style="color:#a0aec0; font-size:12px; padding:10px; text-align:center; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.08); width:100%; box-sizing:border-box;">Conectando proteção de segurança (Cloudflare Turnstile)...</div>`;
-        }
-        setTimeout(() => initTurnstileCaptcha(retries - 1), 400);
-      } else {
-        console.warn("Script do Cloudflare Turnstile não carregado após tentativas. Ativando fallback de segurança...");
-        activateOfflineFallback(false);
-      }
-    }
-
-    initTurnstileCaptcha();
-
-    // Link de auxílio para desbloquear em PCs onde o Cloudflare bloqueia ou falha
-    const widgetContainer = document.getElementById('cf-turnstile-widget');
-    if (widgetContainer && widgetContainer.parentNode) {
-      let helperLink = document.getElementById('turnstile-helper-link');
-      if (!helperLink) {
-        helperLink = document.createElement('div');
-        helperLink.id = 'turnstile-helper-link';
-        helperLink.style.textAlign = 'center';
-        helperLink.style.marginTop = '8px';
-        helperLink.innerHTML = `<a href="#" style="font-size:11px; color:#a855f7; text-decoration:underline; cursor:pointer;">Problemas na verificação humana? Liberar acesso simplificado</a>`;
-        widgetContainer.parentNode.insertBefore(helperLink, widgetContainer.nextSibling);
-        helperLink.querySelector('a').addEventListener('click', (e) => {
-          e.preventDefault();
-          activateOfflineFallback(true);
-        });
-      }
-    }
-
-    // Toggle Password Visibility Action
-    const passwordInput = document.getElementById('login-password');
-    const toggleBtn = document.getElementById('btn-toggle-login-password');
-    if (toggleBtn && passwordInput) {
-      toggleBtn.addEventListener('click', () => {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        toggleBtn.innerHTML = type === 'password'
-          ? `<i data-lucide="eye" style="width: 18px; height: 18px;"></i>`
-          : `<i data-lucide="eye-off" style="width: 18px; height: 18px;"></i>`;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-      });
-    }
-
-    // Submit Action
     const loginForm = document.getElementById('purple-login-form');
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      if (!isCaptchaVerified) {
-        showNotification('Por favor, marque a caixa de verificação humana!', 'error');
-        return;
-      }
-
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
+      const pin = document.getElementById('login-pin').value;
       
-      let operators = getOperators();
-      let matched = operators.find(op => op.email.toLowerCase() === email.toLowerCase() && op.password === password);
-      
-      if (!matched) {
-        // Tenta sincronizar em tempo real com o servidor se o operador não for encontrado localmente
-        const submitBtn = document.getElementById('btn-login-submit');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Verificando...';
-        submitBtn.disabled = true;
-        
-        try {
-          await syncWithSupabase();
-          operators = getOperators();
-          matched = operators.find(op => op.email.toLowerCase() === email.toLowerCase() && op.password === password);
-        } catch (err) {
-          console.warn("Erro ao sincronizar operadores no login:", err);
-        }
-        
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-      }
-
-      // Garantia incondicional de acesso nativo em memória (à prova de falhas de LocalStorage em PCs de terceiros)
-      if (!matched) {
-        if ((email.toLowerCase() === 'purple@live.com' && password === '080601') ||
-            (email.toLowerCase() === 'henriqueelsilva@gmail.com' && password === 'Vida191023!')) {
-          matched = {
-            id: email.toLowerCase() === 'purple@live.com' ? 'op2' : 'op1',
-            name: email.toLowerCase() === 'purple@live.com' ? 'Operador Purple' : 'Henrique',
-            email: email.toLowerCase(),
-            password: password,
-            role: 'admin'
-          };
-        }
-      }
-
-      if (matched) {
-        sessionStorage.setItem('purple_pdv_active_operator', JSON.stringify(matched));
-        if (matched.role === 'admin') {
-          sessionStorage.setItem('purple_admin_authenticated', 'true');
-        }
+      if (pin === '080601') {
+        sessionStorage.setItem('purple_pdv_active_operator', 'Purple Administrador');
         initializeDashboard();
       } else {
-        showIncorrectCredentialsPopup();
-        // Reseta o captcha no login incorreto para prevenir ataques de força bruta
-        if (window.turnstile) {
-          try {
-            window.turnstile.reset('#cf-turnstile-widget');
-          } catch (e) {
-            console.error("Erro ao resetar Turnstile:", e);
-          }
-          isCaptchaVerified = false;
-          if (btnSubmit) {
-            btnSubmit.disabled = true;
-            btnSubmit.style.opacity = '0.5';
-            btnSubmit.style.cursor = 'not-allowed';
-          }
-        } else {
-          const fallbackCheckbox = document.getElementById('fallback-captcha');
-          if (fallbackCheckbox) {
-            fallbackCheckbox.checked = false;
-            isCaptchaVerified = false;
-            if (btnSubmit) {
-              btnSubmit.disabled = true;
-              btnSubmit.style.opacity = '0.5';
-              btnSubmit.style.cursor = 'not-allowed';
-            }
-          }
-        }
+        const container = document.getElementById('notifications-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerHTML = '<span class="toast-msg">Código inválido! Tente novamente.</span>';
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+        document.getElementById('login-pin').value = '';
       }
     });
-  }
-
-  function showIncorrectCredentialsPopup() {
-    let popup = document.getElementById('login-error-popup');
-    if (!popup) {
-      popup = document.createElement('div');
-      popup.id = 'login-error-popup';
-      popup.className = 'modal-overlay active';
-      popup.style.zIndex = '99999';
-      popup.innerHTML = `
-        <div class="modal-card max-w-sm text-center scale-in" style="background: #1a0f2e; color: #fff; border: 2px solid #8b5cf6; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-          <div style="background: rgba(239, 68, 68, 0.15); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; border: 1px solid #ef4444;">
-            <i data-lucide="alert-triangle" style="width: 32px; height: 32px; color: #ef4444;"></i>
-          </div>
-          <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 8px;">Acesso Negado</h3>
-          <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.5;">
-            E-mail ou senha do operador incorretos! Por favor, verifique as suas credenciais e tente novamente.
-          </p>
-          <button type="button" id="btn-close-error-popup" class="btn btn-primary" style="width: 100%; height: 42px; border-radius: 8px; font-weight: 600; font-family: 'Outfit', sans-serif; background: #8b5cf6; border: none; cursor: pointer; color: white;">
-            Tentar Novamente
-          </button>
-        </div>
-      `;
-      document.body.appendChild(popup);
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-
-      document.getElementById('btn-close-error-popup').addEventListener('click', () => {
-        popup.classList.remove('active');
-        setTimeout(() => popup.remove(), 200);
-      });
-    }
-  }
-
-  function showNotification(msg, type) {
-    const container = document.getElementById('notifications-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<span class="toast-msg">${msg}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
   }
 
   function initializeDashboard() {
