@@ -526,7 +526,7 @@ function setupTableActions(container) {
               <tr>
                 <td>${dateStr}</td>
                 <td><span class="text-sm">${itemsList}</span></td>
-                <td><span class="badge ${sale.paymentMethod === 'fiado' ? 'badge-danger' : 'badge-secondary'}">${translatePayment(sale.paymentMethod)}</span></td>
+                <td>${formatPaymentsBadge(sale)}</td>
                 <td class="text-right"><strong>R$ ${sale.total.toFixed(2)}</strong></td>
               </tr>
             `;
@@ -538,6 +538,26 @@ function setupTableActions(container) {
       }
     });
   });
+}
+
+
+function formatPaymentsBadge(sale) {
+  if (sale.payments) {
+    const parts = [];
+    let isFiado = false;
+    if (sale.payments.money > 0) parts.push('Dinheiro');
+    if (sale.payments.pix > 0) parts.push('Pix');
+    if (sale.payments.credit > 0) parts.push('C. Crédito');
+    if (sale.payments.debit > 0) parts.push('C. Débito');
+    if (sale.payments.fiado > 0) { parts.push('Fiado'); isFiado = true; }
+    
+    const display = parts.join(', ') || 'Sem Pagamento';
+    const badgeClass = isFiado ? 'badge-danger' : 'badge-secondary';
+    return `<span class="badge ${badgeClass}">${display}</span>`;
+  }
+  
+  const isLegacyFiado = sale.paymentMethod === 'fiado';
+  return `<span class="badge ${isLegacyFiado ? 'badge-danger' : 'badge-secondary'}">${translatePayment(sale.paymentMethod)}</span>`;
 }
 
 function translatePayment(method) {

@@ -491,7 +491,7 @@ function setupProductEvents(container) {
   });
 
   // Função para comprimir imagem antes do upload ou conversão base64
-  function compressImage(file, maxWidth = 800, quality = 0.7) {
+  function compressImage(file, maxWidth = 400, quality = 0.5) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = event => {
@@ -680,17 +680,25 @@ function setupProductEvents(container) {
       variations: variations
     };
 
-    if (id) {
-      updateProduct(id, productData);
-      showNotification('Produto atualizado com sucesso!', 'success');
-    } else {
-      addProduct(productData);
-      showNotification('Produto cadastrado com sucesso!', 'success');
-    }
+    try {
+      if (id) {
+        updateProduct(id, productData);
+        showNotification('Produto atualizado com sucesso!', 'success');
+      } else {
+        addProduct(productData);
+        showNotification('Produto cadastrado com sucesso!', 'success');
+      }
 
-    modal.classList.remove('active');
-    form.reset();
-    renderProdutos(container);
+      modal.classList.remove('active');
+      form.reset();
+      renderProdutos(container);
+    } catch (err) {
+      if (err.name === 'QuotaExceededError' || err.message.includes('Quota')) {
+        showNotification('Memória cheia! As imagens locais ocuparam todo o limite. Use links ou exclua produtos velhos.', 'error');
+      } else {
+        showNotification('Erro ao salvar produto: ' + err.message, 'error');
+      }
+    }
   });
 
   // Filtragem e Pesquisa em tempo real

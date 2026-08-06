@@ -706,14 +706,13 @@ export function payClientDebt(clientId, amountOrPayments, paymentMethod = null) 
   saveClients(clients);
   syncWithSupabase();
 
-  // Registrar a entrada no caixa
+  // Registrar a entrada no caixa (Apenas Dinheiro físico!)
   if (typeof amountOrPayments === 'object') {
     if (amountOrPayments.money > 0) addCashTransaction('suprimento', amountOrPayments.money, `Recebimento Débito (Fiado) - ${client.name} (Dinheiro)`);
-    if (amountOrPayments.pix > 0) addCashTransaction('suprimento', amountOrPayments.pix, `Recebimento Débito (Fiado) - ${client.name} (Pix)`);
-    if (amountOrPayments.credit > 0) addCashTransaction('suprimento', amountOrPayments.credit, `Recebimento Débito (Fiado) - ${client.name} (C. Crédito)`);
-    if (amountOrPayments.debit > 0) addCashTransaction('suprimento', amountOrPayments.debit, `Recebimento Débito (Fiado) - ${client.name} (C. Débito)`);
   } else {
-    addCashTransaction('suprimento', totalPaid, `Recebimento Débito (Fiado) - ${client.name} via ${translatePaymentMethod(paymentMethod)}`);
+    if (!paymentMethod || paymentMethod === 'money') {
+      addCashTransaction('suprimento', totalPaid, `Recebimento Débito (Fiado) - ${client.name} (Dinheiro)`);
+    }
   }
   
   return client;
