@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 // LocalStorage Fallback for Supabase config (allows setting credentials directly in Admin UI)
-const localDbConfig = JSON.parse(localStorage.getItem('purple_pdv_supabase_config')) || {};
+const localDbConfig = JSON.parse(getStorageItem('purple_pdv_supabase_config')) || {};
 
 const supabaseUrl = 'https://ryodvzcrisfctuiewyrk.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2R2emNyaXNmY3R1aWV3eXJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDM2MzQsImV4cCI6MjEwMDExOTYzNH0.ge_g5aMGJV6t8DZlYdT3QjAsGTArI6OLcs70E2mxNnU';
@@ -246,14 +246,14 @@ const DEFAULT_PRODUCTS = [
 // Inicialização segura
 function initDB() {
   // Limpar histórico de vendas e sessões de caixa apenas uma vez para preparar o deploy limpo
-  if (!localStorage.getItem('purple_pdv_db_reset_v9')) {
-    localStorage.setItem(KEY_SALES, JSON.stringify([]));
-    localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify([]));
-    localStorage.setItem('purple_pdv_db_reset_v9', 'true');
+  if (!getStorageItem('purple_pdv_db_reset_v9')) {
+    setStorageItem(KEY_SALES, JSON.stringify([]));
+    setStorageItem(KEY_CASH_SESSIONS, JSON.stringify([]));
+    setStorageItem('purple_pdv_db_reset_v9', 'true');
   }
 
   // MIGRAR IDs DUPLICADOS (causados por importações em massa na mesma milissegundo)
-  const rawProds = localStorage.getItem(KEY_PRODUCTS);
+  const rawProds = getStorageItem(KEY_PRODUCTS);
   if (rawProds) {
     try {
       let prods = JSON.parse(rawProds);
@@ -284,7 +284,7 @@ function initDB() {
       });
       
       if (modified) {
-        localStorage.setItem(KEY_PRODUCTS, JSON.stringify(prods));
+        setStorageItem(KEY_PRODUCTS, JSON.stringify(prods));
         console.log("Database Migration: Fixed duplicate product IDs!");
       }
     } catch(e) {
@@ -292,30 +292,30 @@ function initDB() {
     }
   }
 
-  const currentProds = localStorage.getItem(KEY_PRODUCTS);
+  const currentProds = getStorageItem(KEY_PRODUCTS);
   let needsReset = false;
   if (!currentProds) {
     needsReset = true;
   }
 
   if (needsReset) {
-    localStorage.setItem(KEY_PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS.map(p => ({ ...p, synced: true }))));
+    setStorageItem(KEY_PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS.map(p => ({ ...p, synced: true }))));
   }
-  if (!localStorage.getItem(KEY_SALES)) {
-    localStorage.setItem(KEY_SALES, JSON.stringify([]));
+  if (!getStorageItem(KEY_SALES)) {
+    setStorageItem(KEY_SALES, JSON.stringify([]));
   }
-  if (!localStorage.getItem(KEY_CASH_SESSIONS)) {
-    localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify([]));
+  if (!getStorageItem(KEY_CASH_SESSIONS)) {
+    setStorageItem(KEY_CASH_SESSIONS, JSON.stringify([]));
   }
-  if (!localStorage.getItem(KEY_CLIENTS)) {
-    localStorage.setItem(KEY_CLIENTS, JSON.stringify(DEFAULT_CLIENTS.map(c => ({ ...c, synced: true }))));
+  if (!getStorageItem(KEY_CLIENTS)) {
+    setStorageItem(KEY_CLIENTS, JSON.stringify(DEFAULT_CLIENTS.map(c => ({ ...c, synced: true }))));
   }
-  if (!localStorage.getItem(KEY_CONFIG)) {
-    localStorage.setItem(KEY_CONFIG, JSON.stringify({ requireClientCheckout: true }));
+  if (!getStorageItem(KEY_CONFIG)) {
+    setStorageItem(KEY_CONFIG, JSON.stringify({ requireClientCheckout: true }));
   }
-  let ops = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
+  let ops = JSON.parse(getStorageItem(KEY_OPERATORS)) || [];
   if (ops.length === 0) {
-    localStorage.setItem(KEY_OPERATORS, JSON.stringify(DEFAULT_OPERATORS.map(o => ({ ...o, synced: true }))));
+    setStorageItem(KEY_OPERATORS, JSON.stringify(DEFAULT_OPERATORS.map(o => ({ ...o, synced: true }))));
   } else {
     let mod = false;
     DEFAULT_OPERATORS.forEach(dOp => {
@@ -324,7 +324,7 @@ function initDB() {
         mod = true;
       }
     });
-    if (mod) localStorage.setItem(KEY_OPERATORS, JSON.stringify(ops));
+    if (mod) setStorageItem(KEY_OPERATORS, JSON.stringify(ops));
   }
 }
 
@@ -333,7 +333,7 @@ initDB();
 
 // --- OPERADORES ---
 export function getOperators() {
-  let ops = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
+  let ops = JSON.parse(getStorageItem(KEY_OPERATORS)) || [];
   let mod = false;
   DEFAULT_OPERATORS.forEach(dOp => {
     if (!ops.some(o => o.email && o.email.toLowerCase() === dOp.email.toLowerCase())) {
@@ -343,14 +343,14 @@ export function getOperators() {
   });
   if (mod || ops.length === 0) {
     const finalOps = ops.length ? ops : DEFAULT_OPERATORS;
-    localStorage.setItem(KEY_OPERATORS, JSON.stringify(finalOps));
+    setStorageItem(KEY_OPERATORS, JSON.stringify(finalOps));
     return finalOps;
   }
   return ops;
 }
 
 export function saveOperators(operators) {
-  localStorage.setItem(KEY_OPERATORS, JSON.stringify(operators));
+  setStorageItem(KEY_OPERATORS, JSON.stringify(operators));
 }
 
 export function addOperator(operator) {
@@ -371,16 +371,16 @@ export function addOperator(operator) {
 
 // --- CONFIGURAÇÕES ---
 export function getConfig() {
-  return JSON.parse(localStorage.getItem(KEY_CONFIG)) || { requireClientCheckout: true };
+  return JSON.parse(getStorageItem(KEY_CONFIG)) || { requireClientCheckout: true };
 }
 
 export function saveConfig(config) {
-  localStorage.setItem(KEY_CONFIG, JSON.stringify(config));
+  setStorageItem(KEY_CONFIG, JSON.stringify(config));
 }
 
 // --- PRODUTOS ---
 export function getProducts() {
-  const prods = JSON.parse(localStorage.getItem(KEY_PRODUCTS)) || [];
+  const prods = JSON.parse(getStorageItem(KEY_PRODUCTS)) || [];
   return prods.map(p => {
     const variations = (p.variations || []).map(v => ({
       ...v,
@@ -403,7 +403,7 @@ export function getProducts() {
 }
 
 export function saveProducts(products) {
-  localStorage.setItem(KEY_PRODUCTS, JSON.stringify(products));
+  setStorageItem(KEY_PRODUCTS, JSON.stringify(products));
 }
 
 export function addProduct(product) {
@@ -466,10 +466,10 @@ export function deleteProduct(id) {
   
   // Add to deletion queue for persistent offline deletions
   const KEY_DELETED_PRODUCTS = 'purple_pdv_deleted_products';
-  let deletedProductIds = JSON.parse(localStorage.getItem(KEY_DELETED_PRODUCTS)) || [];
+  let deletedProductIds = JSON.parse(getStorageItem(KEY_DELETED_PRODUCTS)) || [];
   if (!deletedProductIds.includes(id)) {
     deletedProductIds.push(id);
-    localStorage.setItem(KEY_DELETED_PRODUCTS, JSON.stringify(deletedProductIds));
+    setStorageItem(KEY_DELETED_PRODUCTS, JSON.stringify(deletedProductIds));
   }
 
   if (supabase) {
@@ -481,7 +481,7 @@ export function deleteProduct(id) {
 
 // --- VENDAS ---
 export function getSales() {
-  const sales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
+  const sales = JSON.parse(getStorageItem(KEY_SALES)) || [];
   return sales.map(s => ({
     ...s,
     subtotal: Number(s.subtotal) || 0,
@@ -498,7 +498,7 @@ export function getSales() {
 }
 
 export function saveSales(sales) {
-  localStorage.setItem(KEY_SALES, JSON.stringify(sales));
+  setStorageItem(KEY_SALES, JSON.stringify(sales));
 }
 
 export function addSale(sale) {
@@ -622,7 +622,7 @@ export function cancelSale(saleId) {
 
 // --- CLIENTES ---
 export function getClients() {
-  const clients = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
+  const clients = JSON.parse(getStorageItem(KEY_CLIENTS)) || [];
   return clients.map(c => ({
     ...c,
     debt: Number(c.debt) || 0
@@ -630,7 +630,7 @@ export function getClients() {
 }
 
 export function saveClients(clients) {
-  localStorage.setItem(KEY_CLIENTS, JSON.stringify(clients));
+  setStorageItem(KEY_CLIENTS, JSON.stringify(clients));
 }
 
 export function addClient(client) {
@@ -754,7 +754,7 @@ export function getRealNow() {
 
 // --- CAIXA (SESSÕES E TRANSAÇÕES) ---
 export function getCashSessions() {
-  const sessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
+  const sessions = JSON.parse(getStorageItem(KEY_CASH_SESSIONS)) || [];
   return sessions.map(s => ({
     ...s,
     initialAmount: Number(s.initialAmount) || 0,
@@ -769,7 +769,7 @@ export function getCashSessions() {
 }
 
 export function saveCashSessions(sessions) {
-  localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(sessions));
+  setStorageItem(KEY_CASH_SESSIONS, JSON.stringify(sessions));
 }
 
 export function getCurrentCashSession() {
@@ -937,7 +937,7 @@ export async function syncWithSupabase(manual = false) {
 
     // 1. PUSH LOCAL CHANGES TO REMOTE
     // Sync Products
-    const localProducts = JSON.parse(localStorage.getItem(KEY_PRODUCTS)) || [];
+    const localProducts = JSON.parse(getStorageItem(KEY_PRODUCTS)) || [];
     const unsyncedProducts = localProducts.filter(p => !p.synced);
     for (const prod of unsyncedProducts) {
       const payload = {
@@ -960,13 +960,13 @@ export async function syncWithSupabase(manual = false) {
         prod.synced = true;
       } else {
         console.error("Error syncing product:", prod.id, error);
-        localStorage.setItem('purple_pdv_last_upsert_error', `Produto ${prod.name}: ${error.message || JSON.stringify(error)}`);
+        setStorageItem('purple_pdv_last_upsert_error', `Produto ${prod.name}: ${error.message || JSON.stringify(error)}`);
       }
     }
 
     // Push Deleted Products
     const KEY_DELETED_PRODUCTS = 'purple_pdv_deleted_products';
-    let deletedProductIds = JSON.parse(localStorage.getItem(KEY_DELETED_PRODUCTS)) || [];
+    let deletedProductIds = JSON.parse(getStorageItem(KEY_DELETED_PRODUCTS)) || [];
     if (deletedProductIds.length > 0) {
       const remainingDeletes = [];
       for (const id of deletedProductIds) {
@@ -977,13 +977,13 @@ export async function syncWithSupabase(manual = false) {
         }
       }
       deletedProductIds = remainingDeletes;
-      localStorage.setItem(KEY_DELETED_PRODUCTS, JSON.stringify(deletedProductIds));
+      setStorageItem(KEY_DELETED_PRODUCTS, JSON.stringify(deletedProductIds));
     }
 
-    localStorage.setItem(KEY_PRODUCTS, JSON.stringify(localProducts));
+    setStorageItem(KEY_PRODUCTS, JSON.stringify(localProducts));
 
     // Sync Operators
-    const localOperators = JSON.parse(localStorage.getItem(KEY_OPERATORS)) || [];
+    const localOperators = JSON.parse(getStorageItem(KEY_OPERATORS)) || [];
     const unsyncedOperators = localOperators.filter(o => !o.synced);
     for (const op of unsyncedOperators) {
       const payload = {
@@ -1001,10 +1001,10 @@ export async function syncWithSupabase(manual = false) {
         console.error("Error syncing operator:", op.id, error);
       }
     }
-    localStorage.setItem(KEY_OPERATORS, JSON.stringify(localOperators));
+    setStorageItem(KEY_OPERATORS, JSON.stringify(localOperators));
 
     // Sync Clients
-    const unsyncedClients = (JSON.parse(localStorage.getItem(KEY_CLIENTS)) || []).filter(c => !c.synced);
+    const unsyncedClients = (JSON.parse(getStorageItem(KEY_CLIENTS)) || []).filter(c => !c.synced);
     for (const client of unsyncedClients) {
       const payload = {
         id: client.id,
@@ -1022,11 +1022,11 @@ export async function syncWithSupabase(manual = false) {
       
       const { error } = await supabase.from('clients').upsert(payload);
       if (!error) {
-        const fresh = JSON.parse(localStorage.getItem(KEY_CLIENTS)) || [];
+        const fresh = JSON.parse(getStorageItem(KEY_CLIENTS)) || [];
         const fIdx = fresh.findIndex(x => x.id === client.id);
         if (fIdx !== -1) {
           fresh[fIdx].synced = true;
-          localStorage.setItem(KEY_CLIENTS, JSON.stringify(fresh));
+          setStorageItem(KEY_CLIENTS, JSON.stringify(fresh));
         }
       } else {
         console.error("Error syncing client:", client.id, error);
@@ -1034,7 +1034,7 @@ export async function syncWithSupabase(manual = false) {
     }
 
     // Sync Sales
-    const localSales = JSON.parse(localStorage.getItem(KEY_SALES)) || [];
+    const localSales = JSON.parse(getStorageItem(KEY_SALES)) || [];
     const unsyncedSales = localSales.filter(s => !s.synced);
     for (const sale of unsyncedSales) {
       const payload = {
@@ -1065,10 +1065,10 @@ export async function syncWithSupabase(manual = false) {
         console.error("Error syncing sale:", sale.id, error);
       }
     }
-    localStorage.setItem(KEY_SALES, JSON.stringify(localSales));
+    setStorageItem(KEY_SALES, JSON.stringify(localSales));
 
     // Sync Cash Sessions
-    const localSessions = JSON.parse(localStorage.getItem(KEY_CASH_SESSIONS)) || [];
+    const localSessions = JSON.parse(getStorageItem(KEY_CASH_SESSIONS)) || [];
     const unsyncedSessions = localSessions.filter(s => !s.synced);
     for (const session of unsyncedSessions) {
       const payload = {
@@ -1090,7 +1090,7 @@ export async function syncWithSupabase(manual = false) {
         console.error("Error syncing cash session:", session.id, error);
       }
     }
-    localStorage.setItem(KEY_CASH_SESSIONS, JSON.stringify(localSessions));
+    setStorageItem(KEY_CASH_SESSIONS, JSON.stringify(localSessions));
 
     // 2. PULL FRESH TABLES FROM REMOTE AND OVERWRITE LOCAL (SMART SYNC - 99% LESS BANDWIDTH)
     let dataChanged = false;
@@ -1103,7 +1103,7 @@ export async function syncWithSupabase(manual = false) {
       const { data: metaData, error: errMeta } = await fetchAllRows(tableName, 'updated_at', columns);
       if (errMeta || !metaData) return false;
 
-      const localData = JSON.parse(localStorage.getItem(localKey)) || [];
+      const localData = JSON.parse(getStorageItem(localKey)) || [];
       const remoteIds = new Set(metaData.map(r => String(r.id)));
       const remoteCodes = tableName === 'products' ? new Set(metaData.map(p => String(p.code)).filter(Boolean)) : new Set();
       
@@ -1158,10 +1158,10 @@ export async function syncWithSupabase(manual = false) {
 
       if (merged.length !== localData.length) hasChanges = true;
 
-      const prevVal = localStorage.getItem(localKey);
+      const prevVal = getStorageItem(localKey);
       const newVal = JSON.stringify(merged);
       if (prevVal !== newVal) {
-         localStorage.setItem(localKey, newVal);
+         setStorageItem(localKey, newVal);
          return true;
       }
       return false;
@@ -1258,7 +1258,7 @@ export async function syncWithSupabase(manual = false) {
     return { success: true };
   } catch (err) {
     console.error("Supabase Sync Failed:", err);
-    localStorage.setItem('purple_pdv_last_sync_error', err.message || String(err));
+    setStorageItem('purple_pdv_last_sync_error', err.message || String(err));
     return { success: false, reason: err.message };
   } finally {
     isSyncing = false;

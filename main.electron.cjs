@@ -10,8 +10,8 @@ function createWindow() {
     minHeight: 600,
     icon: path.join(__dirname, 'public', 'logo-purple.jpg'),
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true
+      nodeIntegration: true,
+      contextIsolation: false
     }
   });
 
