@@ -357,10 +357,14 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
   });
 
   // Busca
+  let searchTimeoutPdv;
   searchInput.addEventListener('input', () => {
-    searchQuery = searchInput.value;
-    grid.innerHTML = renderProductsGrid(products, currentCategory, searchQuery);
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    clearTimeout(searchTimeoutPdv);
+    searchTimeoutPdv = setTimeout(() => {
+      searchQuery = searchInput.value;
+      grid.innerHTML = renderProductsGrid(products, currentCategory, searchQuery);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }, 250);
   });
 
   // Limpar Carrinho

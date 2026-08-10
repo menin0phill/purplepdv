@@ -412,20 +412,24 @@ function setupClientEvents(container) {
     modalHistorico.classList.remove('active');
   });
 
-  // Busca em tempo real
+  // Busca em tempo real com Debounce
+  let searchTimeoutCli;
   searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase();
-    const allClients = getClients();
+    clearTimeout(searchTimeoutCli);
+    searchTimeoutCli = setTimeout(() => {
+      const query = searchInput.value.toLowerCase();
+      const allClients = getClients();
 
-    const filtered = allClients.filter(c => {
-      return c.name.toLowerCase().includes(query) || 
-             c.phone.includes(query) || 
-             (c.email && c.email.toLowerCase().includes(query));
-    });
+      const filtered = allClients.filter(c => {
+        return c.name.toLowerCase().includes(query) || 
+               c.phone.includes(query) || 
+               (c.email && c.email.toLowerCase().includes(query));
+      });
 
-    document.getElementById('clients-table-body').innerHTML = renderClientsTableRows(filtered);
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-    setupTableActions(container);
+      document.getElementById('clients-table-body').innerHTML = renderClientsTableRows(filtered);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      setupTableActions(container);
+    }, 250);
   });
 
   setupTableActions(container);

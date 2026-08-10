@@ -718,7 +718,11 @@ function setupProductEvents(container) {
     setupRowActions(container);
   };
 
-  searchInput.addEventListener('input', handleFilter);
+  let searchTimeoutProd;
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeoutProd);
+    searchTimeoutProd = setTimeout(() => handleFilter(e), 250);
+  });
   categoryFilter.addEventListener('change', handleFilter);
 
   // Sincronização ao vivo na tela de Catálogo sem perder foco de pesquisa

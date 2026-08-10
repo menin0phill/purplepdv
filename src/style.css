@@ -48,7 +48,7 @@
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  --transition: none; /* otimizado: sem animação geral */
+  --/* transition removed for legacy performance */ /* otimizado: sem animação geral */
   --glass-blur: blur(12px);
 }
 
@@ -99,7 +99,7 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
   z-index: 100;
 }
 
@@ -116,7 +116,7 @@ body {
   height: 48px;
   border-radius: 50%;
   border: 2px solid var(--primary);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   object-fit: cover;
 }
 
@@ -154,7 +154,7 @@ body {
   font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .nav-item i {
@@ -170,7 +170,7 @@ body {
 .nav-item.active {
   background-color: var(--primary);
   color: var(--text-main);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .sidebar-footer {
@@ -264,8 +264,8 @@ body {
   background-color: var(--success);
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  animation: pulse-animation 1.5s infinite;
+  box-shadow: none;
+  /* animation removed for legacy performance */
 }
 
 @keyframes pulse-animation {
@@ -289,8 +289,8 @@ body {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 24px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transition: var(--transition);
+  box-shadow: none;
+  /* transition removed for legacy performance */
 }
 
 .glass-card:hover {
@@ -326,16 +326,16 @@ body {
 
 /* Animações */
 .fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /* animation removed for legacy performance */
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; /* transform removed */ }
+  to { opacity: 1; /* transform removed */ }
 }
 
 .scale-in {
-  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  /* animation removed for legacy performance */
 }
 
 @keyframes scaleIn {
@@ -355,7 +355,7 @@ body {
   border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
   text-decoration: none;
 }
 
@@ -378,12 +378,12 @@ body {
 .btn-primary {
   background-color: var(--primary);
   color: var(--text-main);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 .btn-primary:hover {
   background-color: var(--primary-hover);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transform: translateY(-1px);
+  box-shadow: none;
+  /* transform removed */
 }
 
 .btn-secondary {
@@ -399,12 +399,12 @@ body {
 .btn-danger {
   background-color: var(--danger);
   color: var(--text-main);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 .btn-danger:hover {
   background-color: #dc2626;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transform: translateY(-1px);
+  box-shadow: none;
+  /* transform removed */
 }
 
 .btn-danger-outline {
@@ -420,12 +420,12 @@ body {
 .btn-success {
   background-color: var(--success);
   color: var(--text-main);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 .btn-success:hover {
   background-color: #059669;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transform: translateY(-1px);
+  box-shadow: none;
+  /* transform removed */
 }
 
 .btn-icon {
@@ -438,7 +438,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 .btn-icon:hover {
   background-color: var(--bg-card-hover);
@@ -453,7 +453,7 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 .btn-clear:hover {
   color: var(--danger);
@@ -505,12 +505,12 @@ input, select, textarea {
   padding: 12px 16px;
   outline: none;
   font-size: 14px;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .input-sm {
@@ -593,7 +593,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
-  text-transform: uppercase;
+  text-/* transform removed */
   letter-spacing: 0.5px;
 }
 
@@ -658,7 +658,7 @@ input:focus, select:focus, textarea:focus {
 
 .data-table tbody tr {
   border-bottom: 1px solid rgba(139, 92, 246, 0.08);
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .data-table tbody tr:hover {
@@ -733,7 +733,7 @@ input:focus, select:focus, textarea:focus {
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .modal-overlay.active {
@@ -747,7 +747,7 @@ input:focus, select:focus, textarea:focus {
   border-radius: var(--radius-lg);
   padding: 30px;
   width: 90%;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .modal-actions {
@@ -772,17 +772,17 @@ input:focus, select:focus, textarea:focus {
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-md);
   padding: 16px 20px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   min-width: 280px;
   max-width: 380px;
   display: flex;
   align-items: center;
-  transform: translateX(120%);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* transform removed */
+  /* transition removed for legacy performance */
 }
 
 .toast.show {
-  transform: translateX(0);
+  /* transform removed */
 }
 
 .toast.success { border-left-color: var(--success); }
@@ -861,7 +861,7 @@ input:focus, select:focus, textarea:focus {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .chip:hover {
@@ -873,7 +873,7 @@ input:focus, select:focus, textarea:focus {
   background-color: var(--primary);
   border-color: var(--primary);
   color: var(--text-main);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .pdv-products-grid {
@@ -899,7 +899,7 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   overflow: hidden;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
   display: flex;
   flex-direction: column;
   height: 280px;
@@ -907,9 +907,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
+  /* transform removed */
   border-color: var(--primary);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .prod-card-image {
@@ -925,7 +925,7 @@ input:focus, select:focus, textarea:focus {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .product-card:hover .prod-card-image img {
@@ -958,7 +958,7 @@ input:focus, select:focus, textarea:focus {
 .prod-card-cat {
   font-size: 10px;
   font-weight: 600;
-  text-transform: uppercase;
+  text-/* transform removed */
   color: var(--primary);
   margin-bottom: 4px;
 }
@@ -1080,7 +1080,7 @@ input:focus, select:focus, textarea:focus {
   height: 24px;
   cursor: pointer;
   font-weight: 700;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 .qty-selector button:hover {
   background-color: var(--bg-card-hover);
@@ -1170,7 +1170,7 @@ input:focus, select:focus, textarea:focus {
   gap: 8px;
   font-size: 12px;
   font-weight: 600;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .payment-btn i {
@@ -1188,7 +1188,7 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--primary);
   color: var(--text-main);
   background-color: var(--primary);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .hidden {
@@ -1255,12 +1255,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 .bounce-anim {
-  animation: bounce 2s infinite;
+  /* animation removed for legacy performance */
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%, 100% { /* transform removed */ }
+  50% { /* transform removed */ }
 }
 
 /* Cupom Térmico (Receipt) */
@@ -1270,7 +1270,7 @@ input:focus, select:focus, textarea:focus {
   width: 320px;
   padding: 20px;
   border-radius: var(--radius-sm);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   font-family: var(--font-mono);
   font-size: 11px;
 }
@@ -1432,7 +1432,7 @@ input:focus, select:focus, textarea:focus {
 .chart-bar-fill {
   height: 100%;
   border-radius: 6px;
-  transition: width 1s ease-out;
+  /* transition removed for legacy performance */
 }
 
 .chart-label-row {
@@ -1528,7 +1528,7 @@ input:focus, select:focus, textarea:focus {
     left: 0;
     top: 0;
     width: 100% !important;
-    box-shadow: none !important;
+    box-shadow: none;
     padding: 0 !important;
     margin: 0 !important;
   }
@@ -1667,7 +1667,7 @@ input:focus, select:focus, textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .btn-pos-link:hover {
@@ -1742,16 +1742,16 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
   display: flex;
   flex-direction: column;
   padding-bottom: 16px;
 }
 
 .ecom-product-card:hover {
-  transform: translateY(-6px);
+  /* transform removed */
   border-color: var(--primary);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .ecom-product-image {
@@ -1768,7 +1768,7 @@ input:focus, select:focus, textarea:focus {
   height: 90%;
   object-fit: cover;
   border-radius: var(--radius-md);
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .ecom-product-card:hover .ecom-product-image img {
@@ -1784,7 +1784,7 @@ input:focus, select:focus, textarea:focus {
 
 .ecom-product-cat {
   font-size: 11px;
-  text-transform: uppercase;
+  text-/* transform removed */
   color: var(--primary);
   font-weight: 600;
   margin-bottom: 6px;
@@ -1854,9 +1854,9 @@ input:focus, select:focus, textarea:focus {
   background-color: rgba(18, 10, 34, 0.95);
   /* otimizado: sem backdrop-filter */
   border-left: 1px solid var(--border-color);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   z-index: 1500;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .ecom-drawer.active {
@@ -1972,7 +1972,7 @@ input:focus, select:focus, textarea:focus {
   padding: 10px 0;
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .auth-tab-btn.active {
@@ -2039,7 +2039,7 @@ input:focus, select:focus, textarea:focus {
   right: 0;
   bottom: 0;
   background-color: rgba(255, 255, 255, 0.1);
-  transition: .4s;
+  /* transition removed for legacy performance */
   border: 1px solid var(--border-color);
 }
 
@@ -2051,7 +2051,7 @@ input:focus, select:focus, textarea:focus {
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  /* transition removed for legacy performance */
 }
 
 input:checked + .slider {
@@ -2059,7 +2059,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(24px);
+  /* transform removed */
 }
 
 .slider.round {
@@ -2119,7 +2119,7 @@ input:checked + .slider:before {
   border: 1px solid var(--border-color);
   padding: 10px 14px;
   border-radius: var(--radius-md);
-  transition: var(--transition);
+  /* transition removed for legacy performance */
 }
 
 .variation-option-row:hover {
@@ -2147,8 +2147,8 @@ input:checked + .slider:before {
   width: 50%;
   height: 100%;
   background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
-  transform: skewX(-25deg);
-  transition: 0.75s;
+  /* transform removed */
+  /* transition removed for legacy performance */
 }
 
 .animate-glow:hover::after {
@@ -2180,7 +2180,7 @@ input:checked + .slider:before {
 }
 .color-swatch.active {
   border-color: var(--purple-accent) !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   /* otimizado: sem scale */
 }
 .color-swatch.out-of-stock {
@@ -2195,7 +2195,7 @@ input:checked + .slider:before {
   width: 75%;
   height: 2px;
   background-color: var(--text-muted);
-  transform: translate(-50%, -50%) rotate(45deg);
+  /* transform removed */
 }
 
 /* Estilos das Opções de Transporte do Melhor Envio */
@@ -2203,7 +2203,7 @@ input:checked + .slider:before {
   background: rgba(139, 92, 246, 0.02);
   border-radius: var(--radius-sm);
   padding: 8px 12px !important;
-  transition: var(--transition);
+  /* transition removed for legacy performance */
   border: 1px solid var(--border-color);
 }
 .shipping-carrier-option:hover {
@@ -2245,7 +2245,7 @@ input:checked + .slider:before {
   color: #555;
   text-decoration: none;
   font-weight: 500;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 .ecom-menu-link:hover {
   color: #6a3f97 !important;
@@ -2265,7 +2265,7 @@ input:checked + .slider:before {
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
   pointer-events: none;
   z-index: 1;
 }
@@ -2273,49 +2273,49 @@ input:checked + .slider:before {
   max-width: 100% !important;
   max-height: 100% !important;
   object-fit: contain !important;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 .carousel-slide.active {
   opacity: 1 !important;
   pointer-events: auto !important;
-  transform: translateX(0) scale(1.05) rotate(0deg) !important;
+  /* transform removed */
   filter: blur(0) !important;
   z-index: 3 !important;
 }
 .carousel-slide.active .carousel-image-box {
-  animation: float-active 3.5s ease-in-out infinite !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  /* animation removed for legacy performance */
+  box-shadow: none;
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 .carousel-slide.prev {
   opacity: 0.35 !important;
   pointer-events: auto !important;
-  transform: translateX(-180px) scale(0.7) rotate(-8deg) !important;
+  /* transform removed */
   filter: blur(3px) !important;
   z-index: 2 !important;
 }
 .carousel-slide.next {
   opacity: 0.35 !important;
   pointer-events: auto !important;
-  transform: translateX(180px) scale(0.7) rotate(8deg) !important;
+  /* transform removed */
   filter: blur(3px) !important;
   z-index: 2 !important;
 }
 .carousel-slide.hidden-slide {
   opacity: 0 !important;
   pointer-events: none !important;
-  transform: translateX(0) scale(0.4) rotate(0deg) !important;
+  /* transform removed */
   z-index: 0 !important;
 }
 
 @keyframes float-active {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0); }
+  0% { /* transform removed */ }
+  50% { /* transform removed */ }
+  100% { /* transform removed */ }
 }
 
 .carousel-arrow {
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 .carousel-arrow:hover {
   color: #b794f4 !important;
@@ -2323,13 +2323,13 @@ input:checked + .slider:before {
 }
 
 #btn-hero-buy-now {
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 #btn-hero-buy-now:hover {
   /* otimizado: sem scale */
   background-color: #ffffff !important;
   color: #bc0df2 !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .ecom-layout {
@@ -2343,7 +2343,7 @@ input:checked + .slider:before {
   top: 0 !important;
   width: 100% !important;
   z-index: 1000 !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .ecom-menu {
@@ -2382,9 +2382,9 @@ input:checked + .slider:before {
   flex-direction: column !important;
   background: transparent !important;
   border: none !important;
-  box-shadow: none !important;
+  box-shadow: none;
   padding: 0 !important;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
   overflow: visible !important;
   box-sizing: border-box !important;
   height: auto !important;
@@ -2402,7 +2402,7 @@ input:checked + .slider:before {
 }
 
 .ecom-product-card-premium:hover {
-  transform: translateY(-5px) !important;
+  /* transform removed */
 }
 
 .ecom-card-image-wrapper {
@@ -2423,7 +2423,7 @@ input:checked + .slider:before {
   object-fit: cover !important;
   padding: 0 !important;
   box-sizing: border-box !important;
-  transition: transform 0.4s ease, filter 0.4s ease !important;
+  /* transition removed for legacy performance */
 }
 
 .ecom-product-body-premium {
@@ -2443,12 +2443,12 @@ input:checked + .slider:before {
 }
 .ecom-product-card-premium:hover .ecom-card-hover-overlay {
   opacity: 1 !important;
-  transform: translateY(0) !important;
+  /* transform removed */
   pointer-events: auto !important;
 }
 
 .ecom-favorite-btn {
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 .ecom-favorite-btn:hover {
   /* otimizado: sem scale */
@@ -2457,11 +2457,11 @@ input:checked + .slider:before {
 
 .card-swatch-circle:hover {
   /* otimizado: sem scale */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .btn-ecom-quick-add {
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 .btn-ecom-quick-add:hover {
   background-color: #6a3f97 !important;
@@ -2506,8 +2506,8 @@ input:checked + .slider:before {
 .ecom-drawer select:-webkit-autofill:hover,
 .ecom-drawer select:-webkit-autofill:focus {
   -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transition: background-color 5000s ease-in-out 0s;
+  -webkit-box-shadow: none;
+  /* transition removed for legacy performance */
 }
 
 /* Select options text color override to be dark so they can be read on dropdown expand */
@@ -2559,7 +2559,7 @@ input:checked + .slider:before {
 #modal-ecom-variation-select .modal-card {
   background-color: #5b328a !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 /* Force white text in details and variation selection popups */
@@ -2617,14 +2617,14 @@ select.select-order-status.status-can {
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   padding: 18px 24px !important;
   border-radius: 16px !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   /* otimizado: sem backdrop-filter */
   /* otimizado: sem webkit-backdrop-filter */
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 
 .gift-card:hover {
-  transform: translateY(-4px) scale(1.02) !important;
+  /* transform removed */
   background: rgba(255, 255, 255, 0.12) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
@@ -2632,11 +2632,11 @@ select.select-order-status.status-can {
 @keyframes slide-in-fade {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    /* transform removed */
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    /* transform removed */
   }
 }
 
@@ -2683,7 +2683,7 @@ select.select-order-status.status-can {
   font-weight: 900 !important;
   color: #ffffff !important;
   margin: 0 !important;
-  text-transform: uppercase !important;
+  text-/* transform removed */
   letter-spacing: -3px !important;
   display: flex !important;
   flex-direction: column !important;
@@ -2712,7 +2712,7 @@ select.select-order-status.status-can {
   width: max-content !important;
   white-space: normal !important;
   margin-top: 5px !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .ecom-hero-carousel-side {
@@ -2727,7 +2727,7 @@ select.select-order-status.status-can {
 @media (min-width: 993px) {
   .ecom-hero-carousel-side {
     justify-content: flex-end !important;
-    transform: translateX(120px) !important;
+    /* transform removed */
   }
 }
 
@@ -2877,7 +2877,7 @@ select.select-order-status.status-can {
     position: relative !important;
     bottom: auto !important;
     left: auto !important;
-    transform: none !important;
+    /* transform removed */
     margin-top: 25px !important;
     margin-bottom: 10px !important;
     display: flex !important;
@@ -2914,7 +2914,7 @@ select.select-order-status.status-can {
     position: relative !important;
     left: auto !important;
     top: auto !important;
-    transform: none !important;
+    /* transform removed */
     margin: 0 !important;
     margin-right: auto !important;
     order: 1 !important;
@@ -3032,7 +3032,7 @@ select.select-order-status.status-can {
   .ecom-hero-carousel-side .carousel-arrow {
     position: absolute !important;
     top: 50% !important;
-    transform: translateY(-50%) !important;
+    /* transform removed */
     z-index: 20 !important;
     font-size: 2rem !important;
     padding: 8px !important;
@@ -3413,13 +3413,13 @@ select.select-order-status.status-can {
   background: #ffffff;
   color: #1a202c;
   box-sizing: border-box;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 
 .login-input-group input:focus {
   outline: none;
   border-color: #8b5cf6;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .password-input-wrapper {
@@ -3431,7 +3431,7 @@ select.select-order-status.status-can {
   position: absolute;
   right: 16px;
   top: 50%;
-  transform: translateY(-50%);
+  /* transform removed */
   background: none;
   border: none;
   color: #a0aec0;
@@ -3440,7 +3440,7 @@ select.select-order-status.status-can {
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: color 0.2s;
+  /* transition removed for legacy performance */
 }
 
 .btn-toggle-login-password:hover {
@@ -3457,13 +3457,13 @@ select.select-order-status.status-can {
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
   margin-top: 15px;
 }
 
 .btn-login-submit:hover {
   background: #7c3aed;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .login-right-side {
@@ -3516,7 +3516,7 @@ select.select-order-status.status-can {
   max-width: 480px;
   width: 100%;
   text-align: left;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   box-sizing: border-box;
   margin-bottom: 70px;
   z-index: 2;
@@ -3543,7 +3543,7 @@ select.select-order-status.status-can {
   font-weight: 800;
   color: #ffffff;
   margin-bottom: 25px;
-  text-transform: uppercase;
+  text-/* transform removed */
   letter-spacing: 3px;
   opacity: 0.9;
   z-index: 2;
@@ -3562,7 +3562,7 @@ select.select-order-status.status-can {
   height: 8px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.35);
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 
 .login-right-dots .dot.active {
@@ -3578,7 +3578,7 @@ select.select-order-status.status-can {
   margin: 0 8px;
   cursor: pointer;
   user-select: none;
-  transition: color 0.2s;
+  /* transition removed for legacy performance */
 }
 
 .login-right-dots .dot-arrow:hover {
@@ -3610,7 +3610,7 @@ select.select-order-status.status-can {
   justify-content: center !important;
   background-color: rgba(15, 10, 25, 0.6) !important;
   /* otimizado: sem backdrop-filter */
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 
 .auth-light-card {
@@ -3620,7 +3620,7 @@ select.select-order-status.status-can {
   padding: 40px 32px 32px 32px !important;
   width: 90% !important;
   max-width: 420px !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   position: relative !important;
   text-align: center !important;
   font-family: 'Outfit', sans-serif !important;
@@ -3632,7 +3632,7 @@ select.select-order-status.status-can {
   position: absolute !important;
   top: -45px !important;
   left: 50% !important;
-  transform: translateX(-50%) !important;
+  /* transform removed */
   width: 90px !important;
   height: 90px !important;
   background: #ffffff !important;
@@ -3640,7 +3640,7 @@ select.select-order-status.status-can {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   border: 4px solid #ffffff !important;
   box-sizing: border-box !important;
   z-index: 10 !important;
@@ -3666,7 +3666,7 @@ select.select-order-status.status-can {
   font-size: 28px !important;
   color: #9ca3af !important;
   cursor: pointer !important;
-  transition: color 0.2s ease !important;
+  /* transition removed for legacy performance */
   line-height: 1 !important;
   z-index: 12 !important;
 }
@@ -3722,7 +3722,7 @@ select.select-order-status.status-can {
   color: #1f2937 !important;
   font-family: 'Outfit', sans-serif !important;
   outline: none !important;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
   width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -3734,7 +3734,7 @@ select.select-order-status.status-can {
 .auth-field-group input:focus {
   background-color: #ffffff !important;
   border-color: #8b5cf6 !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .auth-remember-row {
@@ -3771,16 +3771,16 @@ select.select-order-status.status-can {
   font-size: 15px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
   text-align: center !important;
   width: 100% !important;
   font-family: 'Outfit', sans-serif !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .auth-submit-btn:hover {
   background: #5b328a !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .auth-footer-links {
@@ -3795,7 +3795,7 @@ select.select-order-status.status-can {
   font-size: 13px !important;
   color: #9ca3af !important;
   text-decoration: none !important;
-  transition: color 0.2s ease !important;
+  /* transition removed for legacy performance */
   cursor: pointer !important;
 }
 
@@ -3817,7 +3817,7 @@ select.select-order-status.status-can {
   border-radius: 12px !important;
   padding: 10px 14px !important;
   box-sizing: border-box !important;
-  transition: none; /* otimizado: sem animação geral */
+  /* transition removed for legacy performance */ /* otimizado: sem animação geral */
 }
 
 #app-ecommerce input:not([type="checkbox"]):not([type="radio"])::placeholder,
@@ -3831,7 +3831,7 @@ select.select-order-status.status-can {
 #app-ecommerce textarea:focus {
   background-color: #ffffff !important;
   border-color: #8b5cf6 !important; /* Destaque roxo */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: none;
   color: #1f2937 !important;
   outline: none !important;
 }
