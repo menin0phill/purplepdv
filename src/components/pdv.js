@@ -1,4 +1,19 @@
-import { getClients, addClient, getProducts, addSale, addCashTransaction, getConfig, getCurrentCashSession } from '../db.js';
+
+// --- Utilitários de Busca Avançada ---
+function normalizeString(str) {
+  if (!str) return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function advancedMatch(text, query) {
+  if (!query) return true;
+  const normText = normalizeString(text);
+  const normQuery = normalizeString(query);
+  const tokens = normQuery.split(/\s+/).filter(t => t.length > 0);
+  return tokens.every(token => normText.includes(token));
+}
+// ------------------------------------
+\nimport { getClients, addClient, getProducts, addSale, addCashTransaction, getConfig, getCurrentCashSession } from '../db.js';
 import { showReceipt } from './receipt.js';
 
 export function renderPDV(container) {
@@ -292,11 +307,8 @@ export function renderPDV(container) {
 }
 
 function renderProductsGrid(products, category, query) {
-  const lowerQuery = query.toLowerCase().trim();
   const filtered = products.filter(p => {
-    const matchesSearch = !lowerQuery || 
-                          p.name.toLowerCase().includes(lowerQuery) || 
-                          (p.code && p.code.includes(lowerQuery));
+    const matchesSearch = advancedMatch(p.name, query) || (p.code && advancedMatch(p.code, query));
     const matchesCategory = category === 'Todos' || p.category === category;
     return matchesSearch && matchesCategory;
   });

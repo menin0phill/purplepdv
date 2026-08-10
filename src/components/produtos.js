@@ -1,4 +1,19 @@
-import { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, supabase, syncWithSupabase, saveProducts } from '../db.js';
+
+// --- Utilitários de Busca Avançada ---
+function normalizeString(str) {
+  if (!str) return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function advancedMatch(text, query) {
+  if (!query) return true;
+  const normText = normalizeString(text);
+  const normQuery = normalizeString(query);
+  const tokens = normQuery.split(/\s+/).filter(t => t.length > 0);
+  return tokens.every(token => normText.includes(token));
+}
+// ------------------------------------
+\nimport { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, supabase, syncWithSupabase, saveProducts } from '../db.js';
 
 function generateBarcode39SVG(code) {
   const CHARS = {
@@ -708,7 +723,7 @@ function setupProductEvents(container) {
     const allProducts = getProducts();
 
     const filtered = allProducts.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(query) || p.code.includes(query);
+      const matchesSearch = advancedMatch(p.name, query) || (p.code && advancedMatch(p.code, query));
       const matchesCategory = category === '' || p.category === category;
       return matchesSearch && matchesCategory;
     });

@@ -1,4 +1,20 @@
-import { getClients, addClient, updateClient, deleteClient, payClientDebt, getSales, sanitizeHTML } from '../db.js';
+
+// --- Utilitários de Busca Avançada ---
+function normalizeString(str) {
+  if (!str) return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function advancedMatch(text, query) {
+  if (!query) return true;
+  const normText = normalizeString(text);
+  const normQuery = normalizeString(query);
+  const tokens = normQuery.split(/\s+/).filter(t => t.length > 0);
+  // Todas as palavras digitadas (tokens) devem estar presentes no texto, em qualquer ordem
+  return tokens.every(token => normText.includes(token));
+}
+// ------------------------------------
+\nimport { getClients, addClient, updateClient, deleteClient, payClientDebt, getSales, sanitizeHTML } from '../db.js';
 
 export function renderClientes(container) {
   let clients = getClients();
@@ -421,9 +437,9 @@ function setupClientEvents(container) {
       const allClients = getClients();
 
       const filtered = allClients.filter(c => {
-        return c.name.toLowerCase().includes(query) || 
-               c.phone.includes(query) || 
-               (c.email && c.email.toLowerCase().includes(query));
+        return advancedMatch(c.name, query) || 
+               advancedMatch(c.phone, query) || 
+               (c.email && advancedMatch(c.email, query));
       });
 
       document.getElementById('clients-table-body').innerHTML = renderClientsTableRows(filtered);
