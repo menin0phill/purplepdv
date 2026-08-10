@@ -969,7 +969,6 @@ async function fetchAllRows(tableName, orderBy = 'updated_at', columns = '*') {
 }
 
 export async function syncWithSupabase(manual = false) {
-  if (!manual) return;
   if (!supabase) {
     console.log("Supabase: Client not configured. Running in LocalStorage-only mode.");
     return { success: false, reason: 'not_configured' };
