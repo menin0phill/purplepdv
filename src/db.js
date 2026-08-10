@@ -1,5 +1,54 @@
 import { createClient } from '@supabase/supabase-js';
 
+// ======== SISTEMA DE ARMAZENAMENTO ILIMITADO OFFLINE (ELECTRON FS) ========
+let fsModule = null;
+let pathModule = null;
+let dataPath = '';
+
+try {
+  if (typeof window !== 'undefined' && window.require) {
+    fsModule = window.require('fs');
+    pathModule = window.require('path');
+    const appData = window['process'].env['APPDATA'] || (window['process'].platform === 'darwin' ? window['process'].env['HOME'] + '/Library/Application Support' : window['process'].env['HOME'] + '/.config');
+    dataPath = pathModule.join(appData, 'PurplePDV_Data_Offline');
+    if (!fsModule.existsSync(dataPath)) {
+      fsModule.mkdirSync(dataPath, { recursive: true });
+    }
+  }
+} catch (e) {}
+
+function getStorageItem(key) {
+  if (fsModule) {
+    try {
+      const file = pathModule.join(dataPath, key + '.json');
+      if (fsModule.existsSync(file)) {
+        return fsModule.readFileSync(file, 'utf8');
+      }
+      
+      const localData = localStorage.getItem(key);
+      if (localData) {
+        fsModule.writeFileSync(file, localData, 'utf8');
+        return localData;
+      }
+    } catch(e) {}
+    return null;
+  }
+  return localStorage.getItem(key);
+}
+
+function setStorageItem(key, value) {
+  if (fsModule) {
+    try {
+      const file = pathModule.join(dataPath, key + '.json');
+      fsModule.writeFileSync(file, value, 'utf8');
+    } catch(e) {}
+  } else {
+    localStorage.setItem(key, value);
+  }
+}
+// =========================================================================
+
+
 // LocalStorage Fallback for Supabase config (allows setting credentials directly in Admin UI)
 const localDbConfig = JSON.parse(getStorageItem('purple_pdv_supabase_config')) || {};
 

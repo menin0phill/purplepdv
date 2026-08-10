@@ -23,6 +23,13 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   </head>
   <body>
+    <script>
+      window.addEventListener('error', e => {
+        if (window.require) {
+          window.require('fs').writeFileSync('CRASH.txt', e.message + '\\n' + (e.error ? e.error.stack : ''));
+        }
+      });
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/main.js?v=2"></script>
     <script>
