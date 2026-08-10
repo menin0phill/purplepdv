@@ -14,7 +14,7 @@ function advancedMatch(text, query) {
   return tokens.every(token => normText.includes(token));
 }
 // ------------------------------------
-\nimport { getClients, addClient, updateClient, deleteClient, payClientDebt, getSales, sanitizeHTML } from '../db.js';
+import { getClients, addClient, updateClient, deleteClient, payClientDebt, getSales, sanitizeHTML } from '../db.js';
 
 export function renderClientes(container) {
   let clients = getClients();

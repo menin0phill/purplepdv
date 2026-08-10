@@ -48,7 +48,7 @@
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  --/* transition removed for legacy performance */ /* otimizado: sem animação geral */
+  --transition: 0.3s ease;
   --glass-blur: blur(12px);
 }
 
@@ -593,7 +593,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
-  text-/* transform removed */
+  text-transform:
   letter-spacing: 0.5px;
 }
 
@@ -958,7 +958,7 @@ input:focus, select:focus, textarea:focus {
 .prod-card-cat {
   font-size: 10px;
   font-weight: 600;
-  text-/* transform removed */
+  text-transform:
   color: var(--primary);
   margin-bottom: 4px;
 }
@@ -1784,7 +1784,7 @@ input:focus, select:focus, textarea:focus {
 
 .ecom-product-cat {
   font-size: 11px;
-  text-/* transform removed */
+  text-transform:
   color: var(--primary);
   font-weight: 600;
   margin-bottom: 6px;
@@ -2683,7 +2683,7 @@ select.select-order-status.status-can {
   font-weight: 900 !important;
   color: #ffffff !important;
   margin: 0 !important;
-  text-/* transform removed */
+  text-transform:
   letter-spacing: -3px !important;
   display: flex !important;
   flex-direction: column !important;
@@ -3543,7 +3543,7 @@ select.select-order-status.status-can {
   font-weight: 800;
   color: #ffffff;
   margin-bottom: 25px;
-  text-/* transform removed */
+  text-transform:
   letter-spacing: 3px;
   opacity: 0.9;
   z-index: 2;

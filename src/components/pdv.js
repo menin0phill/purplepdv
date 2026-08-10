@@ -13,7 +13,7 @@ function advancedMatch(text, query) {
   return tokens.every(token => normText.includes(token));
 }
 // ------------------------------------
-\nimport { getClients, addClient, getProducts, addSale, addCashTransaction, getConfig, getCurrentCashSession } from '../db.js';
+import { getClients, addClient, getProducts, addSale, addCashTransaction, getConfig, getCurrentCashSession } from '../db.js';
 import { showReceipt } from './receipt.js';
 
 export function renderPDV(container) {

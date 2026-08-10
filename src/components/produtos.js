@@ -13,7 +13,7 @@ function advancedMatch(text, query) {
   return tokens.every(token => normText.includes(token));
 }
 // ------------------------------------
-\nimport { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, supabase, syncWithSupabase, saveProducts } from '../db.js';
+import { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, supabase, syncWithSupabase, saveProducts } from '../db.js';
 
 function generateBarcode39SVG(code) {
   const CHARS = {
