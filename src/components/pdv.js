@@ -726,13 +726,16 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
   let cartDiscount = 0;
 
   function updateCartTotals() {
-    cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    let rawSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    cartSubtotal = Math.round(rawSubtotal * 100) / 100;
+    
     cartDiscount = parseFloat(discountInput.value) || 0;
     
     if (cartDiscount < 0) cartDiscount = 0;
     if (cartDiscount > cartSubtotal) cartDiscount = cartSubtotal;
 
-    cartTotal = Math.max(0, cartSubtotal - cartDiscount);
+    let rawTotal = Math.max(0, cartSubtotal - cartDiscount);
+    cartTotal = Math.round(rawTotal * 100) / 100;
 
     subtotalEl.textContent = `R$ ${cartSubtotal.toFixed(2)}`;
     totalEl.textContent = `R$ ${cartTotal.toFixed(2)}`;
@@ -857,7 +860,8 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
 
   function updateSplitCalculations() {
     const vals = getSplitValues();
-    const totalInformed = vals.money + vals.pix + vals.credit + vals.debit + vals.fiado;
+    const rawInformed = vals.money + vals.pix + vals.credit + vals.debit + vals.fiado;
+    const totalInformed = Math.round(rawInformed * 100) / 100;
     const remaining = cartTotal - totalInformed;
     
     labelInformed.textContent = `R$ ${totalInformed.toFixed(2)}`;
@@ -973,7 +977,8 @@ function setupPDVEvents(cart, currentCategory, searchQuery, products) {
     const clientName = client ? client.name : null;
     
     const vals = getSplitValues();
-    const totalInformed = vals.money + vals.pix + vals.credit + vals.debit + vals.fiado;
+    const rawTotalInformed = vals.money + vals.pix + vals.credit + vals.debit + vals.fiado;
+    const totalInformed = Math.round(rawTotalInformed * 100) / 100;
 
     if (totalInformed < cartTotal) {
       showNotification('Valor pago é insuficiente!', 'error');
