@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app');
   
   // Sincroniza em segundo plano para carregar novos operadores e configurações
-  /* sync disabled */ Promise.resolve().catch(err => console.warn("Erro no sync inicial:", err));
+  syncWithSupabase(true).catch(err => console.warn("Erro no sync inicial:", err));
 
   // Controle de Sessão de Operador do Caixa
   const activeOperator = sessionStorage.getItem('purple_pdv_active_operator');
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = item.getAttribute('data-screen');
         navigate(target);
         // Sincroniza em segundo plano para capturar atualizações de catálogo ou caixa feitas em outros computadores
-        /* sync disabled */ Promise.resolve().catch(err => console.warn("Erro ao sincronizar na navegação:", err));
+        syncWithSupabase(true).catch(err => console.warn("Erro ao sincronizar na navegação:", err));
       });
     });
 
@@ -407,25 +407,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Sincronização inicial em background
 
-    /* sync disabled */ Promise.resolve().then(() => {
+    syncWithSupabase(true).then(() => {
       navigate(currentScreen);
       updateNavbarCashStatus();
     });
 
     // Dispara sincronização imediata ao acordar a tela ou voltar para o app (essencial para celulares, tablets e notebooks em modo espera)
     window.addEventListener('focus', () => {
-      /* sync disabled */ Promise.resolve().catch(() => {});
+      syncWithSupabase(true).catch(() => {});
     });
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        /* sync disabled */ Promise.resolve().catch(() => {});
+        syncWithSupabase(true).catch(() => {});
       }
     });
 
     // Sincronização via evento de reconexão de rede (o Realtime já cuida da sincronia instantânea)
     window.addEventListener('online', () => {
       console.log('🌐 Conexão restaurada! Sincronizando com a nuvem...');
-      /* sync disabled */ Promise.resolve().catch(err => console.warn("Erro ao sincronizar após reconexão:", err));
+      syncWithSupabase(true).catch(err => console.warn("Erro ao sincronizar após reconexão:", err));
     });
 
     // Atualizar tela quando dados mudarem de fato em background (sem interromper operador com modal aberto, digitando ou no PDV/Caixa/Produtos)

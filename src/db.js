@@ -1149,7 +1149,7 @@ export async function syncWithSupabase(manual = false) {
       if (tableName === 'products') columns += ', code';
       
       const { data: metaData, error: errMeta } = await fetchAllRows(tableName, 'updated_at', columns);
-      if (errMeta || !metaData) return false;
+      if (errMeta || !metaData) { if (errMeta && errMeta.message) throw new Error(errMeta.message); return false; }
 
       const localData = JSON.parse(getStorageItem(localKey)) || [];
       const remoteIds = new Set(metaData.map(r => String(r.id)));
@@ -1305,8 +1305,9 @@ export async function syncWithSupabase(manual = false) {
     }
     return { success: true };
   } catch (err) {
-    console.error("Supabase Sync Failed:", err);
+    console.error("Sync error:", err);
     setStorageItem('purple_pdv_last_sync_error', err.message || String(err));
+    if (manual) throw err;
     return { success: false, reason: err.message };
   } finally {
     isSyncing = false;
