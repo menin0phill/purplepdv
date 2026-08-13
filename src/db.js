@@ -48,36 +48,20 @@ function setStorageItem(key, value) {
 }
 // =========================================================================
 
+const supabaseUrl = 'https://vhjnvewzyfaohmdqdxzj.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoam52ZXd6eWZhb2htZHFkeHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NzQxODcsImV4cCI6MjEwMjE1MDE4N30.i_xMrg-4OcytJTp0Frqvp9nago0mtWCaiXAo23kDs2E';
 
-// LocalStorage Fallback for Supabase config (allows setting credentials directly in Admin UI)
-const localDbConfig = JSON.parse(getStorageItem('purple_pdv_supabase_config')) || {};
+export const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
-const supabaseUrl = 'https://ryodvzcrisfctuiewyrk.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2R2emNyaXNmY3R1aWV3eXJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDM2MzQsImV4cCI6MjEwMDExOTYzNH0.ge_g5aMGJV6t8DZlYdT3QjAsGTArI6OLcs70E2mxNnU';
-
-export const supabase = (supabaseUrl && supabaseAnonKey) 
-  ? createClient(supabaseUrl, supabaseAnonKey) 
-  : null;
-
-// Configurar escuta em tempo real (WebSockets / Supabase Realtime) para propagar alterações instantaneamente para todos os aparelhos (PC, celular e tablet)
 if (supabase) {
   setTimeout(() => {
     try {
-      supabase
-        .channel('purple-pdv-realtime-global')
-        .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
-          console.log('⚡ [Realtime Supabase] Alteração recebida de outro dispositivo:', payload);
-          syncWithSupabase().catch(err => console.warn('Erro ao sincronizar via Realtime:', err));
-        })
-        .subscribe((status) => {
-          console.log('⚡ [Realtime Supabase] Status de conexão ao canal global:', status);
-        });
-    } catch (e) {
-      console.warn('Não foi possível iniciar o canal Realtime:', e);
-    }
+      supabase.channel('purple-pdv-realtime-global').on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+        console.log('[Realtime] Alteração', payload); syncWithSupabase().catch(e => console.warn(e));
+      }).subscribe();
+    } catch (e) {}
   }, 1000);
 }
-
 export function sanitizeHTML(str) {
   if (str === null || str === undefined) return '';
   if (typeof str !== 'string') return String(str);

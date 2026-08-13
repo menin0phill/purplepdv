@@ -14,6 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sincroniza em segundo plano para carregar novos operadores e configurações
   syncWithSupabase(true).catch(err => console.warn("Erro no sync inicial:", err));
 
+  
+  // --- FORÇA RE-SINCRONIZAÇÃO DE TUDO PARA O NOVO BANCO DE DADOS ---
+  if (!localStorage.getItem('purple_pdv_force_pushed_v2')) {
+    const keys = ['purple_pdv_products', 'purple_pdv_clients', 'purple_pdv_operators', 'purple_pdv_sales', 'purple_pdv_cash_sessions'];
+    keys.forEach(k => {
+      let data = JSON.parse(getStorageItem(k)) || [];
+      if (Array.isArray(data)) {
+        data.forEach(d => d.synced = false);
+        setStorageItem(k, JSON.stringify(data));
+      }
+    });
+    localStorage.setItem('purple_pdv_force_pushed_v2', '1');
+    console.log("Forced all local items to synced=false for the new database.");
+  }
+  // ----------------------------------------------------------------
+
   // Controle de Sessão de Operador do Caixa
   const activeOperator = sessionStorage.getItem('purple_pdv_active_operator');
   if (!activeOperator) {
