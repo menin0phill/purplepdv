@@ -50,8 +50,8 @@ export function setStorageItem(key, value) {
 }
 // =========================================================================
 
-const supabaseUrl = 'https://ryodvzcrisfctuiewyrk.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2R2emNyaXNmY3R1aWV3eXJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDM2MzQsImV4cCI6MjEwMDExOTYzNH0.ge_g5aMGJV6t8DZlYdT3QjAsGTArI6OLcs70E2mxNnU';
+const supabaseUrl = 'https://vhjnvewzyfaohmdqdxzj.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoam52ZXd6eWZhb2htZHFkeHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NzQxODcsImV4cCI6MjEwMjE1MDE4N30.i_xMrg-4OcytJTp0Frqvp9nago0mtWCaiXAo23kDs2E';
 
 export const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
