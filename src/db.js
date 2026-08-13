@@ -17,7 +17,7 @@ try {
   }
 } catch (e) {}
 
-function getStorageItem(key) {
+export function getStorageItem(key) {
   if (fsModule) {
     try {
       const file = pathModule.join(dataPath, key + '.json');
@@ -36,7 +36,7 @@ function getStorageItem(key) {
   return localStorage.getItem(key);
 }
 
-function setStorageItem(key, value) {
+export function setStorageItem(key, value) {
   if (fsModule) {
     try {
       const file = pathModule.join(dataPath, key + '.json');

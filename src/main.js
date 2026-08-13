@@ -6,7 +6,7 @@ import { renderDashboard } from './components/dashboard.js';
 import { renderClientes } from './components/clientes.js';
 import { renderConfig } from './components/config.js';
 import { renderPedidos } from './components/pedidos.js';
-import { getConfig, syncWithSupabase, getOperators } from './db.js';
+import { getConfig, syncWithSupabase, getOperators, getStorageItem, setStorageItem } from './db.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app');
