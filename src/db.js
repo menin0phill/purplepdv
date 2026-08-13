@@ -22,7 +22,8 @@ export function getStorageItem(key) {
     try {
       const file = pathModule.join(dataPath, key + '.json');
       if (fsModule.existsSync(file)) {
-        return fsModule.readFileSync(file, 'utf8');
+        const content = fsModule.readFileSync(file, 'utf8');
+        return content.trim() === '' ? null : content;
       }
       
       const localData = localStorage.getItem(key);
@@ -33,7 +34,8 @@ export function getStorageItem(key) {
     } catch(e) {}
     return null;
   }
-  return localStorage.getItem(key);
+  const localVal = localStorage.getItem(key);
+  return (localVal && localVal.trim() === '') ? null : localVal;
 }
 
 export function setStorageItem(key, value) {

@@ -19,7 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!localStorage.getItem('purple_pdv_force_pushed_v2')) {
     const keys = ['purple_pdv_products', 'purple_pdv_clients', 'purple_pdv_operators', 'purple_pdv_sales', 'purple_pdv_cash_sessions'];
     keys.forEach(k => {
-      let data = JSON.parse(getStorageItem(k)) || [];
+      let data = [];
+      try {
+        const raw = getStorageItem(k);
+        if (raw) data = JSON.parse(raw) || [];
+      } catch (e) {
+        console.warn("Erro ao fazer parse do item local", k, e);
+      }
       if (Array.isArray(data)) {
         data.forEach(d => d.synced = false);
         setStorageItem(k, JSON.stringify(data));
