@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </p>
         
         <form id="form-admin-lock" class="margin-top-md">
-          <input type="password" id="admin-pin-input" placeholder="PIN (Padrão: 1234)" maxlength="8" required 
+          <input type="password" id="admin-pin-input" placeholder="Digite o PIN" maxlength="8" required 
                  style="width: 100%; text-align: center; font-size: 20px; letter-spacing: 6px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: white; border-radius: 8px; margin-bottom: 15px;">
           <div class="modal-actions" style="display: flex; gap: 8px;">
             <button type="button" id="btn-cancel-admin-lock" class="btn btn-secondary" style="flex: 1;">Cancelar</button>
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const pinValue = newForm.querySelector('#admin-pin-input').value;
         const currentConfig = getConfig();
-        const correctPin = currentConfig.adminPin || '1234';
+        const correctPin = currentConfig.adminPin || '080601';
         
         if (pinValue === correctPin) {
           sessionStorage.setItem('purple_admin_authenticated', 'true');

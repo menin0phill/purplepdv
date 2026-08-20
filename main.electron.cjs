@@ -25,6 +25,10 @@ function createWindow() {
   } else {
     // Em producA Ao, carregamos o arquivo estAtico gerado pelo Vite
     win.loadFile(path.join(__dirname, 'dist', 'pdv.html'));
+    
+    win.webContents.on('console-message', (event, level, message, line, sourceId) => {
+      console.log(`[RENDERER ERROR] ${message} (Line ${line} in ${sourceId})`);
+    });
   }
 }
 

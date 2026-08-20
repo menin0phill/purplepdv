@@ -759,7 +759,8 @@ function setupProductEvents(container) {
     const unsynced = localProds.filter(p => !p.synced);
     if (unsynced.length > 0) {
       const lastErr = localStorage.getItem('purple_pdv_last_upsert_error') || localStorage.getItem('purple_pdv_last_sync_error') || 'Erro desconhecido (Verifique o F12 Console)';
-      alert(`DIAGNÓSTICO ANTIGRAVITY:\nExistem ${unsynced.length} produtos no seu PC que NÃO conseguiram subir para a nuvem.\n\nÚltimo erro de sincronização: ${lastErr}\n\nPor favor, tire um print ou copie esta mensagem e me envie!`);
+      console.error(`DIAGNÓSTICO ANTIGRAVITY:\nExistem ${unsynced.length} produtos no seu PC que NÃO conseguiram subir para a nuvem.\n\nÚltimo erro de sincronização: ${lastErr}\n\nPor favor, tire um print ou copie esta mensagem e me envie!`);
+      showNotification(`${unsynced.length} produtos aguardando sincronização com a nuvem...`, 'warning');
     } else {
       console.log("Diagnóstico: Todos os produtos estão sincronizados com a nuvem.");
     }

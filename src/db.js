@@ -364,7 +364,7 @@ function initDB() {
 }
 
 // Executa initDB ao importar
-initDB();
+setTimeout(initDB, 0);
 
 // --- OPERADORES ---
 export function getOperators() {

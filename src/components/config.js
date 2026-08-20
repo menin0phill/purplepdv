@@ -1,4 +1,4 @@
-import { getConfig, saveConfig, getOperators, addOperator, saveOperators } from '../db.js';
+import { getConfig, saveConfig, getOperators, addOperator, saveOperators, getProducts } from '../db.js';
 
 export function renderConfig(container) {
   const currentConfig = getConfig();
@@ -43,6 +43,23 @@ export function renderConfig(container) {
             </div>
           </div>
         </details>
+      </div>
+      
+      <!-- Card de Gestão de Dados e Backup -->
+      <div class="glass-card margin-bottom-md" style="border: 1px solid rgba(16, 185, 129, 0.25);">
+        <h3 style="font-size: 15px; font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">
+          <i data-lucide="database-backup" style="width: 18px; height: 18px; color: #10b981;"></i> Gestão de Dados & Backup
+        </h3>
+        <p class="text-muted text-sm margin-top-xs">Exporte seus dados locais para evitar perdas ou realizar integrações externas.</p>
+        
+        <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap;">
+          <button id="btn-backup-json" class="btn btn-secondary" style="flex: 1; border-color: #10b981; color: #10b981; min-width: 200px; display: flex; justify-content: center; gap: 8px;">
+            <i data-lucide="download"></i> Backup Completo (.json)
+          </button>
+          <button id="btn-backup-csv" class="btn btn-secondary" style="flex: 1; border-color: #3b82f6; color: #3b82f6; min-width: 200px; display: flex; justify-content: center; gap: 8px;">
+            <i data-lucide="file-spreadsheet"></i> Exportar para Excel (.csv)
+          </button>
+        </div>
       </div>
 
       <div class="grid grid-2">
@@ -479,6 +496,62 @@ export function renderConfig(container) {
       setTimeout(() => {
         window.location.reload();
       }, 1500);
+    });
+  }
+
+  // Backup JSON
+  const btnBackupJson = document.getElementById('btn-backup-json');
+  if (btnBackupJson) {
+    btnBackupJson.addEventListener('click', () => {
+      const products = getProducts();
+      const blob = new Blob([JSON.stringify(products, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `purple_pdv_produtos_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification('Backup JSON gerado com sucesso!', 'success');
+    });
+  }
+
+  // Backup CSV (Excel)
+  const btnBackupCsv = document.getElementById('btn-backup-csv');
+  if (btnBackupCsv) {
+    btnBackupCsv.addEventListener('click', () => {
+      const products = getProducts();
+      if (products.length === 0) {
+        showNotification('Nenhum produto para exportar!', 'warning');
+        return;
+      }
+      
+      const headers = ['ID', 'Código', 'Nome', 'Categoria', 'Custo', 'Preço', 'Estoque', 'Descrição'];
+      const csvContent = [
+        headers.join(';'),
+        ...products.map(p => [
+          p.id,
+          p.code || '',
+          `"${(p.name || '').replace(/"/g, '""')}"`,
+          `"${(p.category || '').replace(/"/g, '""')}"`,
+          p.costPrice || 0,
+          p.price || 0,
+          p.stock || 0,
+          `"${(p.description || '').replace(/"/g, '""')}"`
+        ].join(';'))
+      ].join('\n');
+      
+      const blob = new Blob(['\ufeff' + csvContent], {type: 'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `purple_pdv_produtos_backup_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification('Backup Excel (CSV) gerado com sucesso!', 'success');
     });
   }
 }

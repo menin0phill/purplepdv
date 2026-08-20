@@ -1,0 +1,2 @@
+Uncaught ReferenceError: getStorageItem is not defined\nReferenceError: getStorageItem is not defined
+    at file:///C:/Users/Admin/.gemini/antigravity/scratch/purple-pdv/dist/assets/db-DQ2Tjc75.js:11:55437
